@@ -12,9 +12,9 @@ const INVENTORY_Y: f32 = 620.0;
 const INVENTORY_SLOT: f32 = 34.0;
 const INVENTORY_GAP: f32 = 5.0;
 const INVENTORY_COLUMNS: usize = 9;
-const PLAYER_DRAW_W: f32 = 128.0;
-const PLAYER_DRAW_H: f32 = 160.0;
-const PLAYER_FOOT_ANCHOR_Y: f32 = 0.96;
+const PLAYER_DRAW_W: f32 = 180.0;
+const PLAYER_DRAW_H: f32 = 240.0;
+const PLAYER_FOOT_ANCHOR_Y: f32 = 0.97;
 
 #[allow(dead_code)]
 #[derive(Clone, Copy, Debug, PartialEq, Eq, Serialize, Deserialize)]
@@ -1027,7 +1027,7 @@ const HOSPITAL_HOTSPOTS: &[HotspotSpec] = &[
     HotspotSpec {
         id: "nurse_station",
         name: "Pflegekraft",
-        pct: pct(83.3, 12.19, 2.92, 12.78),
+        pct: pct(52.8, 17.0, 11.0, 70.0),
         kind: HotspotKind::Character,
         look: "Die Pflegekraft prüft Akte und Monitor.",
         inspect: "Sie wartet auf klare Werte und eine sachliche Erklärung.",
@@ -1171,103 +1171,712 @@ const ARCHIVE_RECOVERY_HOTSPOTS: &[HotspotSpec] = &[
 ];
 
 const HOTSPOT_POLYGONS: &[HotspotPolygonSpec] = &[
-    HotspotPolygonSpec { scene_id: "greenscreen_studio", hotspot_id: "office_hall", points: &[(5.43, 25.47), (11.52, 25.47), (11.52, 68.39), (5.43, 68.39)] },
-    HotspotPolygonSpec { scene_id: "greenscreen_studio", hotspot_id: "control_room", points: &[(94.43, 26.61), (99.28, 26.61), (99.28, 78.44), (94.35, 74.9)] },
-    HotspotPolygonSpec { scene_id: "greenscreen_studio", hotspot_id: "greenscreen_wall", points: &[(38.65, 16.75), (71.41, 16.75), (71.41, 63.97), (38.65, 63.97)] },
-    HotspotPolygonSpec { scene_id: "greenscreen_studio", hotspot_id: "floor_marks", points: &[(38.87, 63.25), (60.87, 63.25), (60.87, 72.25), (38.87, 72.25)] },
-    HotspotPolygonSpec { scene_id: "greenscreen_studio", hotspot_id: "klixx_table", points: &[(23.54, 51.11), (40.22, 51.11), (40.22, 75.5), (23.54, 75.5)] },
-    HotspotPolygonSpec { scene_id: "greenscreen_studio", hotspot_id: "chat_preview", points: &[(19.94, 29.56), (24.51, 29.56), (24.51, 47.92), (19.94, 47.92)] },
-    HotspotPolygonSpec { scene_id: "greenscreen_studio", hotspot_id: "camera_one", points: &[(62.34, 41.44), (73.09, 41.44), (73.09, 76.13), (62.34, 76.13)] },
-    HotspotPolygonSpec { scene_id: "greenscreen_studio", hotspot_id: "mentor_shadow", points: &[(75.74, 37.92), (80.41, 37.92), (80.41, 72.17), (75.74, 72.17)] },
-    HotspotPolygonSpec { scene_id: "greenscreen_studio", hotspot_id: "greenscreen_setup", points: &[(49.18, 35.89), (72.18, 35.89), (72.18, 72.89), (49.18, 72.89)] },
-    HotspotPolygonSpec { scene_id: "office_hall", hotspot_id: "building_courtyard", points: &[(2.49, 21.81), (9.07, 21.81), (9.07, 68.67), (2.49, 68.67)] },
-    HotspotPolygonSpec { scene_id: "office_hall", hotspot_id: "greenscreen_studio", points: &[(16.33, 25.78), (23.25, 25.78), (23.25, 67.45), (16.33, 67.45)] },
-    HotspotPolygonSpec { scene_id: "office_hall", hotspot_id: "control_room", points: &[(34.16, 26.25), (40.41, 26.25), (40.41, 67.14), (34.16, 67.14)] },
-    HotspotPolygonSpec { scene_id: "office_hall", hotspot_id: "server_room", points: &[(84.65, 27.42), (89.7, 27.42), (89.7, 67.98), (84.65, 67.98)] },
-    HotspotPolygonSpec { scene_id: "office_hall", hotspot_id: "schanzenstrasse", points: &[(73.18, 27.39), (79.1, 27.39), (79.1, 64.7), (73.18, 64.7)] },
-    HotspotPolygonSpec { scene_id: "office_hall", hotspot_id: "dispo_board", points: &[(24.53, 31.94), (32.55, 31.94), (32.55, 54.61), (24.53, 54.61)] },
-    HotspotPolygonSpec { scene_id: "office_hall", hotspot_id: "equipment_storage", points: &[(43.54, 26.25), (56.54, 26.25), (56.54, 67.08), (43.54, 67.08)] },
-    HotspotPolygonSpec { scene_id: "office_hall", hotspot_id: "staircase", points: &[(60.8, 13.11), (69.78, 13.11), (69.78, 63.17), (60.8, 63.17)] },
-    HotspotPolygonSpec { scene_id: "office_hall", hotspot_id: "route_map", points: &[(92.8, 31.69), (99.31, 31.69), (99.31, 53.33), (92.8, 53.33)] },
-    HotspotPolygonSpec { scene_id: "building_courtyard", hotspot_id: "office_hall", points: &[(50.44, 31.58), (57.89, 31.58), (57.89, 63.36), (50.44, 63.36)] },
-    HotspotPolygonSpec { scene_id: "building_courtyard", hotspot_id: "set_workshop", points: &[(80.72, 33.5), (85.89, 33.5), (85.89, 67.42), (80.72, 67.42)] },
-    HotspotPolygonSpec { scene_id: "building_courtyard", hotspot_id: "schanzenstrasse", points: &[(7.67, 25.97), (15.42, 25.97), (15.42, 73.3), (7.67, 73.3)] },
-    HotspotPolygonSpec { scene_id: "building_courtyard", hotspot_id: "loading_zone", points: &[(19.56, 46.33), (37.56, 46.33), (37.56, 72.02), (19.56, 72.02)] },
-    HotspotPolygonSpec { scene_id: "building_courtyard", hotspot_id: "address_plate", points: &[(68.55, 30.78), (72.59, 30.78), (72.59, 43.59), (68.55, 43.59)] },
-    HotspotPolygonSpec { scene_id: "control_room", hotspot_id: "office_hall", points: &[(3.39, 23.92), (10.72, 23.92), (10.72, 68.56), (3.39, 68.56)] },
-    HotspotPolygonSpec { scene_id: "control_room", hotspot_id: "greenscreen_studio", points: &[(22.16, 15.14), (46.91, 15.14), (46.91, 44.03), (22.16, 44.03)] },
-    HotspotPolygonSpec { scene_id: "control_room", hotspot_id: "rehearsal_monitor", points: &[(32.57, 46.47), (36.03, 46.47), (36.03, 53.78), (32.57, 53.78)] },
-    HotspotPolygonSpec { scene_id: "control_room", hotspot_id: "graphics_terminal", points: &[(66.11, 42.47), (78.75, 42.47), (78.75, 69.28), (66.11, 69.28)] },
-    HotspotPolygonSpec { scene_id: "control_room", hotspot_id: "intercom_voice", points: &[(56.29, 43.81), (63.19, 43.81), (63.19, 60.34), (56.29, 60.34)] },
-    HotspotPolygonSpec { scene_id: "control_room", hotspot_id: "on_air_lamp", points: &[(87.66, 10.25), (92.0, 10.25), (92.0, 16.25), (87.66, 16.25)] },
-    HotspotPolygonSpec { scene_id: "control_room", hotspot_id: "video_kliemannsland_road", points: &[(67.84, 15.17), (78.82, 15.17), (78.82, 31.86), (67.84, 31.86)] },
-    HotspotPolygonSpec { scene_id: "control_room", hotspot_id: "video_schimmelbrueder", points: &[(63.58, 33.36), (67.48, 33.36), (67.48, 41.3), (63.58, 41.3)] },
-    HotspotPolygonSpec { scene_id: "video_kliemannsland_road", hotspot_id: "control_room", points: &[(3.0, 62.0), (13.0, 62.0), (13.0, 87.0), (3.0, 87.0)] },
-    HotspotPolygonSpec { scene_id: "video_kliemannsland_road", hotspot_id: "walkable_lane", points: &[(49.0, 73.0), (73.0, 73.0), (73.0, 91.0), (49.0, 91.0)] },
-    HotspotPolygonSpec { scene_id: "video_kliemannsland_road", hotspot_id: "road_marker", points: &[(36.0, 56.0), (47.0, 56.0), (47.0, 79.0), (36.0, 79.0)] },
-    HotspotPolygonSpec { scene_id: "video_kliemannsland_road", hotspot_id: "traffic_totem", points: &[(43.0, 35.0), (61.0, 35.0), (61.0, 72.0), (43.0, 72.0)] },
-    HotspotPolygonSpec { scene_id: "video_kliemannsland_road", hotspot_id: "archive_exit_sign", points: &[(72.0, 48.0), (88.0, 48.0), (88.0, 72.0), (72.0, 72.0)] },
-    HotspotPolygonSpec { scene_id: "video_kliemannsland_road", hotspot_id: "distant_gate", points: &[(83.0, 39.0), (95.0, 39.0), (95.0, 69.0), (83.0, 69.0)] },
-    HotspotPolygonSpec { scene_id: "video_schimmelbrueder", hotspot_id: "control_room", points: &[(1.32, 21.94), (7.94, 21.94), (7.94, 38.19), (1.32, 38.19)] },
-    HotspotPolygonSpec { scene_id: "video_schimmelbrueder", hotspot_id: "casting_table", points: &[(26.61, 21.7), (40.11, 24.06), (16.56, 55.31), (8.87, 54.34), (9.14, 31.56)] },
-    HotspotPolygonSpec { scene_id: "video_schimmelbrueder", hotspot_id: "mold_rack", points: &[(50.38, 18.37), (57.15, 19.48), (40.67, 66.49), (19.61, 66.49)] },
-    HotspotPolygonSpec { scene_id: "video_schimmelbrueder", hotspot_id: "patterned_belt", points: &[(61.56, 12.12), (72.2, 11.56), (85.81, 57.67), (54.57, 58.23)] },
-    HotspotPolygonSpec { scene_id: "video_schimmelbrueder", hotspot_id: "mold_token", points: &[(41.3, 80.56), (50.27, 80.56), (50.27, 93.78), (41.3, 93.78)] },
-    HotspotPolygonSpec { scene_id: "video_schimmelbrueder", hotspot_id: "song_exit_gate", points: &[(86.48, 29.36), (99.83, 29.36), (99.83, 82.47), (86.48, 82.47)] },
-    HotspotPolygonSpec { scene_id: "video_schimmelbrueder", hotspot_id: "factory_floor", points: &[(7.57, 66.0), (86.81, 66.0), (86.81, 100.0), (7.57, 100.0)] },
-    HotspotPolygonSpec { scene_id: "video_sewer_archive", hotspot_id: "control_room", points: &[(4.0, 65.0), (14.0, 65.0), (14.0, 87.0), (4.0, 87.0)] },
-    HotspotPolygonSpec { scene_id: "video_sewer_archive", hotspot_id: "archive_hatch", points: &[(72.0, 40.0), (85.0, 40.0), (85.0, 72.0), (72.0, 72.0)] },
-    HotspotPolygonSpec { scene_id: "video_sewer_archive", hotspot_id: "flow_arrow", points: &[(42.0, 73.0), (55.0, 73.0), (55.0, 81.0), (42.0, 81.0)] },
-    HotspotPolygonSpec { scene_id: "video_sewer_archive", hotspot_id: "inspection_tripod", points: &[(19.0, 44.0), (30.0, 44.0), (30.0, 78.0), (19.0, 78.0)] },
-    HotspotPolygonSpec { scene_id: "video_sewer_archive", hotspot_id: "wet_note", points: &[(58.5, 80.0), (64.0, 80.0), (64.0, 85.5), (58.5, 85.5)] },
-    HotspotPolygonSpec { scene_id: "video_sewer_archive", hotspot_id: "lost_signal", points: &[(43.0, 20.0), (65.0, 20.0), (65.0, 52.0), (43.0, 52.0)] },
-    HotspotPolygonSpec { scene_id: "server_room", hotspot_id: "office_hall", points: &[(4.35, 25.69), (9.86, 25.69), (9.86, 71.58), (4.35, 71.58)] },
-    HotspotPolygonSpec { scene_id: "server_room", hotspot_id: "server_racks", points: &[(17.17, 19.3), (39.04, 19.3), (39.04, 72.16), (17.17, 72.16)] },
-    HotspotPolygonSpec { scene_id: "server_room", hotspot_id: "video_hub", points: &[(41.82, 21.31), (61.16, 21.31), (61.16, 70.98), (41.82, 70.98)] },
-    HotspotPolygonSpec { scene_id: "server_room", hotspot_id: "sdi_spool", points: &[(70.59, 51.56), (83.74, 51.56), (83.74, 75.53), (70.59, 75.53)] },
-    HotspotPolygonSpec { scene_id: "server_room", hotspot_id: "sdi_label_printer", points: &[(62.8, 41.41), (68.0, 41.41), (68.0, 50.94), (62.8, 50.94)] },
-    HotspotPolygonSpec { scene_id: "set_workshop", hotspot_id: "building_courtyard", points: &[(4.19, 27.92), (9.21, 27.92), (9.21, 72.7), (4.19, 72.7)] },
-    HotspotPolygonSpec { scene_id: "set_workshop", hotspot_id: "set_pieces", points: &[(14.65, 13.39), (38.65, 13.39), (38.65, 70.28), (14.65, 70.28)] },
-    HotspotPolygonSpec { scene_id: "set_workshop", hotspot_id: "gaffer_roll", points: &[(57.0, 51.33), (60.27, 51.33), (60.27, 57.5), (57.0, 57.5)] },
-    HotspotPolygonSpec { scene_id: "set_workshop", hotspot_id: "bike_workshop_trace", points: &[(67.49, 13.28), (83.49, 13.28), (83.49, 35.28), (67.49, 35.28)] },
-    HotspotPolygonSpec { scene_id: "set_workshop", hotspot_id: "studio_door_15", points: &[(85.53, 29.31), (93.01, 29.31), (93.01, 67.28), (85.53, 67.28)] },
-    HotspotPolygonSpec { scene_id: "schanzenstrasse", hotspot_id: "building_courtyard", points: &[(3.12, 38.39), (10.1, 38.39), (10.1, 70.89), (3.12, 70.89)] },
-    HotspotPolygonSpec { scene_id: "schanzenstrasse", hotspot_id: "sternschanze_station", points: &[(73.14, 31.94), (100.0, 31.94), (100.0, 71.11), (73.14, 71.11)] },
-    HotspotPolygonSpec { scene_id: "schanzenstrasse", hotspot_id: "karoviertel", points: &[(37.38, 27.78), (51.38, 27.78), (51.38, 70.7), (37.38, 70.7)] },
-    HotspotPolygonSpec { scene_id: "schanzenstrasse", hotspot_id: "street_mural", points: &[(12.47, 4.28), (32.94, 4.28), (32.94, 60.61), (12.47, 60.61)] },
-    HotspotPolygonSpec { scene_id: "schanzenstrasse", hotspot_id: "corner_kiosk", points: &[(58.48, 41.11), (69.48, 41.11), (69.48, 61.67), (58.48, 61.67)] },
-    HotspotPolygonSpec { scene_id: "schanzenstrasse", hotspot_id: "city_notice", points: &[(32.73, 31.86), (35.78, 31.86), (35.78, 44.11), (32.73, 44.11)] },
-    HotspotPolygonSpec { scene_id: "sternschanze_station", hotspot_id: "schanzenstrasse", points: &[(6.31, 28.86), (20.31, 28.86), (20.31, 69.08), (6.31, 69.08)] },
-    HotspotPolygonSpec { scene_id: "sternschanze_station", hotspot_id: "schanzenpark", points: &[(79.88, 32.63), (95.44, 32.63), (95.44, 64.44), (79.88, 64.44)] },
-    HotspotPolygonSpec { scene_id: "sternschanze_station", hotspot_id: "station_clock", points: &[(41.8, 22.44), (45.99, 22.44), (45.99, 34.61), (41.8, 34.61)] },
-    HotspotPolygonSpec { scene_id: "sternschanze_station", hotspot_id: "platform_sign", points: &[(65.74, 31.95), (73.08, 31.95), (73.08, 40.45), (65.74, 40.45)] },
-    HotspotPolygonSpec { scene_id: "sternschanze_station", hotspot_id: "busker_case", points: &[(31.07, 57.42), (38.28, 57.42), (38.28, 74.75), (31.07, 74.75)] },
-    HotspotPolygonSpec { scene_id: "schanzenpark", hotspot_id: "sternschanze_station", points: &[(5.54, 53.33), (25.94, 53.33), (25.94, 74.36), (5.54, 74.36)] },
-    HotspotPolygonSpec { scene_id: "schanzenpark", hotspot_id: "schanzenstrasse", points: &[(5.9, 75.11), (18.9, 75.11), (18.9, 91.11), (5.9, 91.11)] },
-    HotspotPolygonSpec { scene_id: "schanzenpark", hotspot_id: "water_tower", points: &[(36.46, 6.61), (46.77, 6.61), (46.77, 54.97), (36.46, 54.97)] },
-    HotspotPolygonSpec { scene_id: "schanzenpark", hotspot_id: "city_reflector", points: &[(64.37, 62.22), (69.9, 62.22), (69.9, 75.86), (64.37, 75.86)] },
-    HotspotPolygonSpec { scene_id: "schanzenpark", hotspot_id: "tv_tower_view", points: &[(74.12, 24.45), (77.09, 24.45), (77.09, 58.28), (74.12, 58.28)] },
-    HotspotPolygonSpec { scene_id: "karoviertel", hotspot_id: "schanzenstrasse", points: &[(7.71, 14.28), (21.71, 14.28), (21.71, 64.5), (7.71, 64.5)] },
-    HotspotPolygonSpec { scene_id: "karoviertel", hotspot_id: "print_shop", points: &[(31.78, 17.03), (52.79, 17.03), (52.79, 64.67), (31.78, 64.67)] },
-    HotspotPolygonSpec { scene_id: "karoviertel", hotspot_id: "record_store", points: &[(65.62, 29.06), (84.48, 29.06), (84.48, 65.56), (65.62, 65.56)] },
-    HotspotPolygonSpec { scene_id: "karoviertel", hotspot_id: "market_boxes", points: &[(16.34, 59.78), (30.34, 59.78), (30.34, 76.03), (16.34, 76.03)] },
-    HotspotPolygonSpec { scene_id: "hospital_room", hotspot_id: "hospital_monitor", points: &[(46.4, 31.8), (50.99, 31.8), (50.99, 42.05), (46.4, 42.05)] },
-    HotspotPolygonSpec { scene_id: "hospital_room", hotspot_id: "call_button", points: &[(43.52, 35.83), (45.83, 35.83), (45.83, 45.41), (43.52, 45.41)] },
-    HotspotPolygonSpec { scene_id: "hospital_room", hotspot_id: "nurse_station", points: &[(83.3, 12.19), (86.22, 12.19), (86.22, 24.97), (83.3, 24.97)] },
-    HotspotPolygonSpec { scene_id: "hospital_room", hotspot_id: "discharge_clipboard", points: &[(11.04, 69.58), (20.49, 69.58), (20.49, 81.58), (11.04, 81.58)] },
-    HotspotPolygonSpec { scene_id: "hospital_room", hotspot_id: "hospital_exit", points: &[(91.44, 1.08), (97.89, 1.08), (97.89, 81.75), (91.44, 81.75)] },
-    HotspotPolygonSpec { scene_id: "sprinkler_courtyard", hotspot_id: "alarm_panel", points: &[(40.37, 22.5), (44.79, 22.5), (44.79, 40.53), (40.37, 40.53)] },
-    HotspotPolygonSpec { scene_id: "sprinkler_courtyard", hotspot_id: "extinguisher_cabinet", points: &[(46.46, 24.55), (52.47, 24.55), (52.47, 51.89), (46.46, 51.89)] },
-    HotspotPolygonSpec { scene_id: "sprinkler_courtyard", hotspot_id: "safety_officer", points: &[(66.92, 27.06), (74.92, 27.06), (74.92, 59.06), (66.92, 59.06)] },
-    HotspotPolygonSpec { scene_id: "sprinkler_courtyard", hotspot_id: "fire_return_door", points: &[(24.34, 9.28), (38.12, 9.28), (38.12, 70.25), (24.34, 70.25)] },
-    HotspotPolygonSpec { scene_id: "prop_storage_collapse", hotspot_id: "brace_beam", points: &[(47.03, 0.0), (60.03, 0.0), (60.03, 73.42), (47.03, 73.42)] },
-    HotspotPolygonSpec { scene_id: "prop_storage_collapse", hotspot_id: "release_rope", points: &[(64.86, 0.0), (69.86, 0.0), (69.86, 40.0), (64.86, 40.0)] },
-    HotspotPolygonSpec { scene_id: "prop_storage_collapse", hotspot_id: "workshop_gap", points: &[(87.91, 6.95), (91.08, 6.95), (91.08, 76.81), (87.91, 76.81)] },
-    HotspotPolygonSpec { scene_id: "prop_storage_collapse", hotspot_id: "collapse_exit", points: &[(74.72, 10.5), (84.01, 10.5), (84.01, 71.81), (74.72, 71.81)] },
-    HotspotPolygonSpec { scene_id: "archive_recovery", hotspot_id: "archive_drive", points: &[(0.87, 34.11), (12.87, 34.11), (12.87, 66.95), (0.87, 66.95)] },
-    HotspotPolygonSpec { scene_id: "archive_recovery", hotspot_id: "recovery_terminal", points: &[(49.46, 12.03), (72.24, 12.03), (72.24, 55.73), (49.46, 55.73)] },
-    HotspotPolygonSpec { scene_id: "archive_recovery", hotspot_id: "checksum_printout", points: &[(67.68, 54.69), (81.24, 54.69), (81.24, 74.39), (67.68, 74.39)] },
-    HotspotPolygonSpec { scene_id: "archive_recovery", hotspot_id: "control_room_return", points: &[(27.84, 0.0), (40.3, 0.0), (40.3, 63.11), (27.84, 63.11)] },
+    HotspotPolygonSpec {
+        scene_id: "greenscreen_studio",
+        hotspot_id: "office_hall",
+        points: &[(5.43, 25.47), (11.52, 25.47), (11.52, 68.39), (5.43, 68.39)],
+    },
+    HotspotPolygonSpec {
+        scene_id: "greenscreen_studio",
+        hotspot_id: "control_room",
+        points: &[
+            (94.43, 26.61),
+            (99.28, 26.61),
+            (99.28, 78.44),
+            (94.35, 74.9),
+        ],
+    },
+    HotspotPolygonSpec {
+        scene_id: "greenscreen_studio",
+        hotspot_id: "greenscreen_wall",
+        points: &[
+            (38.65, 16.75),
+            (71.41, 16.75),
+            (71.41, 63.97),
+            (38.65, 63.97),
+        ],
+    },
+    HotspotPolygonSpec {
+        scene_id: "greenscreen_studio",
+        hotspot_id: "floor_marks",
+        points: &[
+            (38.87, 63.25),
+            (60.87, 63.25),
+            (60.87, 72.25),
+            (38.87, 72.25),
+        ],
+    },
+    HotspotPolygonSpec {
+        scene_id: "greenscreen_studio",
+        hotspot_id: "klixx_table",
+        points: &[(23.54, 51.11), (40.22, 51.11), (40.22, 75.5), (23.54, 75.5)],
+    },
+    HotspotPolygonSpec {
+        scene_id: "greenscreen_studio",
+        hotspot_id: "chat_preview",
+        points: &[
+            (19.94, 29.56),
+            (24.51, 29.56),
+            (24.51, 47.92),
+            (19.94, 47.92),
+        ],
+    },
+    HotspotPolygonSpec {
+        scene_id: "greenscreen_studio",
+        hotspot_id: "camera_one",
+        points: &[
+            (62.34, 41.44),
+            (73.09, 41.44),
+            (73.09, 76.13),
+            (62.34, 76.13),
+        ],
+    },
+    HotspotPolygonSpec {
+        scene_id: "greenscreen_studio",
+        hotspot_id: "mentor_shadow",
+        points: &[
+            (75.74, 37.92),
+            (80.41, 37.92),
+            (80.41, 72.17),
+            (75.74, 72.17),
+        ],
+    },
+    HotspotPolygonSpec {
+        scene_id: "greenscreen_studio",
+        hotspot_id: "greenscreen_setup",
+        points: &[
+            (49.18, 35.89),
+            (72.18, 35.89),
+            (72.18, 72.89),
+            (49.18, 72.89),
+        ],
+    },
+    HotspotPolygonSpec {
+        scene_id: "office_hall",
+        hotspot_id: "building_courtyard",
+        points: &[(2.49, 21.81), (9.07, 21.81), (9.07, 68.67), (2.49, 68.67)],
+    },
+    HotspotPolygonSpec {
+        scene_id: "office_hall",
+        hotspot_id: "greenscreen_studio",
+        points: &[
+            (16.33, 25.78),
+            (23.25, 25.78),
+            (23.25, 67.45),
+            (16.33, 67.45),
+        ],
+    },
+    HotspotPolygonSpec {
+        scene_id: "office_hall",
+        hotspot_id: "control_room",
+        points: &[
+            (34.16, 26.25),
+            (40.41, 26.25),
+            (40.41, 67.14),
+            (34.16, 67.14),
+        ],
+    },
+    HotspotPolygonSpec {
+        scene_id: "office_hall",
+        hotspot_id: "server_room",
+        points: &[(84.65, 27.42), (89.7, 27.42), (89.7, 67.98), (84.65, 67.98)],
+    },
+    HotspotPolygonSpec {
+        scene_id: "office_hall",
+        hotspot_id: "schanzenstrasse",
+        points: &[(73.18, 27.39), (79.1, 27.39), (79.1, 64.7), (73.18, 64.7)],
+    },
+    HotspotPolygonSpec {
+        scene_id: "office_hall",
+        hotspot_id: "dispo_board",
+        points: &[
+            (24.53, 31.94),
+            (32.55, 31.94),
+            (32.55, 54.61),
+            (24.53, 54.61),
+        ],
+    },
+    HotspotPolygonSpec {
+        scene_id: "office_hall",
+        hotspot_id: "equipment_storage",
+        points: &[
+            (43.54, 26.25),
+            (56.54, 26.25),
+            (56.54, 67.08),
+            (43.54, 67.08),
+        ],
+    },
+    HotspotPolygonSpec {
+        scene_id: "office_hall",
+        hotspot_id: "staircase",
+        points: &[(60.8, 13.11), (69.78, 13.11), (69.78, 63.17), (60.8, 63.17)],
+    },
+    HotspotPolygonSpec {
+        scene_id: "office_hall",
+        hotspot_id: "route_map",
+        points: &[(92.8, 31.69), (99.31, 31.69), (99.31, 53.33), (92.8, 53.33)],
+    },
+    HotspotPolygonSpec {
+        scene_id: "building_courtyard",
+        hotspot_id: "office_hall",
+        points: &[
+            (50.44, 31.58),
+            (57.89, 31.58),
+            (57.89, 63.36),
+            (50.44, 63.36),
+        ],
+    },
+    HotspotPolygonSpec {
+        scene_id: "building_courtyard",
+        hotspot_id: "set_workshop",
+        points: &[(80.72, 33.5), (85.89, 33.5), (85.89, 67.42), (80.72, 67.42)],
+    },
+    HotspotPolygonSpec {
+        scene_id: "building_courtyard",
+        hotspot_id: "schanzenstrasse",
+        points: &[(7.67, 25.97), (15.42, 25.97), (15.42, 73.3), (7.67, 73.3)],
+    },
+    HotspotPolygonSpec {
+        scene_id: "building_courtyard",
+        hotspot_id: "loading_zone",
+        points: &[
+            (19.56, 46.33),
+            (37.56, 46.33),
+            (37.56, 72.02),
+            (19.56, 72.02),
+        ],
+    },
+    HotspotPolygonSpec {
+        scene_id: "building_courtyard",
+        hotspot_id: "address_plate",
+        points: &[
+            (68.55, 30.78),
+            (72.59, 30.78),
+            (72.59, 43.59),
+            (68.55, 43.59),
+        ],
+    },
+    HotspotPolygonSpec {
+        scene_id: "control_room",
+        hotspot_id: "office_hall",
+        points: &[(3.39, 23.92), (10.72, 23.92), (10.72, 68.56), (3.39, 68.56)],
+    },
+    HotspotPolygonSpec {
+        scene_id: "control_room",
+        hotspot_id: "greenscreen_studio",
+        points: &[
+            (22.16, 15.14),
+            (46.91, 15.14),
+            (46.91, 44.03),
+            (22.16, 44.03),
+        ],
+    },
+    HotspotPolygonSpec {
+        scene_id: "control_room",
+        hotspot_id: "rehearsal_monitor",
+        points: &[
+            (32.57, 46.47),
+            (36.03, 46.47),
+            (36.03, 53.78),
+            (32.57, 53.78),
+        ],
+    },
+    HotspotPolygonSpec {
+        scene_id: "control_room",
+        hotspot_id: "graphics_terminal",
+        points: &[
+            (66.11, 42.47),
+            (78.75, 42.47),
+            (78.75, 69.28),
+            (66.11, 69.28),
+        ],
+    },
+    HotspotPolygonSpec {
+        scene_id: "control_room",
+        hotspot_id: "intercom_voice",
+        points: &[
+            (56.29, 43.81),
+            (63.19, 43.81),
+            (63.19, 60.34),
+            (56.29, 60.34),
+        ],
+    },
+    HotspotPolygonSpec {
+        scene_id: "control_room",
+        hotspot_id: "on_air_lamp",
+        points: &[(87.66, 10.25), (92.0, 10.25), (92.0, 16.25), (87.66, 16.25)],
+    },
+    HotspotPolygonSpec {
+        scene_id: "control_room",
+        hotspot_id: "video_kliemannsland_road",
+        points: &[
+            (67.84, 15.17),
+            (78.82, 15.17),
+            (78.82, 31.86),
+            (67.84, 31.86),
+        ],
+    },
+    HotspotPolygonSpec {
+        scene_id: "control_room",
+        hotspot_id: "video_schimmelbrueder",
+        points: &[(63.58, 33.36), (67.48, 33.36), (67.48, 41.3), (63.58, 41.3)],
+    },
+    HotspotPolygonSpec {
+        scene_id: "video_kliemannsland_road",
+        hotspot_id: "control_room",
+        points: &[(3.0, 62.0), (13.0, 62.0), (13.0, 87.0), (3.0, 87.0)],
+    },
+    HotspotPolygonSpec {
+        scene_id: "video_kliemannsland_road",
+        hotspot_id: "walkable_lane",
+        points: &[(49.0, 73.0), (73.0, 73.0), (73.0, 91.0), (49.0, 91.0)],
+    },
+    HotspotPolygonSpec {
+        scene_id: "video_kliemannsland_road",
+        hotspot_id: "road_marker",
+        points: &[(36.0, 56.0), (47.0, 56.0), (47.0, 79.0), (36.0, 79.0)],
+    },
+    HotspotPolygonSpec {
+        scene_id: "video_kliemannsland_road",
+        hotspot_id: "traffic_totem",
+        points: &[(43.0, 35.0), (61.0, 35.0), (61.0, 72.0), (43.0, 72.0)],
+    },
+    HotspotPolygonSpec {
+        scene_id: "video_kliemannsland_road",
+        hotspot_id: "archive_exit_sign",
+        points: &[(72.0, 48.0), (88.0, 48.0), (88.0, 72.0), (72.0, 72.0)],
+    },
+    HotspotPolygonSpec {
+        scene_id: "video_kliemannsland_road",
+        hotspot_id: "distant_gate",
+        points: &[(83.0, 39.0), (95.0, 39.0), (95.0, 69.0), (83.0, 69.0)],
+    },
+    HotspotPolygonSpec {
+        scene_id: "video_schimmelbrueder",
+        hotspot_id: "control_room",
+        points: &[(1.32, 21.94), (7.94, 21.94), (7.94, 38.19), (1.32, 38.19)],
+    },
+    HotspotPolygonSpec {
+        scene_id: "video_schimmelbrueder",
+        hotspot_id: "casting_table",
+        points: &[
+            (26.61, 21.7),
+            (40.11, 24.06),
+            (16.56, 55.31),
+            (8.87, 54.34),
+            (9.14, 31.56),
+        ],
+    },
+    HotspotPolygonSpec {
+        scene_id: "video_schimmelbrueder",
+        hotspot_id: "mold_rack",
+        points: &[
+            (50.38, 18.37),
+            (57.15, 19.48),
+            (40.67, 66.49),
+            (19.61, 66.49),
+        ],
+    },
+    HotspotPolygonSpec {
+        scene_id: "video_schimmelbrueder",
+        hotspot_id: "patterned_belt",
+        points: &[
+            (61.56, 12.12),
+            (72.2, 11.56),
+            (85.81, 57.67),
+            (54.57, 58.23),
+        ],
+    },
+    HotspotPolygonSpec {
+        scene_id: "video_schimmelbrueder",
+        hotspot_id: "mold_token",
+        points: &[(41.3, 80.56), (50.27, 80.56), (50.27, 93.78), (41.3, 93.78)],
+    },
+    HotspotPolygonSpec {
+        scene_id: "video_schimmelbrueder",
+        hotspot_id: "song_exit_gate",
+        points: &[
+            (86.48, 29.36),
+            (99.83, 29.36),
+            (99.83, 82.47),
+            (86.48, 82.47),
+        ],
+    },
+    HotspotPolygonSpec {
+        scene_id: "video_schimmelbrueder",
+        hotspot_id: "factory_floor",
+        points: &[(7.57, 66.0), (86.81, 66.0), (86.81, 100.0), (7.57, 100.0)],
+    },
+    HotspotPolygonSpec {
+        scene_id: "video_sewer_archive",
+        hotspot_id: "control_room",
+        points: &[(4.0, 65.0), (14.0, 65.0), (14.0, 87.0), (4.0, 87.0)],
+    },
+    HotspotPolygonSpec {
+        scene_id: "video_sewer_archive",
+        hotspot_id: "archive_hatch",
+        points: &[(72.0, 40.0), (85.0, 40.0), (85.0, 72.0), (72.0, 72.0)],
+    },
+    HotspotPolygonSpec {
+        scene_id: "video_sewer_archive",
+        hotspot_id: "flow_arrow",
+        points: &[(42.0, 73.0), (55.0, 73.0), (55.0, 81.0), (42.0, 81.0)],
+    },
+    HotspotPolygonSpec {
+        scene_id: "video_sewer_archive",
+        hotspot_id: "inspection_tripod",
+        points: &[(19.0, 44.0), (30.0, 44.0), (30.0, 78.0), (19.0, 78.0)],
+    },
+    HotspotPolygonSpec {
+        scene_id: "video_sewer_archive",
+        hotspot_id: "wet_note",
+        points: &[(58.5, 80.0), (64.0, 80.0), (64.0, 85.5), (58.5, 85.5)],
+    },
+    HotspotPolygonSpec {
+        scene_id: "video_sewer_archive",
+        hotspot_id: "lost_signal",
+        points: &[(43.0, 20.0), (65.0, 20.0), (65.0, 52.0), (43.0, 52.0)],
+    },
+    HotspotPolygonSpec {
+        scene_id: "server_room",
+        hotspot_id: "office_hall",
+        points: &[(4.35, 25.69), (9.86, 25.69), (9.86, 71.58), (4.35, 71.58)],
+    },
+    HotspotPolygonSpec {
+        scene_id: "server_room",
+        hotspot_id: "server_racks",
+        points: &[(17.17, 19.3), (39.04, 19.3), (39.04, 72.16), (17.17, 72.16)],
+    },
+    HotspotPolygonSpec {
+        scene_id: "server_room",
+        hotspot_id: "video_hub",
+        points: &[
+            (41.82, 21.31),
+            (61.16, 21.31),
+            (61.16, 70.98),
+            (41.82, 70.98),
+        ],
+    },
+    HotspotPolygonSpec {
+        scene_id: "server_room",
+        hotspot_id: "sdi_spool",
+        points: &[
+            (70.59, 51.56),
+            (83.74, 51.56),
+            (83.74, 75.53),
+            (70.59, 75.53),
+        ],
+    },
+    HotspotPolygonSpec {
+        scene_id: "server_room",
+        hotspot_id: "sdi_label_printer",
+        points: &[(62.8, 41.41), (68.0, 41.41), (68.0, 50.94), (62.8, 50.94)],
+    },
+    HotspotPolygonSpec {
+        scene_id: "set_workshop",
+        hotspot_id: "building_courtyard",
+        points: &[(4.19, 27.92), (9.21, 27.92), (9.21, 72.7), (4.19, 72.7)],
+    },
+    HotspotPolygonSpec {
+        scene_id: "set_workshop",
+        hotspot_id: "set_pieces",
+        points: &[
+            (14.65, 13.39),
+            (38.65, 13.39),
+            (38.65, 70.28),
+            (14.65, 70.28),
+        ],
+    },
+    HotspotPolygonSpec {
+        scene_id: "set_workshop",
+        hotspot_id: "gaffer_roll",
+        points: &[(57.0, 51.33), (60.27, 51.33), (60.27, 57.5), (57.0, 57.5)],
+    },
+    HotspotPolygonSpec {
+        scene_id: "set_workshop",
+        hotspot_id: "bike_workshop_trace",
+        points: &[
+            (67.49, 13.28),
+            (83.49, 13.28),
+            (83.49, 35.28),
+            (67.49, 35.28),
+        ],
+    },
+    HotspotPolygonSpec {
+        scene_id: "set_workshop",
+        hotspot_id: "studio_door_15",
+        points: &[
+            (85.53, 29.31),
+            (93.01, 29.31),
+            (93.01, 67.28),
+            (85.53, 67.28),
+        ],
+    },
+    HotspotPolygonSpec {
+        scene_id: "schanzenstrasse",
+        hotspot_id: "building_courtyard",
+        points: &[(3.12, 38.39), (10.1, 38.39), (10.1, 70.89), (3.12, 70.89)],
+    },
+    HotspotPolygonSpec {
+        scene_id: "schanzenstrasse",
+        hotspot_id: "sternschanze_station",
+        points: &[
+            (73.14, 31.94),
+            (100.0, 31.94),
+            (100.0, 71.11),
+            (73.14, 71.11),
+        ],
+    },
+    HotspotPolygonSpec {
+        scene_id: "schanzenstrasse",
+        hotspot_id: "karoviertel",
+        points: &[(37.38, 27.78), (51.38, 27.78), (51.38, 70.7), (37.38, 70.7)],
+    },
+    HotspotPolygonSpec {
+        scene_id: "schanzenstrasse",
+        hotspot_id: "street_mural",
+        points: &[(12.47, 4.28), (32.94, 4.28), (32.94, 60.61), (12.47, 60.61)],
+    },
+    HotspotPolygonSpec {
+        scene_id: "schanzenstrasse",
+        hotspot_id: "corner_kiosk",
+        points: &[
+            (58.48, 41.11),
+            (69.48, 41.11),
+            (69.48, 61.67),
+            (58.48, 61.67),
+        ],
+    },
+    HotspotPolygonSpec {
+        scene_id: "schanzenstrasse",
+        hotspot_id: "city_notice",
+        points: &[
+            (32.73, 31.86),
+            (35.78, 31.86),
+            (35.78, 44.11),
+            (32.73, 44.11),
+        ],
+    },
+    HotspotPolygonSpec {
+        scene_id: "sternschanze_station",
+        hotspot_id: "schanzenstrasse",
+        points: &[(6.31, 28.86), (20.31, 28.86), (20.31, 69.08), (6.31, 69.08)],
+    },
+    HotspotPolygonSpec {
+        scene_id: "sternschanze_station",
+        hotspot_id: "schanzenpark",
+        points: &[
+            (79.88, 32.63),
+            (95.44, 32.63),
+            (95.44, 64.44),
+            (79.88, 64.44),
+        ],
+    },
+    HotspotPolygonSpec {
+        scene_id: "sternschanze_station",
+        hotspot_id: "station_clock",
+        points: &[(41.8, 22.44), (45.99, 22.44), (45.99, 34.61), (41.8, 34.61)],
+    },
+    HotspotPolygonSpec {
+        scene_id: "sternschanze_station",
+        hotspot_id: "platform_sign",
+        points: &[
+            (65.74, 31.95),
+            (73.08, 31.95),
+            (73.08, 40.45),
+            (65.74, 40.45),
+        ],
+    },
+    HotspotPolygonSpec {
+        scene_id: "sternschanze_station",
+        hotspot_id: "busker_case",
+        points: &[
+            (31.07, 57.42),
+            (38.28, 57.42),
+            (38.28, 74.75),
+            (31.07, 74.75),
+        ],
+    },
+    HotspotPolygonSpec {
+        scene_id: "schanzenpark",
+        hotspot_id: "sternschanze_station",
+        points: &[(5.54, 53.33), (25.94, 53.33), (25.94, 74.36), (5.54, 74.36)],
+    },
+    HotspotPolygonSpec {
+        scene_id: "schanzenpark",
+        hotspot_id: "schanzenstrasse",
+        points: &[(5.9, 75.11), (18.9, 75.11), (18.9, 91.11), (5.9, 91.11)],
+    },
+    HotspotPolygonSpec {
+        scene_id: "schanzenpark",
+        hotspot_id: "water_tower",
+        points: &[(36.46, 6.61), (46.77, 6.61), (46.77, 54.97), (36.46, 54.97)],
+    },
+    HotspotPolygonSpec {
+        scene_id: "schanzenpark",
+        hotspot_id: "city_reflector",
+        points: &[(64.37, 62.22), (69.9, 62.22), (69.9, 75.86), (64.37, 75.86)],
+    },
+    HotspotPolygonSpec {
+        scene_id: "schanzenpark",
+        hotspot_id: "tv_tower_view",
+        points: &[
+            (74.12, 24.45),
+            (77.09, 24.45),
+            (77.09, 58.28),
+            (74.12, 58.28),
+        ],
+    },
+    HotspotPolygonSpec {
+        scene_id: "karoviertel",
+        hotspot_id: "schanzenstrasse",
+        points: &[(7.71, 14.28), (21.71, 14.28), (21.71, 64.5), (7.71, 64.5)],
+    },
+    HotspotPolygonSpec {
+        scene_id: "karoviertel",
+        hotspot_id: "print_shop",
+        points: &[
+            (31.78, 17.03),
+            (52.79, 17.03),
+            (52.79, 64.67),
+            (31.78, 64.67),
+        ],
+    },
+    HotspotPolygonSpec {
+        scene_id: "karoviertel",
+        hotspot_id: "record_store",
+        points: &[
+            (65.62, 29.06),
+            (84.48, 29.06),
+            (84.48, 65.56),
+            (65.62, 65.56),
+        ],
+    },
+    HotspotPolygonSpec {
+        scene_id: "karoviertel",
+        hotspot_id: "market_boxes",
+        points: &[
+            (16.34, 59.78),
+            (30.34, 59.78),
+            (30.34, 76.03),
+            (16.34, 76.03),
+        ],
+    },
+    HotspotPolygonSpec {
+        scene_id: "hospital_room",
+        hotspot_id: "hospital_monitor",
+        points: &[(46.4, 31.8), (50.99, 31.8), (50.99, 42.05), (46.4, 42.05)],
+    },
+    HotspotPolygonSpec {
+        scene_id: "hospital_room",
+        hotspot_id: "call_button",
+        points: &[
+            (43.52, 35.83),
+            (45.83, 35.83),
+            (45.83, 45.41),
+            (43.52, 45.41),
+        ],
+    },
+    HotspotPolygonSpec {
+        scene_id: "hospital_room",
+        hotspot_id: "nurse_station",
+        points: &[(52.8, 17.0), (63.8, 17.0), (63.8, 87.0), (52.8, 87.0)],
+    },
+    HotspotPolygonSpec {
+        scene_id: "hospital_room",
+        hotspot_id: "discharge_clipboard",
+        points: &[
+            (11.04, 69.58),
+            (20.49, 69.58),
+            (20.49, 81.58),
+            (11.04, 81.58),
+        ],
+    },
+    HotspotPolygonSpec {
+        scene_id: "hospital_room",
+        hotspot_id: "hospital_exit",
+        points: &[(91.44, 1.08), (97.89, 1.08), (97.89, 81.75), (91.44, 81.75)],
+    },
+    HotspotPolygonSpec {
+        scene_id: "sprinkler_courtyard",
+        hotspot_id: "alarm_panel",
+        points: &[(40.37, 22.5), (44.79, 22.5), (44.79, 40.53), (40.37, 40.53)],
+    },
+    HotspotPolygonSpec {
+        scene_id: "sprinkler_courtyard",
+        hotspot_id: "extinguisher_cabinet",
+        points: &[
+            (46.46, 24.55),
+            (52.47, 24.55),
+            (52.47, 51.89),
+            (46.46, 51.89),
+        ],
+    },
+    HotspotPolygonSpec {
+        scene_id: "sprinkler_courtyard",
+        hotspot_id: "safety_officer",
+        points: &[
+            (66.92, 27.06),
+            (74.92, 27.06),
+            (74.92, 59.06),
+            (66.92, 59.06),
+        ],
+    },
+    HotspotPolygonSpec {
+        scene_id: "sprinkler_courtyard",
+        hotspot_id: "fire_return_door",
+        points: &[(24.34, 9.28), (38.12, 9.28), (38.12, 70.25), (24.34, 70.25)],
+    },
+    HotspotPolygonSpec {
+        scene_id: "prop_storage_collapse",
+        hotspot_id: "brace_beam",
+        points: &[(47.03, 0.0), (60.03, 0.0), (60.03, 73.42), (47.03, 73.42)],
+    },
+    HotspotPolygonSpec {
+        scene_id: "prop_storage_collapse",
+        hotspot_id: "release_rope",
+        points: &[(64.86, 0.0), (69.86, 0.0), (69.86, 40.0), (64.86, 40.0)],
+    },
+    HotspotPolygonSpec {
+        scene_id: "prop_storage_collapse",
+        hotspot_id: "workshop_gap",
+        points: &[(87.91, 6.95), (91.08, 6.95), (91.08, 76.81), (87.91, 76.81)],
+    },
+    HotspotPolygonSpec {
+        scene_id: "prop_storage_collapse",
+        hotspot_id: "collapse_exit",
+        points: &[(74.72, 10.5), (84.01, 10.5), (84.01, 71.81), (74.72, 71.81)],
+    },
+    HotspotPolygonSpec {
+        scene_id: "archive_recovery",
+        hotspot_id: "archive_drive",
+        points: &[(0.87, 34.11), (12.87, 34.11), (12.87, 66.95), (0.87, 66.95)],
+    },
+    HotspotPolygonSpec {
+        scene_id: "archive_recovery",
+        hotspot_id: "recovery_terminal",
+        points: &[
+            (49.46, 12.03),
+            (72.24, 12.03),
+            (72.24, 55.73),
+            (49.46, 55.73),
+        ],
+    },
+    HotspotPolygonSpec {
+        scene_id: "archive_recovery",
+        hotspot_id: "checksum_printout",
+        points: &[
+            (67.68, 54.69),
+            (81.24, 54.69),
+            (81.24, 74.39),
+            (67.68, 74.39),
+        ],
+    },
+    HotspotPolygonSpec {
+        scene_id: "archive_recovery",
+        hotspot_id: "control_room_return",
+        points: &[(27.84, 0.0), (40.3, 0.0), (40.3, 63.11), (27.84, 63.11)],
+    },
 ];
 
 const STUDIO_WALKABLE: &[(f32, f32)] = &[
@@ -1341,7 +1950,8 @@ const VIDEO_SCHIMMEL_WALKABLE: &[(f32, f32)] = &[
     (0.0, 100.0),
     (0.0, 73.78),
 ];
-const VIDEO_SEWER_WALKABLE: &[(f32, f32)] = &[(15.0, 72.0), (85.0, 72.0), (94.0, 96.0), (7.0, 96.0)];
+const VIDEO_SEWER_WALKABLE: &[(f32, f32)] =
+    &[(15.0, 72.0), (85.0, 72.0), (94.0, 96.0), (7.0, 96.0)];
 const SERVER_ROOM_WALKABLE: &[(f32, f32)] = &[
     (0.0, 77.53),
     (9.46, 71.28),
@@ -1621,6 +2231,33 @@ const SCENES: &[SceneMeta] = &[
     },
 ];
 
+const SCENE_TEXTURE_VARIANTS: &[(&str, &str)] = &[
+    (
+        "hospital_room_nurse",
+        "assets/scenes/hospital_room_nurse.png",
+    ),
+    (
+        "hospital_room_no_clipboard",
+        "assets/scenes/hospital_room_no_clipboard.png",
+    ),
+    (
+        "archive_recovery_no_checksum",
+        "assets/scenes/archive_recovery_no_checksum.png",
+    ),
+    (
+        "video_kliemannsland_road_no_marker",
+        "assets/scenes/video_kliemannsland_road_no_marker.png",
+    ),
+    (
+        "video_schimmelbrueder_no_token",
+        "assets/scenes/video_schimmelbrueder_no_token.png",
+    ),
+    (
+        "video_sewer_archive_no_note",
+        "assets/scenes/video_sewer_archive_no_note.png",
+    ),
+];
+
 const ITEMS: &[ItemMeta] = &[
     ItemMeta {
         id: "call_sheet",
@@ -1881,6 +2518,17 @@ async fn load_scene_textures() -> HashMap<&'static str, Texture2D> {
             }
             Err(error) => {
                 eprintln!("Could not load scene asset {path}: {error}");
+            }
+        }
+    }
+    for (key, path) in SCENE_TEXTURE_VARIANTS {
+        match load_texture(path).await {
+            Ok(texture) => {
+                texture.set_filter(FilterMode::Nearest);
+                textures.insert(*key, texture);
+            }
+            Err(error) => {
+                eprintln!("Could not load scene variant asset {path}: {error}");
             }
         }
     }
@@ -2895,7 +3543,7 @@ impl Game {
     fn draw_player(&self) {
         let token = self.player_pos;
         let frame = if self.walk_target.is_some() {
-            ((get_time() * 8.0) as usize % 4) as f32
+            walk_cycle_frame(get_time())
         } else {
             0.0
         };
@@ -2933,7 +3581,12 @@ impl Game {
     }
 
     fn draw_scene_background(&self, scene: &SceneMeta, rect: Rect) {
-        if let Some(texture) = self.scene_textures.get(scene.id) {
+        let texture_key = self.scene_texture_key(scene.id);
+        if let Some(texture) = self
+            .scene_textures
+            .get(texture_key)
+            .or_else(|| self.scene_textures.get(scene.id))
+        {
             draw_texture_ex(
                 texture,
                 rect.x,
@@ -3081,6 +3734,7 @@ impl Game {
             "wet_note" => !self.has_item("wet_note"),
             "road_marker" => !self.has_item("road_marker"),
             "mold_token" => !self.has_item("mold_token"),
+            "nurse_station" => self.flag("nurse_called"),
             "discharge_clipboard" => !self.has_item("medical_release"),
             "checksum_printout" => !self.has_item("checksum_note"),
             _ => true,
@@ -3100,6 +3754,22 @@ impl Game {
 
     fn has_item(&self, item: &str) -> bool {
         self.state.inventory.iter().any(|id| id == item)
+    }
+
+    fn scene_texture_key(&self, scene_id: &'static str) -> &'static str {
+        match scene_id {
+            "hospital_room" if self.has_item("medical_release") => "hospital_room_no_clipboard",
+            "hospital_room" if self.flag("nurse_called") => "hospital_room_nurse",
+            "archive_recovery" if self.has_item("checksum_note") => "archive_recovery_no_checksum",
+            "video_kliemannsland_road" if self.has_item("road_marker") => {
+                "video_kliemannsland_road_no_marker"
+            }
+            "video_schimmelbrueder" if self.has_item("mold_token") => {
+                "video_schimmelbrueder_no_token"
+            }
+            "video_sewer_archive" if self.has_item("wet_note") => "video_sewer_archive_no_note",
+            _ => scene_id,
+        }
     }
 
     fn add_item(&mut self, item: &str) {
@@ -3612,6 +4282,11 @@ fn facing_from_delta(delta: Vec2) -> PlayerFacing {
     } else {
         PlayerFacing::Down
     }
+}
+
+fn walk_cycle_frame(time: f64) -> f32 {
+    const CYCLE: [f32; 4] = [1.0, 2.0, 3.0, 2.0];
+    CYCLE[((time * 8.0) as usize) % CYCLE.len()]
 }
 
 fn inventory_slot_rect(index: usize) -> Rect {
@@ -5017,5 +5692,61 @@ mod tests {
             hovered_hotspot(scene, &hotspots, rect, token_center).map(|hotspot| hotspot.id),
             Some("mold_token")
         );
+    }
+
+    #[test]
+    fn scene_texture_variants_follow_world_state() {
+        let mut game = Game::new(GameState::default());
+        game.travel("hospital_room", "test");
+
+        assert_eq!(game.scene_texture_key("hospital_room"), "hospital_room");
+        assert!(game
+            .hotspots()
+            .iter()
+            .all(|hotspot| hotspot.id != "nurse_station"));
+        game.state.flags.insert("nurse_called".to_string());
+        assert_eq!(
+            game.scene_texture_key("hospital_room"),
+            "hospital_room_nurse"
+        );
+        assert!(game
+            .hotspots()
+            .iter()
+            .any(|hotspot| hotspot.id == "nurse_station"));
+        game.add_item("medical_release");
+        assert_eq!(
+            game.scene_texture_key("hospital_room"),
+            "hospital_room_no_clipboard"
+        );
+
+        game.add_item("checksum_note");
+        assert_eq!(
+            game.scene_texture_key("archive_recovery"),
+            "archive_recovery_no_checksum"
+        );
+        game.add_item("road_marker");
+        assert_eq!(
+            game.scene_texture_key("video_kliemannsland_road"),
+            "video_kliemannsland_road_no_marker"
+        );
+        game.add_item("mold_token");
+        assert_eq!(
+            game.scene_texture_key("video_schimmelbrueder"),
+            "video_schimmelbrueder_no_token"
+        );
+        game.add_item("wet_note");
+        assert_eq!(
+            game.scene_texture_key("video_sewer_archive"),
+            "video_sewer_archive_no_note"
+        );
+    }
+
+    #[test]
+    fn walk_cycle_skips_idle_pose() {
+        let sampled: Vec<f32> = (0..8)
+            .map(|index| walk_cycle_frame(index as f64 / 8.0))
+            .collect();
+
+        assert_eq!(sampled, vec![1.0, 2.0, 3.0, 2.0, 1.0, 2.0, 3.0, 2.0]);
     }
 }
