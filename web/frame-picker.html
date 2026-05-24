@@ -1,0 +1,1052 @@
+<!doctype html>
+<html lang="de">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Klixx Frame Picker</title>
+<style>
+  :root {
+    color-scheme: dark;
+    --bg: #0e1012;
+    --surface: #171a1e;
+    --surface-2: #20252a;
+    --line: #343b42;
+    --text: #edf0e9;
+    --muted: #a9b0ad;
+    --field: #0d0f11;
+    --accent: #d69a3a;
+    --ok: #58d8b3;
+    --bad: #d85b74;
+  }
+
+  * { box-sizing: border-box; }
+
+  html,
+  body {
+    margin: 0;
+    min-height: 100%;
+    background: var(--bg);
+    color: var(--text);
+    font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+    letter-spacing: 0;
+  }
+
+  body {
+    height: 100vh;
+    overflow: hidden;
+  }
+
+  button,
+  input,
+  select,
+  textarea {
+    font: inherit;
+  }
+
+  button,
+  select,
+  input,
+  textarea {
+    border: 1px solid var(--line);
+    border-radius: 6px;
+    background: var(--field);
+    color: var(--text);
+  }
+
+  button {
+    min-height: 34px;
+    padding: 6px 10px;
+    background: var(--surface-2);
+    cursor: pointer;
+  }
+
+  button:hover,
+  button.active {
+    border-color: #ffffff;
+    background: #273038;
+  }
+
+  button.use.active {
+    border-color: var(--ok);
+  }
+
+  button.reject.active {
+    border-color: var(--bad);
+  }
+
+  select,
+  input {
+    min-height: 34px;
+    padding: 5px 9px;
+  }
+
+  textarea {
+    width: 100%;
+    min-height: 110px;
+    resize: vertical;
+    padding: 10px;
+    line-height: 1.4;
+  }
+
+  .app {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) 410px;
+    height: 100vh;
+    min-height: 0;
+  }
+
+  .workspace {
+    min-width: 0;
+    min-height: 0;
+    height: 100vh;
+    display: flex;
+    flex-direction: column;
+    border-right: 1px solid var(--line);
+    overflow: hidden;
+  }
+
+  .topbar {
+    display: grid;
+    grid-template-columns: auto minmax(190px, 1fr) 170px 180px 170px auto;
+    gap: 10px;
+    align-items: end;
+    padding: 12px 14px;
+    border-bottom: 1px solid var(--line);
+    background: #121518;
+    flex: 0 0 auto;
+  }
+
+  .brand {
+    display: grid;
+    gap: 2px;
+    min-width: 180px;
+  }
+
+  .brand strong {
+    font-size: 1rem;
+  }
+
+  .brand span,
+  .label,
+  .status,
+  .meta,
+  .small {
+    color: var(--muted);
+    font-size: 0.78rem;
+  }
+
+  .control {
+    display: grid;
+    gap: 5px;
+  }
+
+  .label {
+    font-weight: 700;
+    text-transform: uppercase;
+  }
+
+  .toolbar-actions {
+    display: flex;
+    gap: 8px;
+    justify-content: flex-end;
+  }
+
+  .video-editor {
+    flex: 0 0 auto;
+    min-height: 0;
+    max-height: min(52vh, 520px);
+    display: grid;
+    gap: 10px;
+    padding: 14px;
+    border-bottom: 1px solid var(--line);
+    background: #111417;
+    overflow: auto;
+    scrollbar-gutter: stable;
+  }
+
+  .video-layout {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) 300px;
+    gap: 12px;
+    align-items: start;
+  }
+
+  .video-workspace {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr);
+    gap: 8px;
+    min-width: 0;
+  }
+
+  .video-box {
+    position: relative;
+    width: 100%;
+    max-width: 100%;
+    height: clamp(180px, 30vh, 340px);
+    min-width: 0;
+    overflow: hidden;
+    border: 1px solid var(--line);
+    border-radius: 6px;
+    background: #050607;
+  }
+
+  .video-player {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    display: block;
+    object-fit: contain;
+    background: #050607;
+  }
+
+  .timeline {
+    display: grid;
+    gap: 7px;
+  }
+
+  input[type="range"] {
+    width: 100%;
+  }
+
+  .time-row {
+    display: flex;
+    gap: 8px;
+    align-items: center;
+    justify-content: space-between;
+    flex-wrap: wrap;
+  }
+
+  .timecode {
+    color: #dfe5df;
+    font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, "Liberation Mono", monospace;
+    font-size: 0.92rem;
+  }
+
+  .pick-panel {
+    display: grid;
+    gap: 10px;
+    padding: 10px;
+    border: 1px solid var(--line);
+    border-radius: 7px;
+    background: var(--surface);
+  }
+
+  .checkbox-row {
+    display: flex;
+    gap: 8px;
+    align-items: center;
+  }
+
+  .checkbox-row input {
+    min-height: auto;
+  }
+
+  .content {
+    flex: 1 1 0;
+    min-height: 180px;
+    overflow-y: auto;
+    overflow-x: hidden;
+    overscroll-behavior: contain;
+    scrollbar-gutter: stable;
+    padding: 14px;
+  }
+
+  .grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(210px, 1fr));
+    gap: 12px;
+  }
+
+  .card {
+    min-width: 0;
+    display: grid;
+    gap: 8px;
+    padding: 8px;
+    border: 1px solid var(--line);
+    border-radius: 7px;
+    background: var(--surface);
+    text-align: left;
+  }
+
+  .card.selected {
+    border-color: #ffffff;
+    box-shadow: 0 0 0 2px rgba(214, 154, 58, 0.5);
+  }
+
+  .thumb-wrap {
+    position: relative;
+    aspect-ratio: 16 / 9;
+    overflow: hidden;
+    border-radius: 4px;
+    background: #08090a;
+  }
+
+  .thumb-wrap img {
+    width: 100%;
+    height: 100%;
+    display: block;
+    object-fit: cover;
+  }
+
+  .badge-row {
+    position: absolute;
+    left: 6px;
+    right: 6px;
+    bottom: 6px;
+    display: flex;
+    gap: 5px;
+    flex-wrap: wrap;
+  }
+
+  .badge {
+    min-height: 21px;
+    display: inline-flex;
+    align-items: center;
+    border-radius: 4px;
+    padding: 2px 6px;
+    background: rgba(0, 0, 0, 0.72);
+    color: #ffffff;
+    font-size: 0.72rem;
+  }
+
+  .badge.selected-frame {
+    background: rgba(51, 145, 121, 0.9);
+  }
+
+  .badge.rejected {
+    background: rgba(150, 43, 65, 0.92);
+  }
+
+  .card-title {
+    min-width: 0;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    font-weight: 700;
+  }
+
+  .panel {
+    height: 100vh;
+    overflow: auto;
+    background: var(--surface);
+  }
+
+  .panel-section {
+    display: grid;
+    gap: 12px;
+    padding: 14px;
+    border-bottom: 1px solid var(--line);
+  }
+
+  .panel-section h1,
+  .panel-section h2 {
+    margin: 0;
+    font-size: 1rem;
+  }
+
+  .detail-image {
+    width: 100%;
+    display: block;
+    border: 1px solid var(--line);
+    border-radius: 6px;
+    background: #08090a;
+  }
+
+  .button-row {
+    display: flex;
+    gap: 8px;
+    flex-wrap: wrap;
+  }
+
+  .field {
+    display: grid;
+    gap: 5px;
+  }
+
+  .field input,
+  .field textarea {
+    width: 100%;
+  }
+
+  code,
+  .path {
+    color: #c8d0cf;
+    font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, "Liberation Mono", monospace;
+    font-size: 0.76rem;
+    overflow-wrap: anywhere;
+  }
+
+  .empty {
+    padding: 18px;
+    border: 1px dashed var(--line);
+    border-radius: 7px;
+    color: var(--muted);
+  }
+
+  @media (max-width: 1000px) {
+    body {
+      height: auto;
+      overflow: auto;
+    }
+
+    .app {
+      grid-template-columns: 1fr;
+      height: auto;
+    }
+
+    .workspace {
+      height: auto;
+      min-height: 0;
+      overflow: visible;
+    }
+
+    .topbar {
+      grid-template-columns: 1fr;
+      align-items: stretch;
+    }
+
+    .video-editor,
+    .content {
+      max-height: none;
+      overflow: visible;
+    }
+
+    .video-layout {
+      grid-template-columns: 1fr;
+    }
+
+    .panel {
+      height: auto;
+    }
+  }
+</style>
+</head>
+<body>
+<div class="app">
+  <main class="workspace">
+    <header class="topbar">
+      <div class="brand">
+        <strong>Klixx Frame Picker</strong>
+        <span id="summary">Lade Frames...</span>
+      </div>
+      <label class="control">
+        <span class="label">Suche</span>
+        <input id="searchInput" type="search" placeholder="Titel, ID, Notiz">
+      </label>
+      <label class="control">
+        <span class="label">Frame-Video</span>
+        <select id="videoFilter"></select>
+      </label>
+      <label class="control">
+        <span class="label">Liste</span>
+        <select id="sourceFilter">
+          <option value="picked">Meine Picks</option>
+          <option value="suggested">Vorschläge</option>
+          <option value="all">Alles</option>
+        </select>
+      </label>
+      <label class="control">
+        <span class="label">Status</span>
+        <select id="statusFilter">
+          <option value="all">Alle Frames</option>
+          <option value="unreviewed">Ungeprüft</option>
+          <option value="selected">Ausgewählt</option>
+          <option value="rejected">Verworfen</option>
+          <option value="walkable">Walkable</option>
+        </select>
+      </label>
+      <div class="toolbar-actions">
+        <button type="button" id="saveButton">Auswahl speichern</button>
+      </div>
+    </header>
+    <section class="video-editor" aria-label="Video scrubber">
+      <div class="video-layout">
+        <div class="video-workspace">
+          <label class="control">
+            <span class="label">Heruntergeladenes Video</span>
+            <select id="localVideoSelect"></select>
+          </label>
+          <div class="video-box">
+            <video class="video-player" id="videoPlayer" controls preload="metadata"></video>
+          </div>
+          <div class="timeline">
+            <input id="scrubRange" type="range" min="0" max="0" value="0" step="0.04">
+            <div class="time-row">
+              <span class="timecode" id="timecode">0:00.00 / 0:00.00</span>
+              <div class="button-row">
+                <button type="button" id="back10Button">-10s</button>
+                <button type="button" id="back1Button">-1s</button>
+                <button type="button" id="forward1Button">+1s</button>
+                <button type="button" id="forward10Button">+10s</button>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div class="pick-panel">
+          <h2>Frame picken</h2>
+          <label class="field">
+            <span class="label">Scene ID</span>
+            <input id="pickSceneIdInput" placeholder="video_kliemannsland_road">
+          </label>
+          <label class="field">
+            <span class="label">Notiz</span>
+            <textarea id="pickNotesInput" spellcheck="false" placeholder="Warum eignet sich dieser Frame?"></textarea>
+          </label>
+          <label class="checkbox-row">
+            <input id="pickWalkableInput" type="checkbox" checked>
+            <span>Frame hat begehbare Fläche</span>
+          </label>
+          <button type="button" class="use" id="pickFrameButton">Aktuellen Frame übernehmen</button>
+          <div class="status" id="pickStatus">Wähle ein lokales Video und scrubbe zum gewünschten Bild.</div>
+        </div>
+      </div>
+    </section>
+    <section class="content">
+      <div class="grid" id="frameGrid"></div>
+    </section>
+  </main>
+
+  <aside class="panel">
+    <section class="panel-section">
+      <h1 id="detailTitle">Kein Frame</h1>
+      <div class="status" id="statusLine"></div>
+    </section>
+    <section class="panel-section" id="detailPanel"></section>
+    <section class="panel-section">
+      <h2>Ausgewählte Frames</h2>
+      <textarea id="selectedExport" spellcheck="false"></textarea>
+    </section>
+  </aside>
+</div>
+
+<script>
+const API = "http://127.0.0.1:8082";
+
+const state = {
+  frames: [],
+  videos: [],
+  localVideos: [],
+  selections: {},
+  activePath: "",
+  activeVideoPath: "",
+  search: "",
+  video: "all",
+  source: "picked",
+  status: "all",
+};
+
+const el = {
+  summary: document.getElementById("summary"),
+  searchInput: document.getElementById("searchInput"),
+  videoFilter: document.getElementById("videoFilter"),
+  sourceFilter: document.getElementById("sourceFilter"),
+  statusFilter: document.getElementById("statusFilter"),
+  saveButton: document.getElementById("saveButton"),
+  localVideoSelect: document.getElementById("localVideoSelect"),
+  videoPlayer: document.getElementById("videoPlayer"),
+  scrubRange: document.getElementById("scrubRange"),
+  timecode: document.getElementById("timecode"),
+  back10Button: document.getElementById("back10Button"),
+  back1Button: document.getElementById("back1Button"),
+  forward1Button: document.getElementById("forward1Button"),
+  forward10Button: document.getElementById("forward10Button"),
+  pickSceneIdInput: document.getElementById("pickSceneIdInput"),
+  pickNotesInput: document.getElementById("pickNotesInput"),
+  pickWalkableInput: document.getElementById("pickWalkableInput"),
+  pickFrameButton: document.getElementById("pickFrameButton"),
+  pickStatus: document.getElementById("pickStatus"),
+  frameGrid: document.getElementById("frameGrid"),
+  detailTitle: document.getElementById("detailTitle"),
+  statusLine: document.getElementById("statusLine"),
+  detailPanel: document.getElementById("detailPanel"),
+  selectedExport: document.getElementById("selectedExport"),
+};
+
+function frameImageUrl(path) {
+  return `${API}/frame-image?path=${encodeURIComponent(path)}`;
+}
+
+function videoFileUrl(path) {
+  return `${API}/video-file?path=${encodeURIComponent(path)}`;
+}
+
+function formatTime(seconds) {
+  if (!Number.isFinite(Number(seconds))) {
+    return "--:--";
+  }
+  const total = Math.max(0, Math.round(Number(seconds)));
+  const h = Math.floor(total / 3600);
+  const m = Math.floor((total % 3600) / 60);
+  const s = total % 60;
+  return h > 0
+    ? `${h}:${String(m).padStart(2, "0")}:${String(s).padStart(2, "0")}`
+    : `${m}:${String(s).padStart(2, "0")}`;
+}
+
+function formatPreciseTime(seconds) {
+  if (!Number.isFinite(Number(seconds))) {
+    return "0:00.00";
+  }
+  const whole = Math.floor(Math.max(0, Number(seconds)));
+  const fraction = Math.floor((Math.max(0, Number(seconds)) - whole) * 100);
+  return `${formatTime(whole)}.${String(fraction).padStart(2, "0")}`;
+}
+
+function selection(path) {
+  if (!state.selections[path]) {
+    state.selections[path] = defaultSelection(path);
+  }
+  return state.selections[path];
+}
+
+function defaultSelection(path) {
+  return {
+    path,
+    status: "unreviewed",
+    walkable: false,
+    scene_id: "",
+    notes: "",
+    tags: [],
+  };
+}
+
+function readSelection(path) {
+  return state.selections[path] || defaultSelection(path);
+}
+
+function activeFrame() {
+  const frames = filteredFrames();
+  return frames.find((frame) => frame.path === state.activePath) || frames[0] || null;
+}
+
+function activeVideo() {
+  return state.localVideos.find((video) => video.path === state.activeVideoPath) || state.localVideos[0] || null;
+}
+
+function isManualPick(frame) {
+  return frame.source === "video-frame-picker" || /\/pick_\d+ms\.[a-z0-9]+$/i.test(frame.path || "");
+}
+
+function normalize(text) {
+  return String(text || "").toLowerCase();
+}
+
+function filteredFrames() {
+  const query = normalize(state.search);
+  return state.frames.filter((frame) => {
+    const current = readSelection(frame.path);
+    if (state.video !== "all" && frame.video_id !== state.video) {
+      return false;
+    }
+    if (state.source === "picked" && !isManualPick(frame)) {
+      return false;
+    }
+    if (state.source === "suggested" && isManualPick(frame)) {
+      return false;
+    }
+    if (state.status === "walkable" && !current.walkable) {
+      return false;
+    }
+    if (["selected", "rejected", "unreviewed"].includes(state.status) && current.status !== state.status) {
+      return false;
+    }
+    if (!query) {
+      return true;
+    }
+    const haystack = normalize([
+      frame.title,
+      frame.video_id,
+      frame.episode_hint,
+      frame.path,
+      current.scene_id,
+      current.notes,
+    ].join(" "));
+    return haystack.includes(query);
+  });
+}
+
+function setStatus(status) {
+  const frame = activeFrame();
+  if (!frame) {
+    return;
+  }
+  selection(frame.path).status = status;
+  render();
+}
+
+function selectedFrames() {
+  return state.frames
+    .map((frame) => ({ frame, pick: state.selections[frame.path] }))
+    .filter(({ pick }) => pick?.status === "selected");
+}
+
+function selectedExportText() {
+  return JSON.stringify(
+    selectedFrames().map(({ frame, pick }) => ({
+      video_id: frame.video_id,
+      title: frame.title,
+      url: frame.url,
+      seconds: frame.seconds,
+      timecode: formatTime(frame.seconds),
+      path: frame.path,
+      walkable: pick.walkable,
+      scene_id: pick.scene_id,
+      notes: pick.notes,
+    })),
+    null,
+    2,
+  );
+}
+
+function renderVideoFilter() {
+  const current = state.video || el.videoFilter.value || "all";
+  const videosWithFrames = new Set(filteredFramesForVideoFilter().map((frame) => frame.video_id));
+  el.videoFilter.innerHTML = `<option value="all">Alle Videos</option>`;
+  const knownVideos = state.localVideos.length > 0 ? state.localVideos : state.videos;
+  for (const video of knownVideos) {
+    const id = video.video_id || video.webpage_url?.split("v=")[1]?.split("&")[0] || video.url?.split("v=")[1]?.split("&")[0] || "";
+    if (!videosWithFrames.has(id)) {
+      continue;
+    }
+    const option = document.createElement("option");
+    option.value = id;
+    option.textContent = `${video.title || id}`;
+    el.videoFilter.appendChild(option);
+  }
+  const nextValue = [...el.videoFilter.options].some((option) => option.value === current) ? current : "all";
+  el.videoFilter.value = nextValue;
+  state.video = nextValue;
+}
+
+function filteredFramesForVideoFilter() {
+  return state.frames.filter((frame) => {
+    if (state.source === "picked") {
+      return isManualPick(frame);
+    }
+    if (state.source === "suggested") {
+      return !isManualPick(frame);
+    }
+    return true;
+  });
+}
+
+function renderLocalVideoSelect() {
+  const current = state.activeVideoPath;
+  el.localVideoSelect.innerHTML = "";
+  if (state.localVideos.length === 0) {
+    el.localVideoSelect.innerHTML = `<option value="">Keine lokalen Videos</option>`;
+    return;
+  }
+
+  for (const video of state.localVideos) {
+    const option = document.createElement("option");
+    option.value = video.path;
+    const sizeMb = Math.round((Number(video.size) || 0) / 1024 / 1024);
+    option.textContent = `${video.title || video.video_id} · ${sizeMb} MB`;
+    el.localVideoSelect.appendChild(option);
+  }
+
+  state.activeVideoPath = state.localVideos.some((video) => video.path === current)
+    ? current
+    : state.localVideos[0].path;
+  el.localVideoSelect.value = state.activeVideoPath;
+  loadActiveVideo();
+}
+
+function loadActiveVideo() {
+  const video = activeVideo();
+  if (!video) {
+    el.videoPlayer.removeAttribute("src");
+    el.pickStatus.textContent = "Keine lokalen Videos gefunden.";
+    return;
+  }
+  if (el.videoPlayer.dataset.path !== video.path) {
+    el.videoPlayer.dataset.path = video.path;
+    el.videoPlayer.src = videoFileUrl(video.path);
+    el.videoPlayer.load();
+  }
+  el.pickStatus.textContent = `${state.localVideos.length} heruntergeladene Videos · ${video.video_id} bereit.`;
+}
+
+function syncVideoTime() {
+  const duration = Number.isFinite(el.videoPlayer.duration) ? el.videoPlayer.duration : 0;
+  const current = Number.isFinite(el.videoPlayer.currentTime) ? el.videoPlayer.currentTime : 0;
+  el.scrubRange.max = String(duration || 0);
+  if (document.activeElement !== el.scrubRange) {
+    el.scrubRange.value = String(current);
+  }
+  el.timecode.textContent = `${formatPreciseTime(current)} / ${formatPreciseTime(duration)}`;
+}
+
+function seekBy(seconds) {
+  const duration = Number.isFinite(el.videoPlayer.duration) ? el.videoPlayer.duration : 0;
+  el.videoPlayer.currentTime = Math.min(Math.max(0, el.videoPlayer.currentTime + seconds), duration || Number.MAX_SAFE_INTEGER);
+  syncVideoTime();
+}
+
+function statusBadge(pick) {
+  if (pick.status === "selected") {
+    return `<span class="badge selected-frame">Use</span>`;
+  }
+  if (pick.status === "rejected") {
+    return `<span class="badge rejected">Reject</span>`;
+  }
+  return `<span class="badge">Open</span>`;
+}
+
+function renderGrid() {
+  const frames = filteredFrames();
+  if (frames.length === 0) {
+    const emptyText = state.source === "picked"
+      ? "Noch keine eigenen Frames gepickt. Wähle oben ein heruntergeladenes Video, scrubbe zum Bild und klicke „Aktuellen Frame übernehmen“."
+      : "Keine Frames für diesen Filter.";
+    el.frameGrid.innerHTML = `<div class="empty">${emptyText}</div>`;
+    return;
+  }
+
+  el.frameGrid.innerHTML = "";
+  for (const frame of frames) {
+    const pick = readSelection(frame.path);
+    const button = document.createElement("button");
+    button.type = "button";
+    button.className = `card${frame.path === state.activePath ? " selected" : ""}`;
+    button.innerHTML = `
+      <div class="thumb-wrap">
+        <img loading="lazy" src="${frameImageUrl(frame.path)}" alt="">
+        <div class="badge-row">
+          ${statusBadge(pick)}
+          ${pick.walkable ? `<span class="badge selected-frame">Walk</span>` : ""}
+          <span class="badge">${formatTime(frame.seconds)}</span>
+        </div>
+      </div>
+      <div class="card-title">${frame.title || frame.video_id}</div>
+      <div class="meta">${frame.video_id} · ${frame.path.split("/").pop()}</div>
+    `;
+    button.addEventListener("click", () => {
+      state.activePath = frame.path;
+      render();
+    });
+    el.frameGrid.appendChild(button);
+  }
+}
+
+function renderDetail() {
+  const frame = activeFrame();
+  if (!frame) {
+    el.detailTitle.textContent = "Kein Frame";
+    el.statusLine.textContent = "";
+    el.detailPanel.innerHTML = `<div class="empty">Keine Frames geladen.</div>`;
+    return;
+  }
+
+  const pick = selection(frame.path);
+  el.detailTitle.textContent = frame.title || frame.video_id;
+  el.statusLine.textContent = `${frame.video_id} · ${formatTime(frame.seconds)} · ${state.frames.length} Frames`;
+  el.detailPanel.innerHTML = `
+    <img class="detail-image" src="${frameImageUrl(frame.path)}" alt="">
+    <div class="button-row">
+      <button type="button" class="use ${pick.status === "selected" ? "active" : ""}" id="useButton">Use frame</button>
+      <button type="button" class="reject ${pick.status === "rejected" ? "active" : ""}" id="rejectButton">Reject</button>
+      <button type="button" class="${pick.status === "unreviewed" ? "active" : ""}" id="openButton">Open</button>
+      <button type="button" class="${pick.walkable ? "active" : ""}" id="walkableButton">Walkable</button>
+    </div>
+    <label class="field">
+      <span class="label">Scene ID</span>
+      <input id="sceneIdInput" value="${pick.scene_id || ""}" placeholder="video_kliemannsland_road">
+    </label>
+    <label class="field">
+      <span class="label">Notiz</span>
+      <textarea id="notesInput" spellcheck="false">${pick.notes || ""}</textarea>
+    </label>
+    <div class="path">${frame.path}</div>
+    ${frame.url ? `<a class="small" href="${frame.url}" target="_blank" rel="noreferrer">Video öffnen</a>` : ""}
+  `;
+
+  document.getElementById("useButton").addEventListener("click", () => setStatus("selected"));
+  document.getElementById("rejectButton").addEventListener("click", () => setStatus("rejected"));
+  document.getElementById("openButton").addEventListener("click", () => setStatus("unreviewed"));
+  document.getElementById("walkableButton").addEventListener("click", () => {
+    pick.walkable = !pick.walkable;
+    render();
+  });
+  document.getElementById("sceneIdInput").addEventListener("input", (event) => {
+    pick.scene_id = event.target.value;
+    updateExport();
+  });
+  document.getElementById("notesInput").addEventListener("input", (event) => {
+    pick.notes = event.target.value;
+    updateExport();
+  });
+}
+
+function updateExport() {
+  el.selectedExport.value = selectedExportText();
+  const visible = filteredFrames().length;
+  const picked = state.frames.filter(isManualPick).length;
+  const selected = selectedFrames().length;
+  const rejected = Object.values(state.selections).filter((pick) => pick.status === "rejected").length;
+  const walkable = Object.values(state.selections).filter((pick) => pick.walkable).length;
+  el.summary.textContent = `${state.localVideos.length} Videos · ${picked} Picks · ${visible}/${state.frames.length} sichtbar · ${selected} use · ${rejected} reject · ${walkable} walkable`;
+}
+
+function render() {
+  renderGrid();
+  renderDetail();
+  updateExport();
+}
+
+async function saveSelections() {
+  el.saveButton.disabled = true;
+  el.saveButton.textContent = "Speichere...";
+  try {
+    const response = await fetch(`${API}/frame-selections`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ frames: state.selections }),
+    });
+    const result = await response.json().catch(() => ({}));
+    if (!response.ok || !result.ok) {
+      throw new Error(result.error || `HTTP ${response.status}`);
+    }
+    el.saveButton.textContent = `Gespeichert (${result.selected_count})`;
+  } catch (error) {
+    el.saveButton.textContent = "Nicht gespeichert";
+    el.statusLine.textContent = `${error.message}. Starte ./scripts/dev.sh.`;
+  } finally {
+    window.setTimeout(() => {
+      el.saveButton.disabled = false;
+      el.saveButton.textContent = "Auswahl speichern";
+    }, 1200);
+  }
+}
+
+async function pickCurrentFrame() {
+  const video = activeVideo();
+  if (!video) {
+    el.pickStatus.textContent = "Kein lokales Video ausgewählt.";
+    return;
+  }
+
+  const seconds = Number(el.videoPlayer.currentTime) || 0;
+  el.pickFrameButton.disabled = true;
+  el.pickFrameButton.textContent = "Extrahiere...";
+  el.pickStatus.textContent = `Extrahiere Frame bei ${formatPreciseTime(seconds)}...`;
+
+  try {
+    const response = await fetch(`${API}/pick-frame`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        video_path: video.path,
+        video_id: video.video_id,
+        title: video.title,
+        url: video.url,
+        seconds,
+        status: "selected",
+        walkable: el.pickWalkableInput.checked,
+        scene_id: el.pickSceneIdInput.value,
+        notes: el.pickNotesInput.value,
+      }),
+    });
+    const result = await response.json().catch(() => ({}));
+    if (!response.ok || !result.ok) {
+      throw new Error(result.error || `HTTP ${response.status}`);
+    }
+
+    const frame = result.frame;
+    const existingIndex = state.frames.findIndex((candidate) => candidate.path === frame.path);
+    if (existingIndex >= 0) {
+      state.frames[existingIndex] = frame;
+    } else {
+      state.frames.unshift(frame);
+    }
+    state.selections[frame.path] = result.selection;
+    state.activePath = frame.path;
+    state.video = video.video_id;
+    state.source = "picked";
+    state.status = "all";
+    el.sourceFilter.value = "picked";
+    renderVideoFilter();
+    el.videoFilter.value = state.video;
+    el.statusFilter.value = "all";
+    render();
+    el.pickStatus.textContent = `Gepickt: ${formatPreciseTime(seconds)} -> ${frame.path}`;
+  } catch (error) {
+    el.pickStatus.textContent = `Nicht gepickt: ${error.message}`;
+  } finally {
+    el.pickFrameButton.disabled = false;
+    el.pickFrameButton.textContent = "Aktuellen Frame übernehmen";
+  }
+}
+
+async function loadIndex() {
+  try {
+    const [frameResponse, videoResponse] = await Promise.all([
+      fetch(`${API}/frame-index`),
+      fetch(`${API}/video-index`),
+    ]);
+    const data = await frameResponse.json();
+    const videoData = await videoResponse.json();
+    if (!frameResponse.ok || !data.ok) {
+      throw new Error(data.error || `HTTP ${frameResponse.status}`);
+    }
+    if (!videoResponse.ok || !videoData.ok) {
+      throw new Error(videoData.error || `HTTP ${videoResponse.status}`);
+    }
+    state.frames = data.frames || [];
+    state.videos = data.videos || [];
+    state.localVideos = videoData.videos || [];
+    state.selections = data.selections || {};
+    state.activePath = state.frames[0]?.path || "";
+    el.sourceFilter.value = state.source;
+    renderVideoFilter();
+    renderLocalVideoSelect();
+    render();
+  } catch (error) {
+    el.summary.textContent = "Frame-API nicht erreichbar";
+    el.frameGrid.innerHTML = `<div class="empty">${error.message}. Starte den Editor über ./scripts/dev.sh.</div>`;
+    el.detailPanel.innerHTML = "";
+  }
+}
+
+el.searchInput.addEventListener("input", () => {
+  state.search = el.searchInput.value;
+  renderGrid();
+});
+el.videoFilter.addEventListener("change", () => {
+  state.video = el.videoFilter.value;
+  renderGrid();
+});
+el.sourceFilter.addEventListener("change", () => {
+  state.source = el.sourceFilter.value;
+  state.video = "all";
+  renderVideoFilter();
+  render();
+});
+el.statusFilter.addEventListener("change", () => {
+  state.status = el.statusFilter.value;
+  renderGrid();
+});
+el.localVideoSelect.addEventListener("change", () => {
+  state.activeVideoPath = el.localVideoSelect.value;
+  loadActiveVideo();
+});
+el.videoPlayer.addEventListener("loadedmetadata", syncVideoTime);
+el.videoPlayer.addEventListener("timeupdate", syncVideoTime);
+el.videoPlayer.addEventListener("seeked", syncVideoTime);
+el.scrubRange.addEventListener("input", () => {
+  el.videoPlayer.currentTime = Number(el.scrubRange.value) || 0;
+  syncVideoTime();
+});
+el.back10Button.addEventListener("click", () => seekBy(-10));
+el.back1Button.addEventListener("click", () => seekBy(-1));
+el.forward1Button.addEventListener("click", () => seekBy(1));
+el.forward10Button.addEventListener("click", () => seekBy(10));
+el.pickFrameButton.addEventListener("click", pickCurrentFrame);
+el.saveButton.addEventListener("click", saveSelections);
+
+loadIndex();
+</script>
+</body>
+</html>

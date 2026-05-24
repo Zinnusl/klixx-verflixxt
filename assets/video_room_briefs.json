@@ -1,0 +1,142 @@
+{
+  "notes": [
+    "Reference frames are research material only and must not ship as final room art.",
+    "Final rooms should be original 1990s cinematic pixel-art interpretations with walkable lower foreground.",
+    "bbox_pct values are planned click targets for generated rooms and should be checked in web/hotspot-editor.html after generation.",
+    "The sewer-pipe room is deprecated for future generation because the source frame has no human-scale standing plane. Use assets/walkable_video_frames.json for the next room choice."
+  ],
+  "rooms": [
+    {
+      "id": "video_kliemannsland_road",
+      "chapter": "Walkable Entry",
+      "source_url": "https://www.youtube.com/watch?v=yuQxtOc6UjU",
+      "reference_frame": "tmp/klixx-video-rooms/frames/yuQxtOc6UjU_verflixxte_klixx_staffel_2_aus_dem_kliemannsland_mit_lars_paulsen_und_/01_01129s.jpg",
+      "asset_target": "assets/scenes/video_kliemannsland_road.png",
+      "prompt": "Use the reference only for the composition of a road and roadside shoulder with clear human-scale standing space. Create an original 1990s cinematic pixel-art point-and-click room: a road through a rural creative compound, left guardrail and buildings, distant trees, road cones, a small route marker, and a right-side exit sign into the video archive. No real people, no readable logos, no copied UI. The lower and middle road surfaces must be walkable for the protagonist.",
+      "planned_hotspots": [
+        { "id": "control_room", "name": "Zurück zur Regie", "kind": "exit", "bbox_pct": [3, 62, 10, 25] },
+        { "id": "walkable_lane", "name": "Standspur", "kind": "prop", "bbox_pct": [49, 73, 24, 18] },
+        { "id": "road_marker", "name": "Routenmarker", "kind": "pickup", "bbox_pct": [36, 56, 11, 23] },
+        { "id": "traffic_totem", "name": "Markierungsgruppe", "kind": "prop", "bbox_pct": [43, 35, 18, 37] },
+        { "id": "archive_exit_sign", "name": "Ausfahrtschild", "kind": "prop", "bbox_pct": [72, 48, 16, 24] },
+        { "id": "distant_gate", "name": "Straßenende", "kind": "prop", "bbox_pct": [83, 39, 12, 30] }
+      ]
+    },
+    {
+      "id": "video_schimmelbrueder",
+      "chapter": "Schimmelbrüder",
+      "source_url": "https://www.youtube.com/watch?v=-cf1yCs-m8Q",
+      "reference_frame": "tmp/klixx-video-rooms/frames/-cf1yCs-m8Q_verflixxte_hits_die_besten_songs_aus_200_folgen_verflixxte_klixx/pick_000075975ms.jpg",
+      "asset_target": "assets/scenes/video_schimmelbrueder.png",
+      "prompt": "Use the reference only for the composition of a wide manufacturing hall with rows of circular molds and a patterned conveyor. Create an original The Dig-like 1990s cinematic pixel-art point-and-click room: a quiet industrial hall, left casting table, central mold rows, right patterned belt, small form sample, dark archive gate and broad lower floor for the protagonist. No real people, no copied UI, no readable text, no logos.",
+      "planned_hotspots": [
+        { "id": "control_room", "name": "Zurück zur Regie", "kind": "exit", "bbox_pct": [1, 18, 7, 35] },
+        { "id": "casting_table", "name": "Gießtisch", "kind": "prop", "bbox_pct": [5, 12, 35, 38] },
+        { "id": "mold_rack", "name": "Formenreihe", "kind": "prop", "bbox_pct": [18, 28, 31, 31] },
+        { "id": "patterned_belt", "name": "Musterbahn", "kind": "prop", "bbox_pct": [55, 17, 31, 42] },
+        { "id": "mold_token", "name": "Formprobe", "kind": "pickup", "bbox_pct": [42, 75, 8, 16] },
+        { "id": "song_exit_gate", "name": "Clip-Ausgang", "kind": "prop", "bbox_pct": [84, 32, 14, 42] },
+        { "id": "factory_floor", "name": "Hallenboden", "kind": "prop", "bbox_pct": [8, 62, 68, 34] }
+      ]
+    },
+    {
+      "id": "video_sewer_archive",
+      "deprecated": true,
+      "chapter": "Kanalisation",
+      "source_url": "https://www.youtube.com/watch?v=2NBCX4yW5tk",
+      "reference_frame": "tmp/klixx-video-rooms/frames/2NBCX4yW5tk_das_video_ist_so_deep_wie_die_kanalisation_schmutzig_verflixxte_klixx_/01_01089s.jpg",
+      "asset_target": "assets/scenes/video_sewer_archive.png",
+      "prompt": "Use the reference only for the idea of a cylindrical sewer-inspection tunnel. Create an original The Dig-like 1990s cinematic pixel-art point-and-click room: a wide concrete pipe receding into darkness, damp brick texture, side maintenance ledges, cable hooks, a small inspection tripod, chalk arrows, and a sealed archive hatch. No real people, no copied UI, no readable text, no logos. Lower 40 percent must be clearly walkable.",
+      "planned_hotspots": [
+        { "id": "archive_hatch", "name": "Archivluke", "kind": "prop", "bbox_pct": [72, 40, 13, 32] },
+        { "id": "flow_arrow", "name": "Flusspfeil", "kind": "prop", "bbox_pct": [42, 73, 13, 8] },
+        { "id": "inspection_tripod", "name": "Inspektionsstativ", "kind": "prop", "bbox_pct": [19, 44, 11, 34] },
+        { "id": "wet_note", "name": "Nasser Zettel", "kind": "pickup", "bbox_pct": [58.5, 80, 5.5, 5.5] }
+      ]
+    },
+    {
+      "id": "video_marble_thicket",
+      "chapter": "Murmiland",
+      "source_url": "https://www.youtube.com/watch?v=Z6iXrBWRtYo",
+      "reference_frame": "tmp/klixx-video-rooms/frames/Z6iXrBWRtYo_auf_geht_s_ins_murmiland_verflixxte_klixx_mit_lars_florentin_188/01_00631s.jpg",
+      "asset_target": "assets/scenes/video_marble_thicket.png",
+      "prompt": "Use the reference only for the idea of a thin track running through dense greenery. Create an original The Dig-like pixel-art room: a strange overgrown marble-track forest, blue guide rails between mossy branches, suspended cups, wooden switches, small gates, and a lower foreground path for the protagonist. No hosts, no UI, no exact screenshot elements.",
+      "planned_hotspots": [
+        { "id": "blue_rail", "name": "Blaue Schiene", "kind": "prop", "bbox_pct": [18, 32, 58, 12] },
+        { "id": "wooden_switch", "name": "Holzweiche", "kind": "prop", "bbox_pct": [60, 50, 11, 14] },
+        { "id": "lost_marble", "name": "Verlorene Murmel", "kind": "pickup", "bbox_pct": [43, 71, 7, 6] },
+        { "id": "root_exit", "name": "Wurzelgang", "kind": "exit", "bbox_pct": [80, 49, 12, 24] }
+      ]
+    },
+    {
+      "id": "video_bathroom_cut",
+      "chapter": "Missing Episode",
+      "source_url": "https://www.youtube.com/watch?v=Hev5fxAMQ5c",
+      "reference_frame": "tmp/klixx-video-rooms/frames/Hev5fxAMQ5c_was_ist_mit_dem_f_m_ll_verflixxte_klixx_mit_lars_paulsen_florentin_wil/01_00634s.jpg",
+      "asset_target": "assets/scenes/video_bathroom_cut.png",
+      "prompt": "Use the reference only for the idea of a tiled bathroom with a tub. Create an original 1990s pixel-art video-room: pale tiles, an empty bathtub, a shower pipe, a drain that looks like an edit point, torn tape on the floor, bins of cut footage, and a glitchy doorway made of missing frames. Serious The Dig mood, playable foreground, no real faces, no copied UI.",
+      "planned_hotspots": [
+        { "id": "tub_drain", "name": "Abfluss", "kind": "prop", "bbox_pct": [53, 52, 9, 9] },
+        { "id": "cut_bin", "name": "Schnittreste", "kind": "pickup", "bbox_pct": [24, 66, 13, 12] },
+        { "id": "missing_frame_door", "name": "Fehlbild-Tuer", "kind": "exit", "bbox_pct": [75, 26, 13, 44] },
+        { "id": "tape_mark", "name": "Klebebandspur", "kind": "prop", "bbox_pct": [42, 75, 18, 6] }
+      ]
+    },
+    {
+      "id": "video_phone_switchboard",
+      "chapter": "Telefonjoker",
+      "source_url": "https://www.youtube.com/watch?v=s71eKnq9hs8",
+      "reference_frame": "tmp/klixx-video-rooms/frames/s71eKnq9hs8_der_gef_hrlichste_anruf_der_klixx_geschichte_verflixxte_klixx_mit_lars/03_03070s.jpg",
+      "asset_target": "assets/scenes/video_phone_switchboard.png",
+      "prompt": "Use the reference only for a cramped phone-call mood. Create an original cinematic pixel-art switchboard room inside the video archive: wall of old phones, patch cables, blinking line lamps, a privacy door, handwritten number cards with unreadable marks, and a low desk with a rotary phone. No readable real numbers, no logos, no real people. Lower foreground walkable.",
+      "planned_hotspots": [
+        { "id": "rotary_phone", "name": "Waehltelefon", "kind": "prop", "bbox_pct": [37, 59, 12, 13] },
+        { "id": "patch_cables", "name": "Kabelwand", "kind": "prop", "bbox_pct": [58, 24, 23, 34] },
+        { "id": "wrong_line", "name": "Falsche Leitung", "kind": "pickup", "bbox_pct": [68, 61, 10, 9] },
+        { "id": "privacy_door", "name": "Rufkabine", "kind": "exit", "bbox_pct": [84, 31, 10, 38] }
+      ]
+    },
+    {
+      "id": "video_fishcard_altar",
+      "chapter": "Fischkarte",
+      "source_url": "https://www.youtube.com/watch?v=hb9R7GDFbJ4",
+      "reference_frame": "tmp/klixx-video-rooms/frames/hb9R7GDFbJ4_best_of_rocket_beans_alle_fischkarten_intros_aus_10_jahren_verflixxte_/03_17876s.jpg",
+      "asset_target": "assets/scenes/video_fishcard_altar.png",
+      "prompt": "Use the reference only for the motif of a special fish card. Create an original pixel-art altar room in the video archive: an oversized stylized fish-card tablet, watery light, shelves of unlabeled cards, two scoring pedestals, a locked wager scale, and a dark exit behind the altar. No copied typography, no logos, no exact card design. Lower 40 percent walkable.",
+      "planned_hotspots": [
+        { "id": "fish_tablet", "name": "Fischkarten-Tafel", "kind": "prop", "bbox_pct": [42, 26, 18, 26] },
+        { "id": "wager_scale", "name": "Einsatzwaage", "kind": "prop", "bbox_pct": [57, 58, 13, 13] },
+        { "id": "blank_card", "name": "Leere Karte", "kind": "pickup", "bbox_pct": [30, 62, 8, 9] },
+        { "id": "altar_exit", "name": "Archivtiefe", "kind": "exit", "bbox_pct": [78, 39, 13, 29] }
+      ]
+    },
+    {
+      "id": "video_aspect_archive",
+      "chapter": "4:3",
+      "source_url": "https://www.youtube.com/watch?v=PvfTc_TInII",
+      "reference_frame": "tmp/klixx-video-rooms/frames/PvfTc_TInII_das_ist_4_3_karriere_ist_vorbei_verflixxte_klixx_mit_lars_und_florenti/03_02561s.jpg",
+      "asset_target": "assets/scenes/video_aspect_archive.png",
+      "prompt": "Use the reference only for the idea of old screen formats and archive viewing. Create an original 1990s pixel-art room: CRT monitors with 4:3, vertical, letterbox and stretched silhouettes, a VCR rack, aspect-ratio levers, a calibration grid, and a projector gate. The player can walk along the foreground. No copied screenshots, no readable brand text.",
+      "planned_hotspots": [
+        { "id": "crt_stack", "name": "CRT-Stapel", "kind": "prop", "bbox_pct": [19, 30, 22, 30] },
+        { "id": "ratio_levers", "name": "Formathebel", "kind": "prop", "bbox_pct": [49, 55, 14, 16] },
+        { "id": "calibration_card", "name": "Kalibrierkarte", "kind": "pickup", "bbox_pct": [67, 59, 9, 10] },
+        { "id": "projector_gate", "name": "Projektortor", "kind": "exit", "bbox_pct": [82, 27, 11, 36] }
+      ]
+    },
+    {
+      "id": "video_anniversary_gateway",
+      "chapter": "10 Jahre",
+      "source_url": "https://www.youtube.com/watch?v=At4AiO7YTeo",
+      "reference_frame": "tmp/klixx-video-rooms/frames/At4AiO7YTeo_10_jahre_verflixxte_klixx_die_jubil_umsfolge_live/02_01816s.jpg",
+      "asset_target": "assets/scenes/video_anniversary_gateway.png",
+      "prompt": "Use the reference only for the idea of an anniversary stage and archive display. Create an original The Dig-like pixel-art finale room: a quiet studio stage inside a digital archive, banners without readable logos, a central video portal, trophy shelves, two empty host chairs, hanging cables, and a visible walkable foreground. No real people or exact show branding.",
+      "planned_hotspots": [
+        { "id": "video_portal", "name": "Videotor", "kind": "exit", "bbox_pct": [43, 25, 20, 31] },
+        { "id": "empty_chair_left", "name": "Leerer Stuhl", "kind": "prop", "bbox_pct": [28, 55, 11, 16] },
+        { "id": "archive_trophy", "name": "Archivpokal", "kind": "pickup", "bbox_pct": [69, 50, 9, 16] },
+        { "id": "cable_bundle", "name": "Kabelbuendel", "kind": "prop", "bbox_pct": [17, 65, 18, 10] }
+      ]
+    }
+  ]
+}

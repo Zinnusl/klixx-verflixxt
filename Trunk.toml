@@ -1,0 +1,26 @@
+# Trunk pipeline for Klixx.
+#
+# Macroquad/miniquad has its own wasm loader, so web/index.html deliberately
+# does not use `<link data-trunk rel="rust">`. The hook builds the wasm and
+# then Trunk copies the active profile wasm from target/ into web/dist/.
+
+[build]
+target = "web/index.html"
+dist = "web/dist"
+
+[serve]
+addresses = ["127.0.0.1"]
+port = 8080
+open = false
+
+[watch]
+watch = ["src", "Cargo.toml", "web", "assets"]
+ignore = ["target", "web/dist"]
+
+[[hooks]]
+stage = "pre_build"
+command = "sh"
+command_arguments = [
+    "-c",
+    "mkdir -p target/wasm32-unknown-unknown/trunk && if [ \"$TRUNK_PROFILE\" = \"release\" ]; then cargo build --release --target wasm32-unknown-unknown && cp target/wasm32-unknown-unknown/release/klixx.wasm target/wasm32-unknown-unknown/trunk/klixx.wasm; else cargo build --target wasm32-unknown-unknown && cp target/wasm32-unknown-unknown/debug/klixx.wasm target/wasm32-unknown-unknown/trunk/klixx.wasm; fi"
+]

@@ -1,0 +1,3654 @@
+<!doctype html>
+<html lang="de">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Klixx Hotspot Editor</title>
+<style>
+  :root {
+    color-scheme: dark;
+    --bg: #101113;
+    --surface: #171a1e;
+    --surface-2: #20252a;
+    --line: #343b42;
+    --text: #edf0e9;
+    --muted: #a9b0ad;
+    --field: #0d0f11;
+    --accent: #d69a3a;
+    --focus: #ffffff;
+  }
+
+  * {
+    box-sizing: border-box;
+  }
+
+  html,
+  body {
+    margin: 0;
+    min-height: 100%;
+    background: var(--bg);
+    color: var(--text);
+    font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+    letter-spacing: 0;
+  }
+
+  body {
+    height: 100vh;
+    overflow: hidden;
+  }
+
+  button,
+  input,
+  select,
+  textarea {
+    font: inherit;
+  }
+
+  button {
+    border: 1px solid var(--line);
+    border-radius: 6px;
+    background: var(--surface-2);
+    color: var(--text);
+    cursor: pointer;
+  }
+
+  button:hover {
+    border-color: #69727b;
+    background: #273038;
+  }
+
+  button:focus-visible,
+  input:focus-visible,
+  select:focus-visible,
+  textarea:focus-visible,
+  .scene-frame:focus-visible {
+    outline: 2px solid var(--focus);
+    outline-offset: 2px;
+  }
+
+  .app {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) 390px;
+    height: 100vh;
+  }
+
+  .workspace {
+    min-width: 0;
+    display: flex;
+    flex-direction: column;
+    border-right: 1px solid var(--line);
+  }
+
+  .topbar {
+    min-height: 66px;
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    padding: 10px 14px;
+    border-bottom: 1px solid var(--line);
+    background: #121518;
+  }
+
+  .brand {
+    display: flex;
+    flex-direction: column;
+    min-width: 170px;
+  }
+
+  .brand strong {
+    font-size: 0.98rem;
+    font-weight: 700;
+  }
+
+  .brand span,
+  .scene-meta,
+  .image-status {
+    color: var(--muted);
+    font-size: 0.78rem;
+  }
+
+  .scene-picker {
+    display: grid;
+    gap: 5px;
+    min-width: min(330px, 40vw);
+  }
+
+  .scene-picker label,
+  .field-label {
+    color: var(--muted);
+    font-size: 0.74rem;
+    font-weight: 700;
+    text-transform: uppercase;
+  }
+
+  select,
+  input,
+  textarea {
+    border: 1px solid var(--line);
+    border-radius: 6px;
+    background: var(--field);
+    color: var(--text);
+  }
+
+  select,
+  input {
+    min-height: 34px;
+    padding: 5px 9px;
+  }
+
+  .top-actions {
+    margin-left: auto;
+    display: flex;
+    gap: 8px;
+    flex-wrap: wrap;
+    justify-content: flex-end;
+  }
+
+  .top-actions button,
+  .panel-title-row button,
+  .selection-actions button,
+  .export-actions button {
+    min-height: 34px;
+    padding: 5px 10px;
+    white-space: nowrap;
+  }
+
+  .stage-scroll {
+    flex: 1;
+    min-height: 0;
+    overflow: auto;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    padding: 16px;
+    background:
+      linear-gradient(45deg, rgba(255, 255, 255, 0.035) 25%, transparent 25%),
+      linear-gradient(-45deg, rgba(255, 255, 255, 0.035) 25%, transparent 25%),
+      linear-gradient(45deg, transparent 75%, rgba(255, 255, 255, 0.035) 75%),
+      linear-gradient(-45deg, transparent 75%, rgba(255, 255, 255, 0.035) 75%);
+    background-color: #0b0d0f;
+    background-size: 32px 32px;
+    background-position: 0 0, 0 16px, 16px -16px, -16px 0;
+  }
+
+  .scene-frame {
+    position: relative;
+    display: inline-block;
+    max-width: 100%;
+    line-height: 0;
+    box-shadow: 0 18px 45px rgba(0, 0, 0, 0.38);
+    background: #0c0d0f;
+  }
+
+  .scene-frame.missing {
+    display: block;
+    width: min(100%, 1024px);
+    aspect-ratio: 16 / 9;
+    border: 1px dashed #5a636c;
+  }
+
+  #sceneImage {
+    display: block;
+    max-width: 100%;
+    max-height: calc(100vh - 104px);
+    width: auto;
+    height: auto;
+    user-select: none;
+  }
+
+  .scene-frame.missing #sceneImage {
+    display: none;
+  }
+
+  .overlay {
+    position: absolute;
+    inset: 0;
+    overflow: hidden;
+  }
+
+  .hotspot {
+    --spot: 214, 154, 58;
+    position: absolute;
+    z-index: 18;
+    border: 2px solid rgb(var(--spot));
+    background: rgba(var(--spot), 0.22);
+    box-shadow: 0 0 0 1px rgba(0, 0, 0, 0.36), inset 0 0 0 1px rgba(255, 255, 255, 0.2);
+    cursor: move;
+    touch-action: none;
+    min-width: 8px;
+    min-height: 8px;
+  }
+
+  .hotspot.kind-exit {
+    --spot: 77, 188, 169;
+  }
+
+  .hotspot.kind-pickup {
+    --spot: 220, 92, 125;
+  }
+
+  .hotspot.kind-character {
+    --spot: 139, 124, 227;
+  }
+
+  .hotspot.selected {
+    z-index: 20;
+    border-color: #ffffff;
+    background: rgba(var(--spot), 0.34);
+    box-shadow: 0 0 0 2px rgba(var(--spot), 0.95), 0 0 18px rgba(0, 0, 0, 0.48);
+  }
+
+  .hotspot-index {
+    position: absolute;
+    left: 4px;
+    top: 4px;
+    min-width: 20px;
+    height: 20px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 4px;
+    background: rgba(0, 0, 0, 0.68);
+    color: #ffffff;
+    font-size: 0.72rem;
+    line-height: 1;
+    pointer-events: none;
+  }
+
+  .handle {
+    position: absolute;
+    width: 12px;
+    height: 12px;
+    border: 2px solid #0d0f11;
+    border-radius: 50%;
+    background: #ffffff;
+    touch-action: none;
+  }
+
+  .handle-nw { left: -7px; top: -7px; cursor: nwse-resize; }
+  .handle-n { left: calc(50% - 6px); top: -7px; cursor: ns-resize; }
+  .handle-ne { right: -7px; top: -7px; cursor: nesw-resize; }
+  .handle-e { right: -7px; top: calc(50% - 6px); cursor: ew-resize; }
+  .handle-se { right: -7px; bottom: -7px; cursor: nwse-resize; }
+  .handle-s { left: calc(50% - 6px); bottom: -7px; cursor: ns-resize; }
+  .handle-sw { left: -7px; bottom: -7px; cursor: nesw-resize; }
+  .handle-w { left: -7px; top: calc(50% - 6px); cursor: ew-resize; }
+
+  .walkable-layer {
+    position: absolute;
+    inset: 0;
+    z-index: 12;
+    width: 100%;
+    height: 100%;
+    pointer-events: none;
+  }
+
+  .walkable-layer.editing {
+    z-index: 32;
+    cursor: crosshair;
+    pointer-events: auto;
+  }
+
+  .walkable-fill {
+    fill: rgba(79, 205, 169, 0.2);
+    stroke: #58d8b3;
+    stroke-width: 0.35;
+    vector-effect: non-scaling-stroke;
+  }
+
+  .walkable-outline {
+    fill: none;
+    stroke: #58d8b3;
+    stroke-width: 0.35;
+    stroke-dasharray: 1.4 1.2;
+    vector-effect: non-scaling-stroke;
+  }
+
+  .walkable-point {
+    fill: #0d0f11;
+    stroke: #ffffff;
+    stroke-width: 0.55;
+    vector-effect: non-scaling-stroke;
+    pointer-events: none;
+  }
+
+  .walkable-layer.editing .walkable-point {
+    cursor: grab;
+    pointer-events: all;
+  }
+
+  .walkable-point.selected {
+    fill: var(--accent);
+  }
+
+  .walkable-label {
+    fill: #ffffff;
+    font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, "Liberation Mono", monospace;
+    font-size: 2.8px;
+    paint-order: stroke;
+    pointer-events: none;
+    stroke: rgba(0, 0, 0, 0.92);
+    stroke-width: 0.7px;
+  }
+
+  .hotspot-polygon-layer {
+    position: absolute;
+    inset: 0;
+    z-index: 16;
+    width: 100%;
+    height: 100%;
+    pointer-events: none;
+  }
+
+  .hotspot-polygon-layer.editing {
+    z-index: 34;
+    cursor: crosshair;
+    pointer-events: auto;
+  }
+
+  .hotspot-polygon-fill {
+    fill: rgba(214, 154, 58, 0.1);
+    stroke: rgba(214, 154, 58, 0.72);
+    stroke-width: 0.3;
+    vector-effect: non-scaling-stroke;
+  }
+
+  .hotspot-polygon-fill.selected {
+    fill: rgba(255, 255, 255, 0.13);
+    stroke: #ffffff;
+    stroke-width: 0.46;
+  }
+
+  .hotspot-polygon-point {
+    fill: #0d0f11;
+    stroke: #ffffff;
+    stroke-width: 0.55;
+    vector-effect: non-scaling-stroke;
+    pointer-events: none;
+  }
+
+  .hotspot-polygon-layer.editing .hotspot-polygon-point {
+    cursor: grab;
+    pointer-events: all;
+  }
+
+  .hotspot-polygon-point.selected {
+    fill: var(--accent);
+  }
+
+  .hotspot-polygon-label {
+    fill: #ffffff;
+    font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, "Liberation Mono", monospace;
+    font-size: 2.8px;
+    paint-order: stroke;
+    pointer-events: none;
+    stroke: rgba(0, 0, 0, 0.92);
+    stroke-width: 0.7px;
+  }
+
+  .panel {
+    min-width: 0;
+    height: 100vh;
+    overflow: auto;
+    background: var(--surface);
+  }
+
+  .panel-header,
+  .panel-section {
+    padding: 14px;
+    border-bottom: 1px solid var(--line);
+  }
+
+  .panel-header h1,
+  .panel-section h2 {
+    margin: 0;
+    font-size: 1rem;
+    line-height: 1.2;
+  }
+
+  .panel-header {
+    display: grid;
+    gap: 6px;
+  }
+
+  .panel-title-row {
+    display: flex;
+    gap: 10px;
+    align-items: center;
+    justify-content: space-between;
+  }
+
+  .count-pill,
+  .kind-pill {
+    display: inline-flex;
+    align-items: center;
+    border: 1px solid var(--line);
+    border-radius: 999px;
+    padding: 2px 8px;
+    color: var(--muted);
+    font-size: 0.75rem;
+    white-space: nowrap;
+  }
+
+  .hotspot-list {
+    display: grid;
+    gap: 8px;
+    max-height: 34vh;
+    overflow: auto;
+    padding-right: 2px;
+  }
+
+  .walkable-list {
+    display: grid;
+    gap: 8px;
+    max-height: 23vh;
+    overflow: auto;
+    padding-right: 2px;
+  }
+
+  .walkable-actions {
+    margin: 12px 0 10px;
+  }
+
+  .walkable-actions + .walkable-actions {
+    margin-top: 0;
+  }
+
+  .hotspot-row {
+    width: 100%;
+    display: grid;
+    gap: 6px;
+    padding: 9px;
+    text-align: left;
+  }
+
+  .hotspot-row.selected {
+    border-color: #ffffff;
+    background: #273038;
+  }
+
+  button.active {
+    border-color: #ffffff;
+    background: #273038;
+  }
+
+  .row-main {
+    display: grid;
+    grid-template-columns: auto minmax(0, 1fr) auto;
+    gap: 8px;
+    align-items: center;
+  }
+
+  .row-index {
+    width: 24px;
+    height: 24px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 5px;
+    background: #0d0f11;
+    color: #dfe5df;
+    font-size: 0.75rem;
+  }
+
+  .row-name {
+    min-width: 0;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    font-weight: 700;
+  }
+
+  .row-id,
+  .pct-readout,
+  code {
+    color: #c8d0cf;
+    font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, "Liberation Mono", monospace;
+  }
+
+  .row-id {
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    font-size: 0.76rem;
+  }
+
+  .pct-readout {
+    display: grid;
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+    gap: 4px;
+    font-size: 0.72rem;
+  }
+
+  .pct-readout.two {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .pct-readout span {
+    min-width: 0;
+    padding: 3px 5px;
+    border-radius: 4px;
+    background: #101316;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+
+  .selection-card {
+    display: grid;
+    gap: 12px;
+    margin-top: 12px;
+  }
+
+  .selection-heading {
+    display: grid;
+    gap: 3px;
+  }
+
+  .selection-heading strong {
+    overflow-wrap: anywhere;
+  }
+
+  .field-grid {
+    display: grid;
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+    gap: 8px;
+  }
+
+  .field-grid.identity-grid {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .field-grid label {
+    display: grid;
+    gap: 5px;
+  }
+
+  .field-grid input {
+    width: 100%;
+  }
+
+  .pct-line {
+    min-width: 0;
+    padding: 9px;
+    border: 1px solid var(--line);
+    border-radius: 6px;
+    background: #0d0f11;
+    overflow-x: auto;
+    white-space: nowrap;
+  }
+
+  .draft-marker {
+    display: grid;
+    gap: 5px;
+    padding: 9px;
+    border: 1px solid rgba(214, 154, 58, 0.55);
+    border-radius: 6px;
+    background: rgba(214, 154, 58, 0.09);
+    color: var(--muted);
+    font-size: 0.78rem;
+  }
+
+  .draft-marker code {
+    color: #f0d399;
+    overflow-x: auto;
+    white-space: nowrap;
+  }
+
+  .selection-actions,
+  .export-actions {
+    display: flex;
+    gap: 8px;
+    flex-wrap: wrap;
+  }
+
+  .export-tools {
+    display: grid;
+    gap: 9px;
+    margin-top: 12px;
+  }
+
+  textarea {
+    width: 100%;
+    min-height: 260px;
+    resize: vertical;
+    padding: 10px;
+    line-height: 1.42;
+    font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, "Liberation Mono", monospace;
+    font-size: 0.78rem;
+  }
+
+  .empty-state {
+    color: var(--muted);
+    font-size: 0.88rem;
+  }
+
+  @media (max-width: 980px) {
+    body {
+      height: auto;
+      overflow: auto;
+    }
+
+    .app {
+      grid-template-columns: 1fr;
+      height: auto;
+      min-height: 100vh;
+    }
+
+    .workspace {
+      min-height: 64vh;
+      border-right: 0;
+      border-bottom: 1px solid var(--line);
+    }
+
+    .topbar {
+      align-items: stretch;
+      flex-direction: column;
+    }
+
+    .scene-picker {
+      min-width: 0;
+    }
+
+    .top-actions {
+      margin-left: 0;
+      justify-content: flex-start;
+    }
+
+    .stage-scroll {
+      min-height: 52vh;
+      align-items: flex-start;
+    }
+
+    #sceneImage {
+      max-height: none;
+    }
+
+    .panel {
+      height: auto;
+    }
+
+    .hotspot-list {
+      max-height: none;
+    }
+  }
+</style>
+</head>
+<body>
+<div class="app">
+  <main class="workspace">
+    <header class="topbar">
+      <div class="brand">
+        <strong>Klixx Hotspot Editor</strong>
+        <span>Rust pct(...) boxes + hotspot/walkable polygons</span>
+      </div>
+      <div class="scene-picker">
+        <label for="sceneSelect">Szene</label>
+        <select id="sceneSelect"></select>
+      </div>
+      <div class="scene-meta" id="sceneMeta"></div>
+      <div class="top-actions">
+        <button type="button" id="copySceneButton">Szene kopieren</button>
+        <button type="button" id="copyAllButton">Alles kopieren</button>
+      </div>
+    </header>
+    <section class="stage-scroll" aria-label="Hotspot canvas">
+      <div class="scene-frame" id="sceneFrame" tabindex="0">
+        <img id="sceneImage" alt="">
+        <div class="overlay" id="overlay"></div>
+      </div>
+    </section>
+  </main>
+
+  <aside class="panel">
+    <section class="panel-header">
+      <div class="panel-title-row">
+        <h1 id="panelSceneName"></h1>
+        <span class="count-pill" id="hotspotCount"></span>
+      </div>
+      <div class="image-status" id="imageStatus"></div>
+    </section>
+
+    <section class="panel-section">
+      <div class="panel-title-row">
+        <h2>Begehbare Fläche</h2>
+        <span class="count-pill" id="walkableCount"></span>
+      </div>
+      <div class="selection-actions walkable-actions">
+        <button type="button" id="editWalkableButton">Polygon bearbeiten</button>
+        <button type="button" id="addWalkablePointButton">Punkt hinzufügen</button>
+        <button type="button" id="deleteWalkablePointButton">Punkt löschen</button>
+      </div>
+      <div class="selection-actions walkable-actions">
+        <button type="button" id="resetWalkableButton">Polygon zurücksetzen</button>
+        <button type="button" id="clearWalkableButton">Polygon leeren</button>
+      </div>
+      <div class="walkable-list" id="walkableList"></div>
+    </section>
+
+    <section class="panel-section">
+      <div class="panel-title-row">
+        <h2>Hotspots</h2>
+        <button type="button" id="addHotspotButton">Hotspot hinzufügen</button>
+      </div>
+      <div class="hotspot-list" id="hotspotList"></div>
+    </section>
+
+    <section class="panel-section">
+      <h2>Auswahl</h2>
+      <div class="selection-card" id="selectionCard"></div>
+    </section>
+
+    <section class="panel-section">
+      <h2>Definitionen</h2>
+      <div class="export-tools">
+        <div class="image-status" id="definitionStatus">
+          Lokaler Schreibdienst: http://127.0.0.1:8082/
+        </div>
+        <div class="export-actions">
+          <button type="button" id="applyDefinitionsButton">Definitionen speichern</button>
+        </div>
+      </div>
+    </section>
+
+    <section class="panel-section">
+      <h2>Export</h2>
+      <div class="export-tools">
+        <select id="exportMode">
+          <option value="scene">Aktuelle Szene: pct lines</option>
+          <option value="all">Alle Szenen: gruppiert</option>
+        </select>
+        <textarea id="exportText" spellcheck="false"></textarea>
+        <div class="export-actions">
+          <button type="button" id="refreshExportButton">Export aktualisieren</button>
+          <button type="button" id="copyExportButton">Export kopieren</button>
+        </div>
+      </div>
+    </section>
+  </aside>
+</div>
+
+<script>
+const initialScenes = [
+  {
+    id: "greenscreen_studio",
+    name: "Greenscreen-Studio",
+    zone: "Heinrichstraße 9",
+    token: [45.0, 83.0],
+    hotspots: [
+      {
+        id: "office_hall",
+        name: "Büroflur",
+        kind: "Exit",
+        pct: { x: 5.43, y: 25.47, w: 6.09, h: 42.92 },
+        polygon: [
+          { x: 5.43, y: 25.47 },
+          { x: 11.52, y: 25.47 },
+          { x: 11.52, y: 68.39 },
+          { x: 5.43, y: 68.39 },
+        ],
+      },
+      {
+        id: "control_room",
+        name: "Regie",
+        kind: "Exit",
+        pct: { x: 94.43, y: 26.61, w: 4.85, h: 51.83 },
+        polygon: [
+          { x: 94.43, y: 26.61 },
+          { x: 99.28, y: 26.61 },
+          { x: 99.28, y: 78.44 },
+          { x: 94.35, y: 74.9 },
+        ],
+      },
+      {
+        id: "greenscreen_wall",
+        name: "Greenscreen-Fläche",
+        kind: "Prop",
+        pct: { x: 38.65, y: 16.75, w: 32.76, h: 47.22 },
+        polygon: [
+          { x: 38.65, y: 16.75 },
+          { x: 71.41, y: 16.75 },
+          { x: 71.41, y: 63.97 },
+          { x: 38.65, y: 63.97 },
+        ],
+      },
+      {
+        id: "floor_marks",
+        name: "Bodenmarken",
+        kind: "Prop",
+        pct: { x: 38.87, y: 63.25, w: 22.0, h: 9.0 },
+        polygon: [
+          { x: 38.87, y: 63.25 },
+          { x: 60.87, y: 63.25 },
+          { x: 60.87, y: 72.25 },
+          { x: 38.87, y: 72.25 },
+        ],
+      },
+      {
+        id: "klixx_table",
+        name: "Klixx-Tisch",
+        kind: "Prop",
+        pct: { x: 23.54, y: 51.11, w: 16.68, h: 24.39 },
+        polygon: [
+          { x: 23.54, y: 51.11 },
+          { x: 40.22, y: 51.11 },
+          { x: 40.22, y: 75.5 },
+          { x: 23.54, y: 75.5 },
+        ],
+      },
+      {
+        id: "chat_preview",
+        name: "Chat-Vorschau",
+        kind: "Prop",
+        pct: { x: 19.94, y: 29.56, w: 4.57, h: 18.36 },
+        polygon: [
+          { x: 19.94, y: 29.56 },
+          { x: 24.51, y: 29.56 },
+          { x: 24.51, y: 47.92 },
+          { x: 19.94, y: 47.92 },
+        ],
+      },
+      {
+        id: "camera_one",
+        name: "Studiokamera",
+        kind: "Prop",
+        pct: { x: 62.34, y: 41.44, w: 10.75, h: 34.69 },
+        polygon: [
+          { x: 62.34, y: 41.44 },
+          { x: 73.09, y: 41.44 },
+          { x: 73.09, y: 76.13 },
+          { x: 62.34, y: 76.13 },
+        ],
+      },
+      {
+        id: "mentor_shadow",
+        name: "Aufnahmeleitung",
+        kind: "Character",
+        pct: { x: 75.74, y: 37.92, w: 4.67, h: 34.25 },
+        polygon: [
+          { x: 75.74, y: 37.92 },
+          { x: 80.41, y: 37.92 },
+          { x: 80.41, y: 72.17 },
+          { x: 75.74, y: 72.17 },
+        ],
+      },
+      {
+        id: "greenscreen_setup",
+        name: "Probelauf-Setup",
+        kind: "Prop",
+        pct: { x: 49.18, y: 35.89, w: 23.0, h: 37.0 },
+        polygon: [
+          { x: 49.18, y: 35.89 },
+          { x: 72.18, y: 35.89 },
+          { x: 72.18, y: 72.89 },
+          { x: 49.18, y: 72.89 },
+        ],
+      },
+    ],
+  },
+  {
+    id: "office_hall",
+    name: "Büroflur",
+    zone: "Heinrichstraße 9",
+    token: [48.0, 82.0],
+    hotspots: [
+      {
+        id: "building_courtyard",
+        name: "Hof",
+        kind: "Exit",
+        pct: { x: 2.49, y: 21.81, w: 6.58, h: 46.86 },
+        polygon: [
+          { x: 2.49, y: 21.81 },
+          { x: 9.07, y: 21.81 },
+          { x: 9.07, y: 68.67 },
+          { x: 2.49, y: 68.67 },
+        ],
+      },
+      {
+        id: "greenscreen_studio",
+        name: "Greenscreen-Studio",
+        kind: "Exit",
+        pct: { x: 16.33, y: 25.78, w: 6.92, h: 41.67 },
+        polygon: [
+          { x: 16.33, y: 25.78 },
+          { x: 23.25, y: 25.78 },
+          { x: 23.25, y: 67.45 },
+          { x: 16.33, y: 67.45 },
+        ],
+      },
+      {
+        id: "control_room",
+        name: "Regie",
+        kind: "Exit",
+        pct: { x: 34.16, y: 26.25, w: 6.25, h: 40.89 },
+        polygon: [
+          { x: 34.16, y: 26.25 },
+          { x: 40.41, y: 26.25 },
+          { x: 40.41, y: 67.14 },
+          { x: 34.16, y: 67.14 },
+        ],
+      },
+      {
+        id: "server_room",
+        name: "Serverraum 11",
+        kind: "Exit",
+        pct: { x: 84.65, y: 27.42, w: 5.05, h: 40.56 },
+        polygon: [
+          { x: 84.65, y: 27.42 },
+          { x: 89.7, y: 27.42 },
+          { x: 89.7, y: 67.98 },
+          { x: 84.65, y: 67.98 },
+        ],
+      },
+      {
+        id: "schanzenstrasse",
+        name: "Raus zur Schanze",
+        kind: "Exit",
+        pct: { x: 73.18, y: 27.39, w: 5.92, h: 37.31 },
+        polygon: [
+          { x: 73.18, y: 27.39 },
+          { x: 79.1, y: 27.39 },
+          { x: 79.1, y: 64.7 },
+          { x: 73.18, y: 64.7 },
+        ],
+      },
+      {
+        id: "dispo_board",
+        name: "Dispo-Board",
+        kind: "Pickup",
+        pct: { x: 24.53, y: 31.94, w: 8.02, h: 22.67 },
+        polygon: [
+          { x: 24.53, y: 31.94 },
+          { x: 32.55, y: 31.94 },
+          { x: 32.55, y: 54.61 },
+          { x: 24.53, y: 54.61 },
+        ],
+      },
+      {
+        id: "equipment_storage",
+        name: "Techniklager",
+        kind: "Prop",
+        pct: { x: 43.54, y: 26.25, w: 13.0, h: 40.83 },
+        polygon: [
+          { x: 43.54, y: 26.25 },
+          { x: 56.54, y: 26.25 },
+          { x: 56.54, y: 67.08 },
+          { x: 43.54, y: 67.08 },
+        ],
+      },
+      {
+        id: "staircase",
+        name: "Treppe zum Schlauchbüro",
+        kind: "Prop",
+        pct: { x: 60.8, y: 13.11, w: 8.98, h: 50.06 },
+        polygon: [
+          { x: 60.8, y: 13.11 },
+          { x: 69.78, y: 13.11 },
+          { x: 69.78, y: 63.17 },
+          { x: 60.8, y: 63.17 },
+        ],
+      },
+      {
+        id: "route_map",
+        name: "Gebäudeplan",
+        kind: "Prop",
+        pct: { x: 92.8, y: 31.69, w: 6.51, h: 21.64 },
+        polygon: [
+          { x: 92.8, y: 31.69 },
+          { x: 99.31, y: 31.69 },
+          { x: 99.31, y: 53.33 },
+          { x: 92.8, y: 53.33 },
+        ],
+      },
+    ],
+  },
+  {
+    id: "building_courtyard",
+    name: "Heinrichstraße-Hof",
+    zone: "Produktionsgelände",
+    token: [48.0, 82.0],
+    hotspots: [
+      {
+        id: "office_hall",
+        name: "Büroeingang",
+        kind: "Exit",
+        pct: { x: 50.44, y: 31.58, w: 7.45, h: 31.78 },
+        polygon: [
+          { x: 50.44, y: 31.58 },
+          { x: 57.89, y: 31.58 },
+          { x: 57.89, y: 63.36 },
+          { x: 50.44, y: 63.36 },
+        ],
+      },
+      {
+        id: "set_workshop",
+        name: "Haus-15-Szenenbau",
+        kind: "Exit",
+        pct: { x: 80.72, y: 33.5, w: 5.17, h: 33.92 },
+        polygon: [
+          { x: 80.72, y: 33.5 },
+          { x: 85.89, y: 33.5 },
+          { x: 85.89, y: 67.42 },
+          { x: 80.72, y: 67.42 },
+        ],
+      },
+      {
+        id: "schanzenstrasse",
+        name: "Ausgang zur Straße",
+        kind: "Exit",
+        pct: { x: 7.67, y: 25.97, w: 7.75, h: 47.33 },
+        polygon: [
+          { x: 7.67, y: 25.97 },
+          { x: 15.42, y: 25.97 },
+          { x: 15.42, y: 73.3 },
+          { x: 7.67, y: 73.3 },
+        ],
+      },
+      {
+        id: "loading_zone",
+        name: "Ladezone",
+        kind: "Prop",
+        pct: { x: 19.56, y: 46.33, w: 18.0, h: 25.69 },
+        polygon: [
+          { x: 19.56, y: 46.33 },
+          { x: 37.56, y: 46.33 },
+          { x: 37.56, y: 72.02 },
+          { x: 19.56, y: 72.02 },
+        ],
+      },
+      {
+        id: "address_plate",
+        name: "Hausnummern",
+        kind: "Prop",
+        pct: { x: 68.55, y: 30.78, w: 4.04, h: 12.81 },
+        polygon: [
+          { x: 68.55, y: 30.78 },
+          { x: 72.59, y: 30.78 },
+          { x: 72.59, y: 43.59 },
+          { x: 68.55, y: 43.59 },
+        ],
+      },
+    ],
+  },
+  {
+    id: "control_room",
+    name: "Regie",
+    zone: "Heinrichstraße 9",
+    token: [22.0, 82.0],
+    hotspots: [
+      {
+        id: "office_hall",
+        name: "Büroflur",
+        kind: "Exit",
+        pct: { x: 3.39, y: 23.92, w: 7.33, h: 44.64 },
+        polygon: [
+          { x: 3.39, y: 23.92 },
+          { x: 10.72, y: 23.92 },
+          { x: 10.72, y: 68.56 },
+          { x: 3.39, y: 68.56 },
+        ],
+      },
+      {
+        id: "greenscreen_studio",
+        name: "Studiofenster",
+        kind: "Exit",
+        pct: { x: 22.16, y: 15.14, w: 24.75, h: 28.89 },
+        polygon: [
+          { x: 22.16, y: 15.14 },
+          { x: 46.91, y: 15.14 },
+          { x: 46.91, y: 44.03 },
+          { x: 22.16, y: 44.03 },
+        ],
+      },
+      {
+        id: "rehearsal_monitor",
+        name: "Probenmonitor",
+        kind: "Prop",
+        pct: { x: 32.57, y: 46.47, w: 3.46, h: 7.31 },
+        polygon: [
+          { x: 32.57, y: 46.47 },
+          { x: 36.03, y: 46.47 },
+          { x: 36.03, y: 53.78 },
+          { x: 32.57, y: 53.78 },
+        ],
+      },
+      {
+        id: "graphics_terminal",
+        name: "Grafikplatz",
+        kind: "Prop",
+        pct: { x: 67.72, y: 42.47, w: 11.03, h: 26.81 },
+        polygon: [
+          { x: 67.72, y: 42.47 },
+          { x: 78.75, y: 42.47 },
+          { x: 78.75, y: 69.28 },
+          { x: 67.72, y: 69.28 },
+        ],
+      },
+      {
+        id: "intercom_voice",
+        name: "Regiestimme",
+        kind: "Character",
+        pct: { x: 57.15, y: 45.89, w: 5.99, h: 13.89 },
+        polygon: [
+          { x: 57.15, y: 45.89 },
+          { x: 63.14, y: 45.89 },
+          { x: 63.14, y: 59.78 },
+          { x: 57.15, y: 59.78 },
+        ],
+      },
+      {
+        id: "on_air_lamp",
+        name: "On-Air-Lampe",
+        kind: "Prop",
+        pct: { x: 87.66, y: 10.25, w: 4.34, h: 6.0 },
+        polygon: [
+          { x: 87.66, y: 10.25 },
+          { x: 92.0, y: 10.25 },
+          { x: 92.0, y: 16.25 },
+          { x: 87.66, y: 16.25 },
+        ],
+      },
+      {
+        id: "video_kliemannsland_road",
+        name: "Straßenvideo",
+        kind: "Exit",
+        pct: { x: 67.84, y: 15.17, w: 10.98, h: 16.69 },
+        polygon: [
+          { x: 67.84, y: 15.17 },
+          { x: 78.82, y: 15.17 },
+          { x: 78.82, y: 31.86 },
+          { x: 67.84, y: 31.86 },
+        ],
+      },
+      {
+        id: "video_schimmelbrueder",
+        name: "Schimmelbrüder-Video",
+        kind: "Exit",
+        pct: { x: 63.58, y: 33.36, w: 3.9, h: 7.94 },
+        polygon: [
+          { x: 63.58, y: 33.36 },
+          { x: 67.48, y: 33.36 },
+          { x: 67.48, y: 41.3 },
+          { x: 63.58, y: 41.3 },
+        ],
+      },
+    ],
+  },
+  {
+    id: "video_kliemannsland_road",
+    name: "Straßenvideo",
+    zone: "Videoarchiv",
+    token: [22.0, 84.0],
+    hotspots: [
+      {
+        id: "control_room",
+        name: "Zurück zur Regie",
+        kind: "Exit",
+        pct: { x: 3.0, y: 62.0, w: 10.0, h: 25.0 },
+        polygon: [
+          { x: 3.0, y: 62.0 },
+          { x: 13.0, y: 62.0 },
+          { x: 13.0, y: 87.0 },
+          { x: 3.0, y: 87.0 },
+        ],
+      },
+      {
+        id: "walkable_lane",
+        name: "Standspur",
+        kind: "Prop",
+        pct: { x: 49.0, y: 73.0, w: 24.0, h: 18.0 },
+        polygon: [
+          { x: 49.0, y: 73.0 },
+          { x: 73.0, y: 73.0 },
+          { x: 73.0, y: 91.0 },
+          { x: 49.0, y: 91.0 },
+        ],
+      },
+      {
+        id: "road_marker",
+        name: "Routenmarker",
+        kind: "Pickup",
+        pct: { x: 36.0, y: 56.0, w: 11.0, h: 23.0 },
+        polygon: [
+          { x: 36.0, y: 56.0 },
+          { x: 47.0, y: 56.0 },
+          { x: 47.0, y: 79.0 },
+          { x: 36.0, y: 79.0 },
+        ],
+      },
+      {
+        id: "traffic_totem",
+        name: "Markierungsgruppe",
+        kind: "Prop",
+        pct: { x: 43.0, y: 35.0, w: 18.0, h: 37.0 },
+        polygon: [
+          { x: 43.0, y: 35.0 },
+          { x: 61.0, y: 35.0 },
+          { x: 61.0, y: 72.0 },
+          { x: 43.0, y: 72.0 },
+        ],
+      },
+      {
+        id: "archive_exit_sign",
+        name: "Ausfahrtschild",
+        kind: "Prop",
+        pct: { x: 72.0, y: 48.0, w: 16.0, h: 24.0 },
+        polygon: [
+          { x: 72.0, y: 48.0 },
+          { x: 88.0, y: 48.0 },
+          { x: 88.0, y: 72.0 },
+          { x: 72.0, y: 72.0 },
+        ],
+      },
+      {
+        id: "distant_gate",
+        name: "Straßenende",
+        kind: "Prop",
+        pct: { x: 83.0, y: 39.0, w: 12.0, h: 30.0 },
+        polygon: [
+          { x: 83.0, y: 39.0 },
+          { x: 95.0, y: 39.0 },
+          { x: 95.0, y: 69.0 },
+          { x: 83.0, y: 69.0 },
+        ],
+      },
+    ],
+  },
+  {
+    id: "video_schimmelbrueder",
+    name: "Schimmelbrüder-Video",
+    zone: "Videoarchiv",
+    token: [24.0, 84.0],
+    hotspots: [
+      {
+        id: "control_room",
+        name: "Zurück zur Regie",
+        kind: "Exit",
+        pct: { x: 1.32, y: 21.94, w: 6.62, h: 16.25 },
+        polygon: [
+          { x: 1.32, y: 21.94 },
+          { x: 7.94, y: 21.94 },
+          { x: 7.94, y: 38.19 },
+          { x: 1.32, y: 38.19 },
+        ],
+      },
+      {
+        id: "casting_table",
+        name: "Gießtisch",
+        kind: "Prop",
+        pct: { x: 6.18, y: 12.56, w: 12.9, h: 40.64 },
+        polygon: [
+          { x: 26.61, y: 21.7 },
+          { x: 40.11, y: 24.06 },
+          { x: 16.56, y: 55.31 },
+          { x: 8.87, y: 54.34 },
+          { x: 9.14, y: 31.56 },
+        ],
+      },
+      {
+        id: "mold_rack",
+        name: "Formenreihe",
+        kind: "Prop",
+        pct: { x: 19.61, y: 27.44, w: 21.06, h: 39.05 },
+        polygon: [
+          { x: 50.38, y: 18.37 },
+          { x: 57.15, y: 19.48 },
+          { x: 40.67, y: 66.49 },
+          { x: 19.61, y: 66.49 },
+        ],
+      },
+      {
+        id: "patterned_belt",
+        name: "Musterbahn",
+        kind: "Prop",
+        pct: { x: 55.0, y: 17.0, w: 31.0, h: 42.0 },
+        polygon: [
+          { x: 61.56, y: 12.12 },
+          { x: 72.2, y: 11.56 },
+          { x: 85.81, y: 57.67 },
+          { x: 54.57, y: 58.23 },
+        ],
+      },
+      {
+        id: "mold_token",
+        name: "Formprobe",
+        kind: "Pickup",
+        pct: { x: 41.3, y: 80.56, w: 8.97, h: 13.22 },
+        polygon: [
+          { x: 41.3, y: 80.56 },
+          { x: 50.27, y: 80.56 },
+          { x: 50.27, y: 93.78 },
+          { x: 41.3, y: 93.78 },
+        ],
+      },
+      {
+        id: "song_exit_gate",
+        name: "Clip-Ausgang",
+        kind: "Prop",
+        pct: { x: 86.48, y: 29.36, w: 13.35, h: 53.11 },
+        polygon: [
+          { x: 86.48, y: 29.36 },
+          { x: 99.83, y: 29.36 },
+          { x: 99.83, y: 82.47 },
+          { x: 86.48, y: 82.47 },
+        ],
+      },
+      {
+        id: "factory_floor",
+        name: "Hallenboden",
+        kind: "Prop",
+        pct: { x: 7.57, y: 66.0, w: 79.24, h: 34.0 },
+        polygon: [
+          { x: 7.57, y: 66.0 },
+          { x: 86.81, y: 66.0 },
+          { x: 86.81, y: 100.0 },
+          { x: 7.57, y: 100.0 },
+        ],
+      },
+    ],
+  },
+  {
+    id: "video_sewer_archive",
+    name: "Kanalvideo",
+    zone: "Videoarchiv",
+    token: [20.0, 84.0],
+    hotspots: [
+      {
+        id: "control_room",
+        name: "Zurück zur Regie",
+        kind: "Exit",
+        pct: { x: 4.0, y: 65.0, w: 10.0, h: 22.0 },
+        polygon: [
+          { x: 4.0, y: 65.0 },
+          { x: 14.0, y: 65.0 },
+          { x: 14.0, y: 87.0 },
+          { x: 4.0, y: 87.0 },
+        ],
+      },
+      {
+        id: "archive_hatch",
+        name: "Archivluke",
+        kind: "Prop",
+        pct: { x: 72.0, y: 40.0, w: 13.0, h: 32.0 },
+        polygon: [
+          { x: 72.0, y: 40.0 },
+          { x: 85.0, y: 40.0 },
+          { x: 85.0, y: 72.0 },
+          { x: 72.0, y: 72.0 },
+        ],
+      },
+      {
+        id: "flow_arrow",
+        name: "Flusspfeil",
+        kind: "Prop",
+        pct: { x: 42.0, y: 73.0, w: 13.0, h: 8.0 },
+        polygon: [
+          { x: 42.0, y: 73.0 },
+          { x: 55.0, y: 73.0 },
+          { x: 55.0, y: 81.0 },
+          { x: 42.0, y: 81.0 },
+        ],
+      },
+      {
+        id: "inspection_tripod",
+        name: "Inspektionsstativ",
+        kind: "Prop",
+        pct: { x: 19.0, y: 44.0, w: 11.0, h: 34.0 },
+        polygon: [
+          { x: 19.0, y: 44.0 },
+          { x: 30.0, y: 44.0 },
+          { x: 30.0, y: 78.0 },
+          { x: 19.0, y: 78.0 },
+        ],
+      },
+      {
+        id: "wet_note",
+        name: "Nasser Zettel",
+        kind: "Pickup",
+        pct: { x: 58.5, y: 80.0, w: 5.5, h: 5.5 },
+        polygon: [
+          { x: 58.5, y: 80.0 },
+          { x: 64.0, y: 80.0 },
+          { x: 64.0, y: 85.5 },
+          { x: 58.5, y: 85.5 },
+        ],
+      },
+      {
+        id: "lost_signal",
+        name: "Fehlender Bildbereich",
+        kind: "Prop",
+        pct: { x: 43.0, y: 20.0, w: 22.0, h: 32.0 },
+        polygon: [
+          { x: 43.0, y: 20.0 },
+          { x: 65.0, y: 20.0 },
+          { x: 65.0, y: 52.0 },
+          { x: 43.0, y: 52.0 },
+        ],
+      },
+    ],
+  },
+  {
+    id: "server_room",
+    name: "Serverraum 11",
+    zone: "Heinrichstraße 11",
+    token: [22.0, 82.0],
+    hotspots: [
+      {
+        id: "office_hall",
+        name: "Büroflur",
+        kind: "Exit",
+        pct: { x: 4.35, y: 25.69, w: 5.51, h: 45.89 },
+        polygon: [
+          { x: 4.35, y: 25.69 },
+          { x: 9.86, y: 25.69 },
+          { x: 9.86, y: 71.58 },
+          { x: 4.35, y: 71.58 },
+        ],
+      },
+      {
+        id: "server_racks",
+        name: "Serverracks",
+        kind: "Prop",
+        pct: { x: 17.17, y: 19.3, w: 21.87, h: 52.86 },
+        polygon: [
+          { x: 17.17, y: 19.3 },
+          { x: 39.04, y: 19.3 },
+          { x: 39.04, y: 72.16 },
+          { x: 17.17, y: 72.16 },
+        ],
+      },
+      {
+        id: "video_hub",
+        name: "Video-Hub",
+        kind: "Prop",
+        pct: { x: 41.82, y: 21.31, w: 19.34, h: 49.67 },
+        polygon: [
+          { x: 41.82, y: 21.31 },
+          { x: 61.16, y: 21.31 },
+          { x: 61.16, y: 70.98 },
+          { x: 41.82, y: 70.98 },
+        ],
+      },
+      {
+        id: "sdi_spool",
+        name: "80-m-SDI-Rolle",
+        kind: "Prop",
+        pct: { x: 70.59, y: 51.56, w: 13.15, h: 23.97 },
+        polygon: [
+          { x: 70.59, y: 51.56 },
+          { x: 83.74, y: 51.56 },
+          { x: 83.74, y: 75.53 },
+          { x: 70.59, y: 75.53 },
+        ],
+      },
+      {
+        id: "sdi_label_printer",
+        name: "Labeldrucker",
+        kind: "Pickup",
+        pct: { x: 62.8, y: 41.41, w: 5.2, h: 9.53 },
+        polygon: [
+          { x: 62.8, y: 41.41 },
+          { x: 68.0, y: 41.41 },
+          { x: 68.0, y: 50.94 },
+          { x: 62.8, y: 50.94 },
+        ],
+      },
+    ],
+  },
+  {
+    id: "set_workshop",
+    name: "Haus-15-Szenenbau",
+    zone: "Heinrichstraße 15",
+    token: [22.0, 82.0],
+    hotspots: [
+      {
+        id: "building_courtyard",
+        name: "Hof",
+        kind: "Exit",
+        pct: { x: 4.19, y: 27.92, w: 5.02, h: 44.78 },
+        polygon: [
+          { x: 4.19, y: 27.92 },
+          { x: 9.21, y: 27.92 },
+          { x: 9.21, y: 72.7 },
+          { x: 4.19, y: 72.7 },
+        ],
+      },
+      {
+        id: "set_pieces",
+        name: "Kulissenteile",
+        kind: "Prop",
+        pct: { x: 14.65, y: 13.39, w: 24.0, h: 56.89 },
+        polygon: [
+          { x: 14.65, y: 13.39 },
+          { x: 38.65, y: 13.39 },
+          { x: 38.65, y: 70.28 },
+          { x: 14.65, y: 70.28 },
+        ],
+      },
+      {
+        id: "gaffer_roll",
+        name: "Gaffer-Tape",
+        kind: "Pickup",
+        pct: { x: 57.0, y: 51.33, w: 3.27, h: 6.17 },
+        polygon: [
+          { x: 57.0, y: 51.33 },
+          { x: 60.27, y: 51.33 },
+          { x: 60.27, y: 57.5 },
+          { x: 57.0, y: 57.5 },
+        ],
+      },
+      {
+        id: "bike_workshop_trace",
+        name: "Werkstattspur",
+        kind: "Prop",
+        pct: { x: 67.49, y: 13.28, w: 16.0, h: 22.0 },
+        polygon: [
+          { x: 67.49, y: 13.28 },
+          { x: 83.49, y: 13.28 },
+          { x: 83.49, y: 35.28 },
+          { x: 67.49, y: 35.28 },
+        ],
+      },
+      {
+        id: "studio_door_15",
+        name: "Zusatzstudio",
+        kind: "Prop",
+        pct: { x: 85.53, y: 29.31, w: 7.48, h: 37.97 },
+        polygon: [
+          { x: 85.53, y: 29.31 },
+          { x: 93.01, y: 29.31 },
+          { x: 93.01, y: 67.28 },
+          { x: 85.53, y: 67.28 },
+        ],
+      },
+    ],
+  },
+  {
+    id: "schanzenstrasse",
+    name: "Schanzenstraße",
+    zone: "Hamburg",
+    token: [30.0, 82.0],
+    hotspots: [
+      {
+        id: "building_courtyard",
+        name: "Zur Heinrichstraße",
+        kind: "Exit",
+        pct: { x: 3.12, y: 38.39, w: 6.98, h: 32.5 },
+        polygon: [
+          { x: 3.12, y: 38.39 },
+          { x: 10.1, y: 38.39 },
+          { x: 10.1, y: 70.89 },
+          { x: 3.12, y: 70.89 },
+        ],
+      },
+      {
+        id: "sternschanze_station",
+        name: "Sternschanze",
+        kind: "Exit",
+        pct: { x: 73.14, y: 31.94, w: 26.86, h: 39.17 },
+        polygon: [
+          { x: 73.14, y: 31.94 },
+          { x: 100.0, y: 31.94 },
+          { x: 100.0, y: 71.11 },
+          { x: 73.14, y: 71.11 },
+        ],
+      },
+      {
+        id: "karoviertel",
+        name: "Karoviertel",
+        kind: "Exit",
+        pct: { x: 37.38, y: 27.78, w: 14.0, h: 42.92 },
+        polygon: [
+          { x: 37.38, y: 27.78 },
+          { x: 51.38, y: 27.78 },
+          { x: 51.38, y: 70.7 },
+          { x: 37.38, y: 70.7 },
+        ],
+      },
+      {
+        id: "street_mural",
+        name: "Wandbild",
+        kind: "Prop",
+        pct: { x: 12.47, y: 4.28, w: 20.47, h: 56.33 },
+        polygon: [
+          { x: 12.47, y: 4.28 },
+          { x: 32.94, y: 4.28 },
+          { x: 32.94, y: 60.61 },
+          { x: 12.47, y: 60.61 },
+        ],
+      },
+      {
+        id: "corner_kiosk",
+        name: "Kiosk",
+        kind: "Prop",
+        pct: { x: 58.48, y: 41.11, w: 11.0, h: 20.56 },
+        polygon: [
+          { x: 58.48, y: 41.11 },
+          { x: 69.48, y: 41.11 },
+          { x: 69.48, y: 61.67 },
+          { x: 58.48, y: 61.67 },
+        ],
+      },
+      {
+        id: "city_notice",
+        name: "Drehhinweis",
+        kind: "Prop",
+        pct: { x: 32.73, y: 31.86, w: 3.05, h: 12.25 },
+        polygon: [
+          { x: 32.73, y: 31.86 },
+          { x: 35.78, y: 31.86 },
+          { x: 35.78, y: 44.11 },
+          { x: 32.73, y: 44.11 },
+        ],
+      },
+    ],
+  },
+  {
+    id: "sternschanze_station",
+    name: "Bahnhof Sternschanze",
+    zone: "Hamburg",
+    token: [28.0, 82.0],
+    hotspots: [
+      {
+        id: "schanzenstrasse",
+        name: "Zur Schanze",
+        kind: "Exit",
+        pct: { x: 6.31, y: 28.86, w: 14.0, h: 40.22 },
+        polygon: [
+          { x: 6.31, y: 28.86 },
+          { x: 20.31, y: 28.86 },
+          { x: 20.31, y: 69.08 },
+          { x: 6.31, y: 69.08 },
+        ],
+      },
+      {
+        id: "schanzenpark",
+        name: "Schanzenpark",
+        kind: "Exit",
+        pct: { x: 79.88, y: 32.63, w: 15.56, h: 31.81 },
+        polygon: [
+          { x: 79.88, y: 32.63 },
+          { x: 95.44, y: 32.63 },
+          { x: 95.44, y: 64.44 },
+          { x: 79.88, y: 64.44 },
+        ],
+      },
+      {
+        id: "station_clock",
+        name: "Bahnhofsuhr",
+        kind: "Prop",
+        pct: { x: 41.8, y: 22.44, w: 4.19, h: 12.17 },
+        polygon: [
+          { x: 41.8, y: 22.44 },
+          { x: 45.99, y: 22.44 },
+          { x: 45.99, y: 34.61 },
+          { x: 41.8, y: 34.61 },
+        ],
+      },
+      {
+        id: "platform_sign",
+        name: "Bahnsteigschild",
+        kind: "Prop",
+        pct: { x: 65.74, y: 31.95, w: 7.34, h: 8.5 },
+        polygon: [
+          { x: 65.74, y: 31.95 },
+          { x: 73.08, y: 31.95 },
+          { x: 73.08, y: 40.45 },
+          { x: 65.74, y: 40.45 },
+        ],
+      },
+      {
+        id: "busker_case",
+        name: "Straßenmusiker-Koffer",
+        kind: "Character",
+        pct: { x: 31.07, y: 57.42, w: 7.21, h: 17.33 },
+        polygon: [
+          { x: 31.07, y: 57.42 },
+          { x: 38.28, y: 57.42 },
+          { x: 38.28, y: 74.75 },
+          { x: 31.07, y: 74.75 },
+        ],
+      },
+    ],
+  },
+  {
+    id: "schanzenpark",
+    name: "Schanzenpark",
+    zone: "Hamburg",
+    token: [24.0, 82.0],
+    hotspots: [
+      {
+        id: "sternschanze_station",
+        name: "Zur Sternschanze",
+        kind: "Exit",
+        pct: { x: 5.54, y: 53.33, w: 20.4, h: 21.03 },
+        polygon: [
+          { x: 5.54, y: 53.33 },
+          { x: 25.94, y: 53.33 },
+          { x: 25.94, y: 74.36 },
+          { x: 5.54, y: 74.36 },
+        ],
+      },
+      {
+        id: "schanzenstrasse",
+        name: "Runter zur Straße",
+        kind: "Exit",
+        pct: { x: 5.9, y: 75.11, w: 13.0, h: 16.0 },
+        polygon: [
+          { x: 5.9, y: 75.11 },
+          { x: 18.9, y: 75.11 },
+          { x: 18.9, y: 91.11 },
+          { x: 5.9, y: 91.11 },
+        ],
+      },
+      {
+        id: "water_tower",
+        name: "Wasserturm",
+        kind: "Prop",
+        pct: { x: 36.46, y: 6.61, w: 10.31, h: 48.36 },
+        polygon: [
+          { x: 36.46, y: 6.61 },
+          { x: 46.77, y: 6.61 },
+          { x: 46.77, y: 54.97 },
+          { x: 36.46, y: 54.97 },
+        ],
+      },
+      {
+        id: "city_reflector",
+        name: "Lichtreflektor",
+        kind: "Pickup",
+        pct: { x: 64.37, y: 62.22, w: 5.53, h: 13.64 },
+        polygon: [
+          { x: 64.37, y: 62.22 },
+          { x: 69.9, y: 62.22 },
+          { x: 69.9, y: 75.86 },
+          { x: 64.37, y: 75.86 },
+        ],
+      },
+      {
+        id: "tv_tower_view",
+        name: "Fernsehturmblick",
+        kind: "Prop",
+        pct: { x: 74.12, y: 24.45, w: 2.97, h: 33.83 },
+        polygon: [
+          { x: 74.12, y: 24.45 },
+          { x: 77.09, y: 24.45 },
+          { x: 77.09, y: 58.28 },
+          { x: 74.12, y: 58.28 },
+        ],
+      },
+    ],
+  },
+  {
+    id: "karoviertel",
+    name: "Karoviertel",
+    zone: "Hamburg",
+    token: [24.0, 82.0],
+    hotspots: [
+      {
+        id: "schanzenstrasse",
+        name: "Zurück zur Schanze",
+        kind: "Exit",
+        pct: { x: 7.71, y: 14.28, w: 14.0, h: 50.22 },
+        polygon: [
+          { x: 7.71, y: 14.28 },
+          { x: 21.71, y: 14.28 },
+          { x: 21.71, y: 64.5 },
+          { x: 7.71, y: 64.5 },
+        ],
+      },
+      {
+        id: "print_shop",
+        name: "Copyshop",
+        kind: "Pickup",
+        pct: { x: 31.78, y: 17.03, w: 21.01, h: 47.64 },
+        polygon: [
+          { x: 31.78, y: 17.03 },
+          { x: 52.79, y: 17.03 },
+          { x: 52.79, y: 64.67 },
+          { x: 31.78, y: 64.67 },
+        ],
+      },
+      {
+        id: "record_store",
+        name: "Plattenladen",
+        kind: "Prop",
+        pct: { x: 65.62, y: 29.06, w: 18.86, h: 36.5 },
+        polygon: [
+          { x: 65.62, y: 29.06 },
+          { x: 84.48, y: 29.06 },
+          { x: 84.48, y: 65.56 },
+          { x: 65.62, y: 65.56 },
+        ],
+      },
+      {
+        id: "market_boxes",
+        name: "Marktkisten",
+        kind: "Prop",
+        pct: { x: 16.34, y: 59.78, w: 14.0, h: 16.25 },
+        polygon: [
+          { x: 16.34, y: 59.78 },
+          { x: 30.34, y: 59.78 },
+          { x: 30.34, y: 76.03 },
+          { x: 16.34, y: 76.03 },
+        ],
+      },
+    ],
+  },
+  {
+    id: "hospital_room",
+    name: "Krankenhauszimmer",
+    zone: "Notaufnahme",
+    token: [38.0, 82.0],
+    hotspots: [
+      {
+        id: "hospital_monitor",
+        name: "Überwachungsmonitor",
+        kind: "Prop",
+        pct: { x: 35.0, y: 20.0, w: 9.0, h: 24.0 },
+      },
+      {
+        id: "call_button",
+        name: "Rufknopf",
+        kind: "Prop",
+        pct: { x: 44.0, y: 55.0, w: 5.0, h: 10.0 },
+      },
+      {
+        id: "nurse_station",
+        name: "Pflegekraft",
+        kind: "Character",
+        pct: { x: 69.0, y: 24.0, w: 9.0, h: 35.0 },
+      },
+      {
+        id: "discharge_clipboard",
+        name: "Entlassungsbogen",
+        kind: "Pickup",
+        pct: { x: 54.0, y: 50.0, w: 8.0, h: 12.0 },
+      },
+      {
+        id: "hospital_exit",
+        name: "Korridortür",
+        kind: "Prop",
+        pct: { x: 88.0, y: 19.0, w: 8.0, h: 49.0 },
+      },
+    ],
+  },
+  {
+    id: "sprinkler_courtyard",
+    name: "Evakuierungsbereich",
+    zone: "Produktionsgelände",
+    token: [28.0, 82.0],
+    hotspots: [
+      {
+        id: "alarm_panel",
+        name: "Alarmfeld",
+        kind: "Prop",
+        pct: { x: 18.0, y: 30.0, w: 7.0, h: 24.0 },
+      },
+      {
+        id: "extinguisher_cabinet",
+        name: "Löschschrank",
+        kind: "Prop",
+        pct: { x: 40.0, y: 39.0, w: 8.0, h: 19.0 },
+      },
+      {
+        id: "safety_officer",
+        name: "Sicherheitsdienst",
+        kind: "Character",
+        pct: { x: 63.0, y: 34.0, w: 8.0, h: 32.0 },
+      },
+      {
+        id: "fire_return_door",
+        name: "Rückweg ins Gebäude",
+        kind: "Prop",
+        pct: { x: 86.0, y: 24.0, w: 9.0, h: 45.0 },
+      },
+    ],
+  },
+  {
+    id: "prop_storage_collapse",
+    name: "Blockierter Szenenbau",
+    zone: "Heinrichstraße 15",
+    token: [24.0, 84.0],
+    hotspots: [
+      {
+        id: "brace_beam",
+        name: "Stützstrebe",
+        kind: "Prop",
+        pct: { x: 38.0, y: 29.0, w: 13.0, h: 28.0 },
+      },
+      {
+        id: "release_rope",
+        name: "Notleine",
+        kind: "Prop",
+        pct: { x: 59.0, y: 18.0, w: 5.0, h: 40.0 },
+      },
+      {
+        id: "workshop_gap",
+        name: "Freier Spalt",
+        kind: "Prop",
+        pct: { x: 70.0, y: 55.0, w: 10.0, h: 20.0 },
+      },
+      {
+        id: "collapse_exit",
+        name: "Werkstatttür",
+        kind: "Prop",
+        pct: { x: 88.0, y: 28.0, w: 8.0, h: 42.0 },
+      },
+    ],
+  },
+  {
+    id: "archive_recovery",
+    name: "Archiv-Rettungsplatz",
+    zone: "Videoarchiv",
+    token: [24.0, 82.0],
+    hotspots: [
+      {
+        id: "archive_drive",
+        name: "Archivlaufwerk",
+        kind: "Prop",
+        pct: { x: 22.0, y: 28.0, w: 12.0, h: 32.0 },
+      },
+      {
+        id: "recovery_terminal",
+        name: "Rettungsterminal",
+        kind: "Prop",
+        pct: { x: 43.0, y: 28.0, w: 13.0, h: 28.0 },
+      },
+      {
+        id: "checksum_printout",
+        name: "Prüfsummenzettel",
+        kind: "Pickup",
+        pct: { x: 58.0, y: 54.0, w: 7.0, h: 9.0 },
+      },
+      {
+        id: "control_room_return",
+        name: "Tür zur Regie",
+        kind: "Prop",
+        pct: { x: 88.0, y: 21.0, w: 8.0, h: 47.0 },
+      },
+    ],
+  },
+];
+
+const DEFAULT_WALKABLE = [
+  { x: 6.0, y: 66.0 },
+  { x: 94.0, y: 66.0 },
+  { x: 98.0, y: 96.0 },
+  { x: 3.0, y: 96.0 },
+];
+
+const SCENE_WALKABLE = {
+  "greenscreen_studio": [
+    { x: 16.13, y: 65.73 },
+    { x: 28.17, y: 76.7 },
+    { x: 41.61, y: 65.59 },
+    { x: 80.0, y: 62.0 },
+    { x: 100.0, y: 87.95 },
+    { x: 100.0, y: 100.0 },
+    { x: 0.0, y: 100.0 },
+    { x: 0.0, y: 76.15 },
+    { x: 5.91, y: 69.76 },
+  ],
+  "office_hall": [
+    { x: 11.45, y: 67.12 },
+    { x: 91.61, y: 69.48 },
+    { x: 100.0, y: 73.65 },
+    { x: 100.0, y: 100.0 },
+    { x: 0.0, y: 100.0 },
+    { x: 0.11, y: 76.56 },
+    { x: 2.96, y: 74.62 },
+    { x: 3.17, y: 72.67 },
+  ],
+  "building_courtyard": [
+    { x: 7.74, y: 76.7 },
+    { x: 19.73, y: 73.37 },
+    { x: 31.83, y: 74.62 },
+    { x: 41.51, y: 72.53 },
+    { x: 62.26, y: 73.51 },
+    { x: 75.27, y: 70.73 },
+    { x: 82.85, y: 77.95 },
+    { x: 86.51, y: 76.28 },
+    { x: 93.55, y: 81.15 },
+    { x: 99.62, y: 78.65 },
+    { x: 100.0, y: 86.15 },
+    { x: 91.08, y: 85.87 },
+    { x: 89.09, y: 82.67 },
+    { x: 87.2, y: 87.4 },
+    { x: 84.41, y: 90.17 },
+    { x: 81.13, y: 94.2 },
+    { x: 71.45, y: 100.0 },
+    { x: 16.67, y: 99.62 },
+    { x: 15.32, y: 95.45 },
+    { x: 10.22, y: 92.26 },
+  ],
+  "control_room": [
+    { x: 0.0, y: 69.9 },
+    { x: 21.18, y: 66.42 },
+    { x: 100.0, y: 89.2 },
+    { x: 100.0, y: 100.0 },
+    { x: 0.0, y: 100.0 },
+  ],
+  "video_kliemannsland_road": [
+    { x: 24.0, y: 45.0 },
+    { x: 58.0, y: 47.0 },
+    { x: 90.0, y: 96.0 },
+    { x: 3.0, y: 96.0 },
+    { x: 10.0, y: 72.0 },
+  ],
+  "video_schimmelbrueder": [
+    { x: 8.66, y: 64.76 },
+    { x: 40.16, y: 66.56 },
+    { x: 56.56, y: 20.45 },
+    { x: 59.62, y: 28.78 },
+    { x: 53.71, y: 60.59 },
+    { x: 80.05, y: 60.45 },
+    { x: 84.41, y: 72.67 },
+    { x: 89.57, y: 70.17 },
+    { x: 100.0, y: 84.76 },
+    { x: 100.0, y: 100.0 },
+    { x: 0.0, y: 100.0 },
+    { x: 0.0, y: 73.78 },
+  ],
+  "video_sewer_archive": [
+    { x: 15.0, y: 72.0 },
+    { x: 85.0, y: 72.0 },
+    { x: 94.0, y: 96.0 },
+    { x: 7.0, y: 96.0 },
+  ],
+  "server_room": [
+    { x: 0.0, y: 77.53 },
+    { x: 9.46, y: 71.28 },
+    { x: 18.01, y: 73.51 },
+    { x: 39.14, y: 74.06 },
+    { x: 61.13, y: 73.37 },
+    { x: 69.89, y: 73.65 },
+    { x: 72.58, y: 78.23 },
+    { x: 75.54, y: 78.51 },
+    { x: 79.62, y: 78.51 },
+    { x: 83.76, y: 78.37 },
+    { x: 84.78, y: 75.59 },
+    { x: 84.3, y: 68.65 },
+    { x: 87.26, y: 68.37 },
+    { x: 93.98, y: 73.37 },
+    { x: 100.0, y: 77.67 },
+    { x: 100.0, y: 100.0 },
+    { x: 0.0, y: 100.0 },
+  ],
+  "set_workshop": [
+    { x: 0.0, y: 77.26 },
+    { x: 11.29, y: 71.7 },
+    { x: 39.78, y: 72.12 },
+    { x: 65.43, y: 72.4 },
+    { x: 67.47, y: 67.95 },
+    { x: 100.0, y: 69.34 },
+    { x: 100.0, y: 100.0 },
+    { x: 0.0, y: 100.0 },
+  ],
+  "schanzenstrasse": [
+    { x: 0.05, y: 71.15 },
+    { x: 37.47, y: 72.4 },
+    { x: 58.23, y: 75.59 },
+    { x: 72.9, y: 74.34 },
+    { x: 73.44, y: 60.59 },
+    { x: 92.63, y: 61.98 },
+    { x: 100.0, y: 72.4 },
+    { x: 86.24, y: 73.78 },
+    { x: 86.02, y: 90.31 },
+    { x: 92.85, y: 100.0 },
+    { x: 0.0, y: 100.0 },
+  ],
+  "sternschanze_station": [
+    { x: 11.51, y: 91.7 },
+    { x: 11.02, y: 80.87 },
+    { x: 9.46, y: 70.87 },
+    { x: 21.94, y: 70.03 },
+    { x: 25.81, y: 72.4 },
+    { x: 32.1, y: 76.15 },
+    { x: 38.82, y: 75.03 },
+    { x: 40.22, y: 68.65 },
+    { x: 54.52, y: 67.4 },
+    { x: 65.59, y: 63.92 },
+    { x: 77.9, y: 65.87 },
+    { x: 95.81, y: 66.84 },
+    { x: 100.0, y: 72.67 },
+    { x: 100.0, y: 100.0 },
+    { x: 0.0, y: 100.0 },
+  ],
+  "schanzenpark": [
+    { x: 0.0, y: 91.98 },
+    { x: 7.42, y: 91.98 },
+    { x: 12.31, y: 79.2 },
+    { x: 15.0, y: 79.34 },
+    { x: 17.74, y: 90.03 },
+    { x: 22.58, y: 90.45 },
+    { x: 29.09, y: 83.23 },
+    { x: 35.65, y: 78.09 },
+    { x: 33.92, y: 59.62 },
+    { x: 40.59, y: 56.7 },
+    { x: 48.66, y: 55.45 },
+    { x: 56.02, y: 56.7 },
+    { x: 59.52, y: 60.59 },
+    { x: 61.02, y: 66.98 },
+    { x: 60.65, y: 73.78 },
+    { x: 68.82, y: 78.09 },
+    { x: 72.04, y: 77.53 },
+    { x: 74.78, y: 75.87 },
+    { x: 92.15, y: 76.84 },
+    { x: 91.02, y: 87.12 },
+    { x: 100.0, y: 100.0 },
+    { x: 0.0, y: 100.0 },
+  ],
+  "karoviertel": [
+    { x: 0.0, y: 67.53 },
+    { x: 7.63, y: 65.59 },
+    { x: 15.0, y: 65.45 },
+    { x: 15.43, y: 72.4 },
+    { x: 17.1, y: 76.98 },
+    { x: 30.75, y: 76.42 },
+    { x: 31.88, y: 66.28 },
+    { x: 88.06, y: 66.42 },
+    { x: 90.86, y: 73.09 },
+    { x: 95.48, y: 76.98 },
+    { x: 100.0, y: 74.48 },
+    { x: 100.0, y: 100.0 },
+    { x: 0.0, y: 100.0 },
+  ],
+  "hospital_room": [
+    { x: 9.0, y: 86.0 },
+    { x: 18.0, y: 69.0 },
+    { x: 42.0, y: 66.0 },
+    { x: 52.0, y: 72.0 },
+    { x: 83.0, y: 71.0 },
+    { x: 96.0, y: 84.0 },
+    { x: 100.0, y: 100.0 },
+    { x: 0.0, y: 100.0 },
+  ],
+  "sprinkler_courtyard": [
+    { x: 0.0, y: 77.0 },
+    { x: 20.0, y: 66.0 },
+    { x: 64.0, y: 67.0 },
+    { x: 100.0, y: 76.0 },
+    { x: 100.0, y: 100.0 },
+    { x: 0.0, y: 100.0 },
+  ],
+  "prop_storage_collapse": [
+    { x: 6.0, y: 88.0 },
+    { x: 18.0, y: 72.0 },
+    { x: 48.0, y: 70.0 },
+    { x: 67.0, y: 78.0 },
+    { x: 96.0, y: 77.0 },
+    { x: 100.0, y: 100.0 },
+    { x: 0.0, y: 100.0 },
+  ],
+  "archive_recovery": [
+    { x: 0.0, y: 82.0 },
+    { x: 11.0, y: 68.0 },
+    { x: 38.0, y: 67.0 },
+    { x: 56.0, y: 72.0 },
+    { x: 82.0, y: 68.0 },
+    { x: 100.0, y: 78.0 },
+    { x: 100.0, y: 100.0 },
+    { x: 0.0, y: 100.0 },
+  ],
+};
+
+function deepClone(value) {
+  return JSON.parse(JSON.stringify(value));
+}
+
+function rawRectPolygon(pct) {
+  const x = Number(pct.x) || 0;
+  const y = Number(pct.y) || 0;
+  const w = Number(pct.w) || 0.5;
+  const h = Number(pct.h) || 0.5;
+  return [
+    { x, y },
+    { x: x + w, y },
+    { x: x + w, y: y + h },
+    { x, y: y + h },
+  ];
+}
+
+for (const currentScene of initialScenes) {
+  currentScene.walkable = deepClone(SCENE_WALKABLE[currentScene.id] || DEFAULT_WALKABLE);
+  for (const hotspot of currentScene.hotspots) {
+    if (!Array.isArray(hotspot.polygon) || hotspot.polygon.length < 3) {
+      hotspot.polygon = rawRectPolygon(hotspot.pct);
+    }
+  }
+}
+
+const MIN_SIZE = 0.5;
+const NEW_HOTSPOT_SOURCE = "editor_new_hotspot";
+const HOTSPOT_KINDS = ["Prop", "Exit", "Pickup", "Character"];
+const state = {
+  scenes: deepClone(initialScenes),
+  sceneIndex: 0,
+  selectedIndex: 0,
+  selectedLayer: "hotspot",
+  selectedPointIndex: 0,
+  drag: null,
+};
+
+const el = {
+  sceneSelect: document.getElementById("sceneSelect"),
+  sceneMeta: document.getElementById("sceneMeta"),
+  sceneFrame: document.getElementById("sceneFrame"),
+  sceneImage: document.getElementById("sceneImage"),
+  overlay: document.getElementById("overlay"),
+  panelSceneName: document.getElementById("panelSceneName"),
+  hotspotCount: document.getElementById("hotspotCount"),
+  imageStatus: document.getElementById("imageStatus"),
+  walkableCount: document.getElementById("walkableCount"),
+  walkableList: document.getElementById("walkableList"),
+  editWalkableButton: document.getElementById("editWalkableButton"),
+  addWalkablePointButton: document.getElementById("addWalkablePointButton"),
+  deleteWalkablePointButton: document.getElementById("deleteWalkablePointButton"),
+  resetWalkableButton: document.getElementById("resetWalkableButton"),
+  clearWalkableButton: document.getElementById("clearWalkableButton"),
+  addHotspotButton: document.getElementById("addHotspotButton"),
+  hotspotList: document.getElementById("hotspotList"),
+  selectionCard: document.getElementById("selectionCard"),
+  exportMode: document.getElementById("exportMode"),
+  exportText: document.getElementById("exportText"),
+  copySceneButton: document.getElementById("copySceneButton"),
+  copyAllButton: document.getElementById("copyAllButton"),
+  definitionStatus: document.getElementById("definitionStatus"),
+  applyDefinitionsButton: document.getElementById("applyDefinitionsButton"),
+  refreshExportButton: document.getElementById("refreshExportButton"),
+  copyExportButton: document.getElementById("copyExportButton"),
+};
+
+function scene() {
+  return state.scenes[state.sceneIndex];
+}
+
+function selectedHotspot() {
+  const hotspots = scene().hotspots;
+  return hotspots[state.selectedIndex] || null;
+}
+
+function escapeHtml(value) {
+  return String(value)
+    .replace(/&/g, "&amp;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;")
+    .replace(/"/g, "&quot;")
+    .replace(/'/g, "&#039;");
+}
+
+function normalizeHotspotId(value) {
+  return String(value)
+    .trim()
+    .toLowerCase()
+    .replace(/[^a-z0-9_]+/g, "_")
+    .replace(/^_+|_+$/g, "");
+}
+
+function isNewHotspot(hotspot) {
+  return hotspot?.source === NEW_HOTSPOT_SOURCE
+    || hotspot?.id?.startsWith("draft_")
+    || hotspot?.id?.startsWith("new_");
+}
+
+function uniqueHotspotId(currentScene, baseId, ignoreHotspot = null) {
+  const fallback = `draft_${currentScene.id}_hotspot`;
+  const base = normalizeHotspotId(baseId) || fallback;
+  let candidate = base;
+  let suffix = 2;
+  while (currentScene.hotspots.some((hotspot) => hotspot !== ignoreHotspot && hotspot.id === candidate)) {
+    candidate = `${base}_${suffix}`;
+    suffix += 1;
+  }
+  return candidate;
+}
+
+function nextDraftHotspotId(currentScene) {
+  let index = currentScene.hotspots.length + 1;
+  let candidate = "";
+  do {
+    candidate = `draft_${currentScene.id}_${String(index).padStart(2, "0")}`;
+    index += 1;
+  } while (currentScene.hotspots.some((hotspot) => hotspot.id === candidate));
+  return candidate;
+}
+
+function createDraftHotspot(currentScene) {
+  const pct = sanitizePct({ x: 44, y: 44, w: 12, h: 16 });
+  return {
+    id: nextDraftHotspotId(currentScene),
+    name: "Neuer Hotspot",
+    kind: "Prop",
+    pct,
+    polygon: rectToPolygon(pct),
+    source: NEW_HOTSPOT_SOURCE,
+    look: "Noch nicht beschrieben.",
+    inspect: "Noch nicht beschrieben.",
+  };
+}
+
+function ensureWalkable(currentScene = scene()) {
+  if (!Array.isArray(currentScene.walkable)) {
+    currentScene.walkable = [];
+  }
+  return currentScene.walkable;
+}
+
+function selectedWalkablePoint() {
+  const points = ensureWalkable();
+  return points[state.selectedPointIndex] || null;
+}
+
+function originalHotspot(sceneId, hotspotId) {
+  const sourceScene = initialScenes.find((candidate) => candidate.id === sceneId);
+  return sourceScene?.hotspots.find((candidate) => candidate.id === hotspotId) || null;
+}
+
+function originalWalkable(sceneId) {
+  const sourceScene = initialScenes.find((candidate) => candidate.id === sceneId);
+  return sourceScene?.walkable || [];
+}
+
+function clamp(value, min, max) {
+  return Math.min(Math.max(value, min), max);
+}
+
+function round(value) {
+  return Math.round(value * 100) / 100;
+}
+
+function sanitizePct(pct) {
+  let x = clamp(Number(pct.x) || 0, 0, 100 - MIN_SIZE);
+  let y = clamp(Number(pct.y) || 0, 0, 100 - MIN_SIZE);
+  let w = clamp(Number(pct.w) || MIN_SIZE, MIN_SIZE, 100 - x);
+  let h = clamp(Number(pct.h) || MIN_SIZE, MIN_SIZE, 100 - y);
+  return { x: round(x), y: round(y), w: round(w), h: round(h) };
+}
+
+function sanitizePoint(point) {
+  return {
+    x: round(clamp(Number(point.x) || 0, 0, 100)),
+    y: round(clamp(Number(point.y) || 0, 0, 100)),
+  };
+}
+
+function rectToPolygon(pct) {
+  const sanitized = sanitizePct(pct);
+  return [
+    sanitizePoint({ x: sanitized.x, y: sanitized.y }),
+    sanitizePoint({ x: sanitized.x + sanitized.w, y: sanitized.y }),
+    sanitizePoint({ x: sanitized.x + sanitized.w, y: sanitized.y + sanitized.h }),
+    sanitizePoint({ x: sanitized.x, y: sanitized.y + sanitized.h }),
+  ];
+}
+
+function samePoint(a, b) {
+  return round(a.x) === round(b.x) && round(a.y) === round(b.y);
+}
+
+function polygonMatchesRect(hotspot) {
+  if (!Array.isArray(hotspot.polygon) || hotspot.polygon.length !== 4) {
+    return false;
+  }
+  const rectPolygon = rectToPolygon(hotspot.pct);
+  return hotspot.polygon.map(sanitizePoint).every((point, index) => samePoint(point, rectPolygon[index]));
+}
+
+function ensureHotspotPolygon(hotspot) {
+  if (!Array.isArray(hotspot.polygon) || hotspot.polygon.length < 3) {
+    hotspot.polygon = rectToPolygon(hotspot.pct);
+    return hotspot.polygon;
+  }
+
+  hotspot.polygon = hotspot.polygon.map(sanitizePoint);
+  return hotspot.polygon;
+}
+
+function ensureAllHotspotPolygons(currentScene = scene()) {
+  for (const hotspot of currentScene.hotspots) {
+    ensureHotspotPolygon(hotspot);
+  }
+}
+
+function selectedHotspotPolygonPoint() {
+  const hotspot = selectedHotspot();
+  if (!hotspot) {
+    return null;
+  }
+  const points = ensureHotspotPolygon(hotspot);
+  return points[state.selectedPointIndex] || null;
+}
+
+function setPct(hotspot, pct) {
+  const keepRectangularPolygon = !Array.isArray(hotspot.polygon)
+    || hotspot.polygon.length < 3
+    || polygonMatchesRect(hotspot);
+  hotspot.pct = sanitizePct(pct);
+  if (keepRectangularPolygon) {
+    hotspot.polygon = rectToPolygon(hotspot.pct);
+  }
+}
+
+function setHotspotPolygonPoint(index, point) {
+  const hotspot = selectedHotspot();
+  if (!hotspot) {
+    return;
+  }
+  const points = ensureHotspotPolygon(hotspot);
+  if (!points[index]) {
+    return;
+  }
+  points[index] = sanitizePoint(point);
+}
+
+function setWalkablePoint(index, point) {
+  const points = ensureWalkable();
+  if (!points[index]) {
+    return;
+  }
+  points[index] = sanitizePoint(point);
+}
+
+function rustFloat(value) {
+  const rounded = round(value);
+  const text = rounded.toFixed(2).replace(/0+$/, "").replace(/\.$/, "");
+  return text.includes(".") ? text : `${text}.0`;
+}
+
+function displayFloat(value) {
+  return round(value).toFixed(2).replace(/0+$/, "").replace(/\.$/, "");
+}
+
+function pctCall(hotspot) {
+  const { x, y, w, h } = hotspot.pct;
+  return `pct(${rustFloat(x)}, ${rustFloat(y)}, ${rustFloat(w)}, ${rustFloat(h)})`;
+}
+
+function pctReadout(hotspot) {
+  const { x, y, w, h } = hotspot.pct;
+  return [
+    `<span>x ${displayFloat(x)}%</span>`,
+    `<span>y ${displayFloat(y)}%</span>`,
+    `<span>w ${displayFloat(w)}%</span>`,
+    `<span>h ${displayFloat(h)}%</span>`,
+  ].join("");
+}
+
+function pointReadout(point) {
+  return [
+    `<span>x ${displayFloat(point.x)}%</span>`,
+    `<span>y ${displayFloat(point.y)}%</span>`,
+  ].join("");
+}
+
+function hotspotLine(currentScene, hotspot) {
+  const lines = [
+    `// ${currentScene.id} / ${hotspot.id} / ${hotspot.name}`,
+    `pct: ${pctCall(hotspot)},`,
+    hotspotPolygonExport(hotspot),
+  ];
+  if (isNewHotspot(hotspot)) {
+    lines.unshift(`// NEW_HOTSPOT ${currentScene.id}/${hotspot.id}`);
+  }
+  return lines.join("\n");
+}
+
+function walkablePointCall(point) {
+  return `(${rustFloat(point.x)}, ${rustFloat(point.y)})`;
+}
+
+function hotspotPolygonExport(hotspot) {
+  const points = ensureHotspotPolygon(hotspot).map(walkablePointCall).join(", ");
+  return `polygon: &[${points}],`;
+}
+
+function walkableExport(currentScene) {
+  const points = ensureWalkable(currentScene);
+  if (points.length === 0) {
+    return "walkable: &[],";
+  }
+
+  return [
+    "walkable: &[",
+    ...points.map((point) => `    ${walkablePointCall(point)},`),
+    "],",
+  ].join("\n");
+}
+
+function sceneExport(currentScene) {
+  const lines = [`// ${currentScene.id} - ${currentScene.name}`];
+  lines.push("// walkable polygon");
+  lines.push(walkableExport(currentScene));
+  lines.push("");
+  lines.push("// hotspots");
+  for (const hotspot of currentScene.hotspots) {
+    if (isNewHotspot(hotspot)) {
+      lines.push(`// NEW_HOTSPOT ${currentScene.id}/${hotspot.id}`);
+    }
+    lines.push(`// ${hotspot.id} - ${hotspot.name}`);
+    lines.push(`pct: ${pctCall(hotspot)},`);
+    lines.push(hotspotPolygonExport(hotspot));
+  }
+  return lines.join("\n");
+}
+
+function allExport() {
+  return state.scenes.map(sceneExport).join("\n\n");
+}
+
+function currentExport() {
+  return el.exportMode.value === "all" ? allExport() : sceneExport(scene());
+}
+
+function definitionPayload(dryRun = false) {
+  const hotspotPayload = (hotspot) => {
+    const payload = {
+      id: hotspot.id,
+      name: hotspot.name,
+      kind: hotspot.kind,
+      pct: sanitizePct(hotspot.pct),
+      polygon: ensureHotspotPolygon(hotspot).map((point) => sanitizePoint(point)),
+    };
+    if (hotspot.source) {
+      payload.source = hotspot.source;
+    }
+    if (hotspot.look) {
+      payload.look = hotspot.look;
+    }
+    if (hotspot.inspect) {
+      payload.inspect = hotspot.inspect;
+    }
+    return payload;
+  };
+
+  return {
+    dry_run: dryRun,
+    scenes: state.scenes.map((currentScene) => ({
+      id: currentScene.id,
+      name: currentScene.name,
+      zone: currentScene.zone,
+      token: currentScene.token,
+      walkable: ensureWalkable(currentScene).map((point) => sanitizePoint(point)),
+      hotspots: currentScene.hotspots.map(hotspotPayload),
+    })),
+  };
+}
+
+async function applyDefinitions() {
+  const url = "http://127.0.0.1:8082/apply-scene-definitions";
+  el.applyDefinitionsButton.disabled = true;
+  el.definitionStatus.textContent = "Speichere Definitionen...";
+
+  try {
+    const response = await fetch(url, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(definitionPayload(false)),
+    });
+    const result = await response.json().catch(() => ({}));
+    if (!response.ok || !result.ok) {
+      throw new Error(result.error || `HTTP ${response.status}`);
+    }
+
+    const files = result.changed_files?.length
+      ? result.changed_files.join(", ")
+      : "keine Datei geändert";
+    const warnings = result.warnings?.length ? ` Warnungen: ${result.warnings.join("; ")}` : "";
+    el.definitionStatus.textContent = `Gespeichert: ${files}.${warnings}`;
+  } catch (error) {
+    el.definitionStatus.textContent =
+      `Nicht gespeichert: ${error.message}. Starte den Editor über ./scripts/dev.sh.`;
+  } finally {
+    el.applyDefinitionsButton.disabled = false;
+  }
+}
+
+async function copyText(text, button) {
+  let ok = false;
+  try {
+    if (navigator.clipboard?.writeText) {
+      await navigator.clipboard.writeText(text);
+      ok = true;
+    }
+  } catch {
+    ok = false;
+  }
+
+  if (!ok) {
+    const scratch = document.createElement("textarea");
+    scratch.value = text;
+    scratch.style.position = "fixed";
+    scratch.style.left = "-9999px";
+    document.body.appendChild(scratch);
+    scratch.focus();
+    scratch.select();
+    ok = document.execCommand("copy");
+    scratch.remove();
+  }
+
+  if (button) {
+    const previous = button.textContent;
+    button.textContent = ok ? "Kopiert" : "Nicht kopiert";
+    window.setTimeout(() => {
+      button.textContent = previous;
+    }, 950);
+  }
+}
+
+function imageCandidates(sceneId) {
+  return [
+    `assets/scenes/${sceneId}.png`,
+    `../assets/scenes/${sceneId}.png`,
+    `/assets/scenes/${sceneId}.png`,
+    `dist/assets/scenes/${sceneId}.png`,
+  ];
+}
+
+function loadSceneImage(currentScene) {
+  const candidates = imageCandidates(currentScene.id);
+  let index = 0;
+  el.sceneImage.alt = currentScene.name;
+  el.sceneFrame.classList.remove("missing");
+  el.imageStatus.textContent = `Bild lädt: ${currentScene.id}.png`;
+
+  const tryCandidate = () => {
+    const src = candidates[index];
+    el.sceneImage.onload = () => {
+      el.sceneFrame.classList.remove("missing");
+      el.imageStatus.textContent = `${src} · ${el.sceneImage.naturalWidth}×${el.sceneImage.naturalHeight}`;
+    };
+    el.sceneImage.onerror = () => {
+      index += 1;
+      if (index < candidates.length) {
+        tryCandidate();
+        return;
+      }
+      el.sceneImage.onload = null;
+      el.sceneImage.onerror = null;
+      el.sceneImage.removeAttribute("src");
+      el.sceneFrame.classList.add("missing");
+      el.imageStatus.textContent = `Kein Bild gefunden: ${currentScene.id}.png`;
+    };
+    el.sceneImage.src = src;
+  };
+
+  tryCandidate();
+}
+
+function pointFromEvent(event, frame = el.sceneFrame.getBoundingClientRect()) {
+  return sanitizePoint({
+    x: ((event.clientX - frame.left) / frame.width) * 100,
+    y: ((event.clientY - frame.top) / frame.height) * 100,
+  });
+}
+
+function suggestedWalkablePoint() {
+  const points = ensureWalkable();
+  const selected = points[state.selectedPointIndex];
+  if (selected) {
+    return {
+      x: clamp(selected.x + 2.0, 0, 100),
+      y: clamp(selected.y + 2.0, 0, 100),
+    };
+  }
+
+  const token = scene().token || [50.0, 82.0];
+  return { x: token[0], y: token[1] };
+}
+
+function suggestedHotspotPolygonPoint() {
+  const hotspot = selectedHotspot();
+  if (!hotspot) {
+    return { x: 50.0, y: 50.0 };
+  }
+
+  const points = ensureHotspotPolygon(hotspot);
+  const selected = points[state.selectedPointIndex];
+  if (selected) {
+    return {
+      x: clamp(selected.x + 2.0, 0, 100),
+      y: clamp(selected.y + 2.0, 0, 100),
+    };
+  }
+
+  return {
+    x: hotspot.pct.x + hotspot.pct.w * 0.5,
+    y: hotspot.pct.y + hotspot.pct.h * 0.5,
+  };
+}
+
+function editSelectedHotspotPolygon() {
+  const hotspot = selectedHotspot();
+  if (!hotspot) {
+    return;
+  }
+  ensureHotspotPolygon(hotspot);
+  state.selectedLayer = "hotspot-polygon";
+  state.selectedPointIndex = clamp(state.selectedPointIndex, 0, hotspot.polygon.length - 1);
+  renderAll(true);
+  el.sceneFrame.focus({ preventScroll: true });
+}
+
+function addHotspotPolygonPoint(point = suggestedHotspotPolygonPoint()) {
+  const hotspot = selectedHotspot();
+  if (!hotspot) {
+    return;
+  }
+  const points = ensureHotspotPolygon(hotspot);
+  const insertIndex = clamp(state.selectedPointIndex + 1, 0, points.length);
+  points.splice(insertIndex, 0, sanitizePoint(point));
+  state.selectedLayer = "hotspot-polygon";
+  state.selectedPointIndex = insertIndex;
+  renderAll(true);
+}
+
+function deleteHotspotPolygonPoint() {
+  const hotspot = selectedHotspot();
+  if (!hotspot) {
+    return;
+  }
+  const points = ensureHotspotPolygon(hotspot);
+  if (points.length <= 3) {
+    return;
+  }
+  points.splice(clamp(state.selectedPointIndex, 0, points.length - 1), 1);
+  state.selectedLayer = "hotspot-polygon";
+  state.selectedPointIndex = clamp(state.selectedPointIndex, 0, points.length - 1);
+  renderAll(true);
+}
+
+function resetHotspotPolygon() {
+  const hotspot = selectedHotspot();
+  if (!hotspot) {
+    return;
+  }
+  hotspot.polygon = rectToPolygon(hotspot.pct);
+  state.selectedLayer = "hotspot-polygon";
+  state.selectedPointIndex = 0;
+  renderAll(true);
+}
+
+function addDraftHotspot() {
+  const currentScene = scene();
+  const hotspot = createDraftHotspot(currentScene);
+  currentScene.hotspots.push(hotspot);
+  state.selectedLayer = "hotspot";
+  state.selectedIndex = currentScene.hotspots.length - 1;
+  state.selectedPointIndex = 0;
+  renderAll(true);
+  el.sceneFrame.focus({ preventScroll: true });
+}
+
+function addWalkablePoint(point = suggestedWalkablePoint()) {
+  const points = ensureWalkable();
+  const insertIndex = points.length === 0
+    ? 0
+    : clamp(state.selectedPointIndex + 1, 0, points.length);
+  points.splice(insertIndex, 0, sanitizePoint(point));
+  state.selectedLayer = "walkable";
+  state.selectedPointIndex = insertIndex;
+  renderAll(true);
+}
+
+function deleteWalkablePoint() {
+  const points = ensureWalkable();
+  if (points.length === 0) {
+    return;
+  }
+  points.splice(clamp(state.selectedPointIndex, 0, points.length - 1), 1);
+  state.selectedLayer = "walkable";
+  state.selectedPointIndex = clamp(state.selectedPointIndex, 0, Math.max(0, points.length - 1));
+  renderAll(true);
+}
+
+function resetWalkablePolygon() {
+  scene().walkable = deepClone(originalWalkable(scene().id));
+  state.selectedLayer = "walkable";
+  state.selectedPointIndex = 0;
+  renderAll(true);
+}
+
+function clearWalkablePolygon() {
+  scene().walkable = [];
+  state.selectedLayer = "walkable";
+  state.selectedPointIndex = 0;
+  renderAll(true);
+}
+
+function renderSceneSelect() {
+  el.sceneSelect.innerHTML = "";
+  state.scenes.forEach((currentScene, index) => {
+    const option = document.createElement("option");
+    option.value = String(index);
+    option.textContent = `${currentScene.name} (${currentScene.id})`;
+    el.sceneSelect.appendChild(option);
+  });
+  el.sceneSelect.value = String(state.sceneIndex);
+}
+
+function renderRects() {
+  const currentScene = scene();
+  ensureAllHotspotPolygons(currentScene);
+  el.overlay.innerHTML = "";
+  renderHotspotPolygonLayer(currentScene);
+
+  if (state.selectedLayer === "hotspot-polygon") {
+    renderWalkableLayer(currentScene);
+    return;
+  }
+
+  currentScene.hotspots.forEach((hotspot, index) => {
+    const box = document.createElement("div");
+    const selected = index === state.selectedIndex;
+    const kindClass = hotspot.kind.toLowerCase();
+    box.className = `hotspot kind-${kindClass}${selected ? " selected" : ""}`;
+    box.title = `${hotspot.id} · ${hotspot.name}`;
+    box.style.left = `${hotspot.pct.x}%`;
+    box.style.top = `${hotspot.pct.y}%`;
+    box.style.width = `${hotspot.pct.w}%`;
+    box.style.height = `${hotspot.pct.h}%`;
+    box.innerHTML = `<span class="hotspot-index">${index + 1}</span>`;
+    box.addEventListener("pointerdown", (event) => startDrag(event, index, "move"));
+
+    if (selected) {
+      for (const handle of ["nw", "n", "ne", "e", "se", "s", "sw", "w"]) {
+        const node = document.createElement("span");
+        node.className = `handle handle-${handle}`;
+        node.dataset.handle = handle;
+        node.addEventListener("pointerdown", (event) => startDrag(event, index, handle));
+        box.appendChild(node);
+      }
+    }
+    el.overlay.appendChild(box);
+  });
+  renderWalkableLayer(currentScene);
+}
+
+function renderHotspotPolygonLayer(currentScene) {
+  const svg = document.createElementNS("http://www.w3.org/2000/svg", "svg");
+  svg.classList.add("hotspot-polygon-layer");
+  if (state.selectedLayer === "hotspot-polygon") {
+    svg.classList.add("editing");
+  }
+  svg.setAttribute("viewBox", "0 0 100 100");
+  svg.setAttribute("preserveAspectRatio", "none");
+
+  currentScene.hotspots.forEach((hotspot, hotspotIndex) => {
+    const points = ensureHotspotPolygon(hotspot);
+    const path = points.map((point) => `${point.x},${point.y}`).join(" ");
+    const polygon = document.createElementNS("http://www.w3.org/2000/svg", "polygon");
+    polygon.classList.add("hotspot-polygon-fill");
+    if (hotspotIndex === state.selectedIndex) {
+      polygon.classList.add("selected");
+    }
+    polygon.setAttribute("points", path);
+    svg.appendChild(polygon);
+
+    if (state.selectedLayer !== "hotspot-polygon" || hotspotIndex !== state.selectedIndex) {
+      return;
+    }
+
+    points.forEach((point, pointIndex) => {
+      const circle = document.createElementNS("http://www.w3.org/2000/svg", "circle");
+      circle.classList.add("hotspot-polygon-point");
+      if (pointIndex === state.selectedPointIndex) {
+        circle.classList.add("selected");
+      }
+      circle.setAttribute("cx", point.x);
+      circle.setAttribute("cy", point.y);
+      circle.setAttribute("r", "1.35");
+      circle.addEventListener("pointerdown", (event) => startHotspotPolygonPointDrag(event, pointIndex));
+      svg.appendChild(circle);
+
+      const label = document.createElementNS("http://www.w3.org/2000/svg", "text");
+      label.classList.add("hotspot-polygon-label");
+      label.setAttribute("x", point.x + 1.6);
+      label.setAttribute("y", point.y - 1.6);
+      label.textContent = String(pointIndex + 1);
+      svg.appendChild(label);
+    });
+  });
+
+  svg.addEventListener("pointerdown", (event) => {
+    if (state.selectedLayer !== "hotspot-polygon") {
+      return;
+    }
+    event.preventDefault();
+    addHotspotPolygonPoint(pointFromEvent(event));
+  });
+  el.overlay.appendChild(svg);
+}
+
+function renderWalkableLayer(currentScene) {
+  const points = ensureWalkable(currentScene);
+  const svg = document.createElementNS("http://www.w3.org/2000/svg", "svg");
+  svg.classList.add("walkable-layer");
+  if (state.selectedLayer === "walkable") {
+    svg.classList.add("editing");
+  }
+  svg.setAttribute("viewBox", "0 0 100 100");
+  svg.setAttribute("preserveAspectRatio", "none");
+
+  const path = points.map((point) => `${point.x},${point.y}`).join(" ");
+  if (points.length >= 3) {
+    const polygon = document.createElementNS("http://www.w3.org/2000/svg", "polygon");
+    polygon.classList.add("walkable-fill");
+    polygon.setAttribute("points", path);
+    svg.appendChild(polygon);
+  } else if (points.length >= 2) {
+    const polyline = document.createElementNS("http://www.w3.org/2000/svg", "polyline");
+    polyline.classList.add("walkable-outline");
+    polyline.setAttribute("points", path);
+    svg.appendChild(polyline);
+  }
+
+  points.forEach((point, index) => {
+    const circle = document.createElementNS("http://www.w3.org/2000/svg", "circle");
+    circle.classList.add("walkable-point");
+    if (state.selectedLayer === "walkable" && index === state.selectedPointIndex) {
+      circle.classList.add("selected");
+    }
+    circle.setAttribute("cx", point.x);
+    circle.setAttribute("cy", point.y);
+    circle.setAttribute("r", "1.35");
+    circle.addEventListener("pointerdown", (event) => startPointDrag(event, index));
+    svg.appendChild(circle);
+
+    if (state.selectedLayer === "walkable") {
+      const label = document.createElementNS("http://www.w3.org/2000/svg", "text");
+      label.classList.add("walkable-label");
+      label.setAttribute("x", point.x + 1.6);
+      label.setAttribute("y", point.y - 1.6);
+      label.textContent = String(index + 1);
+      svg.appendChild(label);
+    }
+  });
+
+  svg.addEventListener("pointerdown", (event) => {
+    if (state.selectedLayer !== "walkable") {
+      return;
+    }
+    event.preventDefault();
+    addWalkablePoint(pointFromEvent(event));
+  });
+  el.overlay.appendChild(svg);
+}
+
+function renderWalkablePanel(scrollSelection = false) {
+  const currentScene = scene();
+  const points = ensureWalkable(currentScene);
+  el.walkableCount.textContent = `${points.length} Punkte`;
+  el.editWalkableButton.classList.toggle("active", state.selectedLayer === "walkable");
+  el.deleteWalkablePointButton.disabled = points.length === 0;
+  el.clearWalkableButton.disabled = points.length === 0;
+  el.walkableList.innerHTML = "";
+
+  if (points.length === 0) {
+    el.walkableList.innerHTML = `<div class="empty-state">Kein Polygon.</div>`;
+    return;
+  }
+
+  points.forEach((point, index) => {
+    const row = document.createElement("button");
+    row.type = "button";
+    row.className = `hotspot-row${state.selectedLayer === "walkable" && index === state.selectedPointIndex ? " selected" : ""}`;
+    row.dataset.index = String(index);
+    row.innerHTML = `
+      <div class="row-main">
+        <span class="row-index">${index + 1}</span>
+        <span class="row-name">Punkt ${index + 1}</span>
+        <span class="kind-pill">Walk</span>
+      </div>
+      <div class="pct-readout two">${pointReadout(point)}</div>
+    `;
+    row.addEventListener("click", () => selectWalkablePoint(index, false));
+    el.walkableList.appendChild(row);
+  });
+
+  if (scrollSelection) {
+    const selected = el.walkableList.querySelector(".hotspot-row.selected");
+    selected?.scrollIntoView({ block: "nearest" });
+  }
+}
+
+function renderHotspotList(scrollSelection = false) {
+  const currentScene = scene();
+  el.hotspotList.innerHTML = "";
+  if (currentScene.hotspots.length === 0) {
+    el.hotspotList.innerHTML = `<div class="empty-state">Keine Hotspots.</div>`;
+    return;
+  }
+
+  currentScene.hotspots.forEach((hotspot, index) => {
+    const row = document.createElement("button");
+    const rowId = isNewHotspot(hotspot)
+      ? `${escapeHtml(hotspot.id)} · NEW_HOTSPOT`
+      : escapeHtml(hotspot.id);
+    row.type = "button";
+    row.className = `hotspot-row${index === state.selectedIndex ? " selected" : ""}`;
+    row.dataset.index = String(index);
+    row.innerHTML = `
+      <div class="row-main">
+        <span class="row-index">${index + 1}</span>
+        <span class="row-name">${escapeHtml(hotspot.name)}</span>
+        <span class="kind-pill">${escapeHtml(hotspot.kind)}</span>
+      </div>
+      <div class="row-id">${rowId}</div>
+      <div class="pct-readout">${pctReadout(hotspot)}</div>
+    `;
+    row.addEventListener("click", () => selectHotspot(index, false));
+    el.hotspotList.appendChild(row);
+  });
+
+  if (scrollSelection) {
+    const selected = el.hotspotList.querySelector(".hotspot-row.selected");
+    selected?.scrollIntoView({ block: "nearest" });
+  }
+}
+
+function renderSelection() {
+  const currentScene = scene();
+  if (state.selectedLayer === "walkable") {
+    renderWalkableSelection(currentScene);
+    return;
+  }
+  if (state.selectedLayer === "hotspot-polygon") {
+    renderHotspotPolygonSelection(currentScene);
+    return;
+  }
+
+  const hotspot = selectedHotspot();
+  if (!hotspot) {
+    el.selectionCard.innerHTML = `<div class="empty-state">Keine Auswahl.</div>`;
+    return;
+  }
+
+  const identityFields = isNewHotspot(hotspot)
+    ? `
+    <div class="draft-marker">
+      <span>Suchmarker für spätere Einbindung</span>
+      <code>NEW_HOTSPOT ${escapeHtml(currentScene.id)}/${escapeHtml(hotspot.id)}</code>
+    </div>
+    <div class="field-grid identity-grid">
+      <label><span class="field-label">Hotspot-ID</span><input id="hotspotIdInput" type="text" value="${escapeHtml(hotspot.id)}" spellcheck="false"></label>
+      <label><span class="field-label">Name</span><input id="hotspotNameInput" type="text" value="${escapeHtml(hotspot.name)}"></label>
+      <label>
+        <span class="field-label">Typ</span>
+        <select id="hotspotKindInput">
+          ${HOTSPOT_KINDS.map((kind) => `<option value="${kind}"${hotspot.kind === kind ? " selected" : ""}>${kind}</option>`).join("")}
+        </select>
+      </label>
+    </div>
+  `
+    : "";
+
+  el.selectionCard.innerHTML = `
+    <div class="selection-heading">
+      <strong>${escapeHtml(hotspot.name)}</strong>
+      <code>${escapeHtml(hotspot.id)}</code>
+      <span class="kind-pill">${escapeHtml(hotspot.kind)}</span>
+    </div>
+    ${identityFields}
+    <div class="field-grid">
+      <label><span class="field-label">x %</span><input id="pctX" type="number" min="0" max="100" step="0.1" value="${displayFloat(hotspot.pct.x)}"></label>
+      <label><span class="field-label">y %</span><input id="pctY" type="number" min="0" max="100" step="0.1" value="${displayFloat(hotspot.pct.y)}"></label>
+      <label><span class="field-label">w %</span><input id="pctW" type="number" min="0.5" max="100" step="0.1" value="${displayFloat(hotspot.pct.w)}"></label>
+      <label><span class="field-label">h %</span><input id="pctH" type="number" min="0.5" max="100" step="0.1" value="${displayFloat(hotspot.pct.h)}"></label>
+    </div>
+    <code class="pct-line">${pctCall(hotspot)}</code>
+    <div class="pct-readout two">
+      <span>Polygon ${ensureHotspotPolygon(hotspot).length} Punkte</span>
+      <span>${polygonMatchesRect(hotspot) ? "Default: Rechteck" : "Korrigiert"}</span>
+    </div>
+    <div class="selection-actions">
+      <button type="button" id="editHotspotPolygonButton">Polygon bearbeiten</button>
+      <button type="button" id="addHotspotPolygonButton">Punkt hinzufügen</button>
+      <button type="button" id="resetHotspotPolygonButton">Polygon aus Rechteck</button>
+    </div>
+    <div class="selection-actions">
+      <button type="button" id="copySelectedButton">Auswahl kopieren</button>
+      <button type="button" id="resetSelectedButton">Auswahl zurücksetzen</button>
+      <button type="button" id="resetSceneButton">Szene zurücksetzen</button>
+    </div>
+  `;
+
+  if (isNewHotspot(hotspot)) {
+    const idInput = document.getElementById("hotspotIdInput");
+    const nameInput = document.getElementById("hotspotNameInput");
+    const kindInput = document.getElementById("hotspotKindInput");
+    idInput.addEventListener("change", () => {
+      hotspot.id = uniqueHotspotId(currentScene, idInput.value, hotspot);
+      renderAll(true);
+    });
+    nameInput.addEventListener("change", () => {
+      hotspot.name = nameInput.value.trim() || hotspot.id;
+      renderAll(true);
+    });
+    kindInput.addEventListener("change", () => {
+      hotspot.kind = HOTSPOT_KINDS.includes(kindInput.value) ? kindInput.value : "Prop";
+      renderAll(true);
+    });
+  }
+
+  for (const [field, key] of [["pctX", "x"], ["pctY", "y"], ["pctW", "w"], ["pctH", "h"]]) {
+    const input = document.getElementById(field);
+    input.addEventListener("input", () => {
+      if (input.value.trim() === "") {
+        return;
+      }
+      const next = { ...hotspot.pct, [key]: Number(input.value) };
+      setPct(hotspot, next);
+      renderRects();
+      renderHotspotList(false);
+      renderSelectionGeometry(input);
+      renderExport();
+    });
+  }
+
+  document.getElementById("copySelectedButton").addEventListener("click", (event) => {
+    copyText(hotspotLine(currentScene, hotspot), event.currentTarget);
+  });
+  document.getElementById("editHotspotPolygonButton").addEventListener("click", () => {
+    state.selectedPointIndex = 0;
+    editSelectedHotspotPolygon();
+  });
+  document.getElementById("addHotspotPolygonButton").addEventListener("click", () => addHotspotPolygonPoint());
+  document.getElementById("resetHotspotPolygonButton").addEventListener("click", () => resetHotspotPolygon());
+
+  document.getElementById("resetSelectedButton").addEventListener("click", () => {
+    const original = originalHotspot(currentScene.id, hotspot.id);
+    if (original) {
+      hotspot.pct = sanitizePct(original.pct);
+      hotspot.polygon = Array.isArray(original.polygon)
+        ? original.polygon.map(sanitizePoint)
+        : rectToPolygon(hotspot.pct);
+      renderAll();
+    }
+  });
+
+  document.getElementById("resetSceneButton").addEventListener("click", () => {
+    const original = initialScenes.find((candidate) => candidate.id === currentScene.id);
+    if (original) {
+      currentScene.hotspots = deepClone(original.hotspots);
+      currentScene.walkable = deepClone(original.walkable);
+      ensureAllHotspotPolygons(currentScene);
+      state.selectedIndex = Math.min(state.selectedIndex, currentScene.hotspots.length - 1);
+      state.selectedPointIndex = Math.min(state.selectedPointIndex, Math.max(0, ensureWalkable(currentScene).length - 1));
+      renderAll();
+    }
+  });
+}
+
+function renderWalkableSelection(currentScene) {
+  const point = selectedWalkablePoint();
+  if (!point) {
+    el.selectionCard.innerHTML = `<div class="empty-state">Kein Polygonpunkt ausgewählt.</div>`;
+    return;
+  }
+
+  el.selectionCard.innerHTML = `
+    <div class="selection-heading">
+      <strong>Walkable Punkt ${state.selectedPointIndex + 1}</strong>
+      <code>${currentScene.id}</code>
+      <span class="kind-pill">Walk</span>
+    </div>
+    <div class="field-grid">
+      <label><span class="field-label">x %</span><input id="pointX" type="number" min="0" max="100" step="0.1" value="${displayFloat(point.x)}"></label>
+      <label><span class="field-label">y %</span><input id="pointY" type="number" min="0" max="100" step="0.1" value="${displayFloat(point.y)}"></label>
+    </div>
+    <code class="pct-line">${walkablePointCall(point)}</code>
+    <div class="selection-actions">
+      <button type="button" id="copyPointButton">Punkt kopieren</button>
+      <button type="button" id="insertPointButton">Punkt danach einfügen</button>
+      <button type="button" id="deletePointButton">Punkt löschen</button>
+    </div>
+  `;
+
+  for (const [field, key] of [["pointX", "x"], ["pointY", "y"]]) {
+    const input = document.getElementById(field);
+    input.addEventListener("input", () => {
+      if (input.value.trim() === "") {
+        return;
+      }
+      setWalkablePoint(state.selectedPointIndex, { ...point, [key]: Number(input.value) });
+      renderRects();
+      renderWalkablePanel(false);
+      renderWalkableSelectionGeometry(input);
+      renderExport();
+    });
+  }
+
+  document.getElementById("copyPointButton").addEventListener("click", (event) => {
+    copyText(walkablePointCall(selectedWalkablePoint()), event.currentTarget);
+  });
+  document.getElementById("insertPointButton").addEventListener("click", () => addWalkablePoint());
+  document.getElementById("deletePointButton").addEventListener("click", () => deleteWalkablePoint());
+}
+
+function renderHotspotPolygonSelection(currentScene) {
+  const hotspot = selectedHotspot();
+  const point = selectedHotspotPolygonPoint();
+  if (!hotspot || !point) {
+    el.selectionCard.innerHTML = `<div class="empty-state">Kein Hotspot-Polygonpunkt ausgewählt.</div>`;
+    return;
+  }
+
+  const pointCount = ensureHotspotPolygon(hotspot).length;
+  el.selectionCard.innerHTML = `
+    <div class="selection-heading">
+      <strong>${hotspot.name}: Punkt ${state.selectedPointIndex + 1}</strong>
+      <code>${currentScene.id} / ${hotspot.id}</code>
+      <span class="kind-pill">Hotspot Polygon</span>
+    </div>
+    <div class="field-grid">
+      <label><span class="field-label">x %</span><input id="hotspotPointX" type="number" min="0" max="100" step="0.1" value="${displayFloat(point.x)}"></label>
+      <label><span class="field-label">y %</span><input id="hotspotPointY" type="number" min="0" max="100" step="0.1" value="${displayFloat(point.y)}"></label>
+    </div>
+    <code class="pct-line">${walkablePointCall(point)}</code>
+    <div class="selection-actions">
+      <button type="button" id="copyHotspotPointButton">Punkt kopieren</button>
+      <button type="button" id="insertHotspotPointButton">Punkt danach einfügen</button>
+      <button type="button" id="deleteHotspotPointButton"${pointCount <= 3 ? " disabled" : ""}>Punkt löschen</button>
+    </div>
+    <div class="selection-actions">
+      <button type="button" id="backToHotspotButton">Rechteck bearbeiten</button>
+      <button type="button" id="resetHotspotPolygonFromPointButton">Polygon aus Rechteck</button>
+    </div>
+  `;
+
+  for (const [field, key] of [["hotspotPointX", "x"], ["hotspotPointY", "y"]]) {
+    const input = document.getElementById(field);
+    input.addEventListener("input", () => {
+      if (input.value.trim() === "") {
+        return;
+      }
+      setHotspotPolygonPoint(state.selectedPointIndex, { ...point, [key]: Number(input.value) });
+      renderRects();
+      renderHotspotPolygonSelectionGeometry(input);
+      renderExport();
+    });
+  }
+
+  document.getElementById("copyHotspotPointButton").addEventListener("click", (event) => {
+    copyText(walkablePointCall(selectedHotspotPolygonPoint()), event.currentTarget);
+  });
+  document.getElementById("insertHotspotPointButton").addEventListener("click", () => addHotspotPolygonPoint());
+  document.getElementById("deleteHotspotPointButton").addEventListener("click", () => deleteHotspotPolygonPoint());
+  document.getElementById("backToHotspotButton").addEventListener("click", () => {
+    state.selectedLayer = "hotspot";
+    renderAll(true);
+  });
+  document.getElementById("resetHotspotPolygonFromPointButton").addEventListener("click", () => resetHotspotPolygon());
+}
+
+function renderExport() {
+  el.exportText.value = currentExport();
+}
+
+function renderSelectionGeometry(activeInput = null) {
+  if (state.selectedLayer === "walkable") {
+    renderWalkableSelectionGeometry(activeInput);
+    return;
+  }
+  if (state.selectedLayer === "hotspot-polygon") {
+    renderHotspotPolygonSelectionGeometry(activeInput);
+    return;
+  }
+
+  const hotspot = selectedHotspot();
+  if (!hotspot) {
+    return;
+  }
+
+  for (const [field, key] of [["pctX", "x"], ["pctY", "y"], ["pctW", "w"], ["pctH", "h"]]) {
+    const input = document.getElementById(field);
+    if (input && input !== activeInput) {
+      input.value = displayFloat(hotspot.pct[key]);
+    }
+  }
+
+  const pctLine = el.selectionCard.querySelector(".pct-line");
+  if (pctLine) {
+    pctLine.textContent = pctCall(hotspot);
+  }
+}
+
+function renderHotspotPolygonSelectionGeometry(activeInput = null) {
+  const point = selectedHotspotPolygonPoint();
+  if (!point) {
+    return;
+  }
+
+  for (const [field, key] of [["hotspotPointX", "x"], ["hotspotPointY", "y"]]) {
+    const input = document.getElementById(field);
+    if (input && input !== activeInput) {
+      input.value = displayFloat(point[key]);
+    }
+  }
+
+  const pctLine = el.selectionCard.querySelector(".pct-line");
+  if (pctLine) {
+    pctLine.textContent = walkablePointCall(point);
+  }
+}
+
+function renderWalkableSelectionGeometry(activeInput = null) {
+  const point = selectedWalkablePoint();
+  if (!point) {
+    return;
+  }
+
+  for (const [field, key] of [["pointX", "x"], ["pointY", "y"]]) {
+    const input = document.getElementById(field);
+    if (input && input !== activeInput) {
+      input.value = displayFloat(point[key]);
+    }
+  }
+
+  const pctLine = el.selectionCard.querySelector(".pct-line");
+  if (pctLine) {
+    pctLine.textContent = walkablePointCall(point);
+  }
+}
+
+function renderHeader() {
+  const currentScene = scene();
+  el.sceneSelect.value = String(state.sceneIndex);
+  el.panelSceneName.textContent = currentScene.name;
+  el.hotspotCount.textContent = `${currentScene.hotspots.length} Hotspots · ${ensureWalkable(currentScene).length} Punkte`;
+  el.sceneMeta.textContent = `${currentScene.zone} · token ${rustFloat(currentScene.token[0])}/${rustFloat(currentScene.token[1])}`;
+}
+
+function renderAll(scrollSelection = false) {
+  renderHeader();
+  renderRects();
+  renderWalkablePanel(scrollSelection);
+  renderHotspotList(scrollSelection);
+  renderSelection();
+  renderExport();
+}
+
+function selectHotspot(index, scrollSelection = true) {
+  state.selectedLayer = "hotspot";
+  state.selectedIndex = clamp(index, 0, scene().hotspots.length - 1);
+  renderAll(scrollSelection);
+  el.sceneFrame.focus({ preventScroll: true });
+}
+
+function selectWalkablePoint(index, scrollSelection = true) {
+  const points = ensureWalkable();
+  state.selectedLayer = "walkable";
+  state.selectedPointIndex = clamp(index, 0, Math.max(0, points.length - 1));
+  renderAll(scrollSelection);
+  el.sceneFrame.focus({ preventScroll: true });
+}
+
+function selectHotspotPolygonPoint(index, scrollSelection = true) {
+  const hotspot = selectedHotspot();
+  if (!hotspot) {
+    return;
+  }
+  const points = ensureHotspotPolygon(hotspot);
+  state.selectedLayer = "hotspot-polygon";
+  state.selectedPointIndex = clamp(index, 0, Math.max(0, points.length - 1));
+  renderAll(scrollSelection);
+  el.sceneFrame.focus({ preventScroll: true });
+}
+
+function startDrag(event, index, mode) {
+  event.preventDefault();
+  event.stopPropagation();
+  selectHotspot(index, false);
+  const frame = el.sceneFrame.getBoundingClientRect();
+  state.drag = {
+    type: "hotspot",
+    mode,
+    index,
+    frame,
+    startX: event.clientX,
+    startY: event.clientY,
+    startPct: { ...scene().hotspots[index].pct },
+  };
+  document.addEventListener("pointermove", onPointerMove);
+  document.addEventListener("pointerup", stopDrag, { once: true });
+  document.addEventListener("pointercancel", stopDrag, { once: true });
+}
+
+function startPointDrag(event, index) {
+  event.preventDefault();
+  event.stopPropagation();
+  selectWalkablePoint(index, false);
+  state.drag = {
+    type: "walkable-point",
+    index,
+    frame: el.sceneFrame.getBoundingClientRect(),
+  };
+  document.addEventListener("pointermove", onPointerMove);
+  document.addEventListener("pointerup", stopDrag, { once: true });
+  document.addEventListener("pointercancel", stopDrag, { once: true });
+}
+
+function startHotspotPolygonPointDrag(event, index) {
+  event.preventDefault();
+  event.stopPropagation();
+  selectHotspotPolygonPoint(index, false);
+  state.drag = {
+    type: "hotspot-polygon-point",
+    index,
+    frame: el.sceneFrame.getBoundingClientRect(),
+  };
+  document.addEventListener("pointermove", onPointerMove);
+  document.addEventListener("pointerup", stopDrag, { once: true });
+  document.addEventListener("pointercancel", stopDrag, { once: true });
+}
+
+function resizePct(start, dx, dy, mode) {
+  let left = start.x;
+  let top = start.y;
+  let right = start.x + start.w;
+  let bottom = start.y + start.h;
+
+  if (mode.includes("w")) {
+    left = clamp(start.x + dx, 0, right - MIN_SIZE);
+  }
+  if (mode.includes("e")) {
+    right = clamp(start.x + start.w + dx, left + MIN_SIZE, 100);
+  }
+  if (mode.includes("n")) {
+    top = clamp(start.y + dy, 0, bottom - MIN_SIZE);
+  }
+  if (mode.includes("s")) {
+    bottom = clamp(start.y + start.h + dy, top + MIN_SIZE, 100);
+  }
+
+  return sanitizePct({ x: left, y: top, w: right - left, h: bottom - top });
+}
+
+function onPointerMove(event) {
+  if (!state.drag) {
+    return;
+  }
+
+  if (state.drag.type === "walkable-point") {
+    setWalkablePoint(state.drag.index, pointFromEvent(event, state.drag.frame));
+    renderAll(true);
+    return;
+  }
+  if (state.drag.type === "hotspot-polygon-point") {
+    setHotspotPolygonPoint(state.drag.index, pointFromEvent(event, state.drag.frame));
+    renderAll(true);
+    return;
+  }
+
+  const currentScene = scene();
+  const hotspot = currentScene.hotspots[state.drag.index];
+  const dx = ((event.clientX - state.drag.startX) / state.drag.frame.width) * 100;
+  const dy = ((event.clientY - state.drag.startY) / state.drag.frame.height) * 100;
+
+  if (state.drag.mode === "move") {
+    const start = state.drag.startPct;
+    setPct(hotspot, {
+      ...start,
+      x: clamp(start.x + dx, 0, 100 - start.w),
+      y: clamp(start.y + dy, 0, 100 - start.h),
+    });
+  } else {
+    setPct(hotspot, resizePct(state.drag.startPct, dx, dy, state.drag.mode));
+  }
+
+  renderAll(true);
+}
+
+function stopDrag() {
+  state.drag = null;
+  document.removeEventListener("pointermove", onPointerMove);
+}
+
+function targetIsEditable(target) {
+  return ["INPUT", "TEXTAREA", "SELECT"].includes(target.tagName);
+}
+
+function onKeyDown(event) {
+  if (targetIsEditable(event.target)) {
+    return;
+  }
+
+  if (state.selectedLayer === "hotspot-polygon") {
+    const point = selectedHotspotPolygonPoint();
+    if (!point) {
+      return;
+    }
+
+    if (event.key === "Delete" || event.key === "Backspace") {
+      event.preventDefault();
+      deleteHotspotPolygonPoint();
+      return;
+    }
+
+    const keyMap = {
+      ArrowLeft: [-1, 0],
+      ArrowRight: [1, 0],
+      ArrowUp: [0, -1],
+      ArrowDown: [0, 1],
+    };
+    const vector = keyMap[event.key];
+    if (!vector) {
+      return;
+    }
+
+    event.preventDefault();
+    const step = event.shiftKey ? 1 : event.altKey ? 0.05 : 0.25;
+    const [xDir, yDir] = vector;
+    setHotspotPolygonPoint(state.selectedPointIndex, {
+      x: point.x + xDir * step,
+      y: point.y + yDir * step,
+    });
+    renderAll(true);
+    return;
+  }
+
+  if (state.selectedLayer === "walkable") {
+    const point = selectedWalkablePoint();
+    if (!point) {
+      return;
+    }
+
+    if (event.key === "Delete" || event.key === "Backspace") {
+      event.preventDefault();
+      deleteWalkablePoint();
+      return;
+    }
+
+    const keyMap = {
+      ArrowLeft: [-1, 0],
+      ArrowRight: [1, 0],
+      ArrowUp: [0, -1],
+      ArrowDown: [0, 1],
+    };
+    const vector = keyMap[event.key];
+    if (!vector) {
+      return;
+    }
+
+    event.preventDefault();
+    const step = event.shiftKey ? 1 : event.altKey ? 0.05 : 0.25;
+    const [xDir, yDir] = vector;
+    setWalkablePoint(state.selectedPointIndex, {
+      x: point.x + xDir * step,
+      y: point.y + yDir * step,
+    });
+    renderAll(true);
+    return;
+  }
+
+  const hotspot = selectedHotspot();
+  if (!hotspot) {
+    return;
+  }
+
+  const keyMap = {
+    ArrowLeft: [-1, 0],
+    ArrowRight: [1, 0],
+    ArrowUp: [0, -1],
+    ArrowDown: [0, 1],
+  };
+  const vector = keyMap[event.key];
+  if (!vector) {
+    return;
+  }
+
+  event.preventDefault();
+  const step = event.shiftKey ? 1 : event.altKey ? 0.05 : 0.25;
+  const [xDir, yDir] = vector;
+  const next = { ...hotspot.pct };
+
+  if (event.ctrlKey || event.metaKey) {
+    next.w += xDir * step;
+    next.h += yDir * step;
+  } else {
+    next.x += xDir * step;
+    next.y += yDir * step;
+  }
+
+  setPct(hotspot, next);
+  renderAll(true);
+}
+
+el.sceneSelect.addEventListener("change", () => {
+  state.sceneIndex = Number(el.sceneSelect.value);
+  state.selectedIndex = 0;
+  state.selectedPointIndex = 0;
+  state.selectedLayer = "hotspot";
+  loadSceneImage(scene());
+  renderAll();
+});
+
+el.editWalkableButton.addEventListener("click", () => {
+  state.selectedLayer = "walkable";
+  if (ensureWalkable().length === 0) {
+    addWalkablePoint();
+    return;
+  }
+  renderAll(true);
+  el.sceneFrame.focus({ preventScroll: true });
+});
+el.addWalkablePointButton.addEventListener("click", () => addWalkablePoint());
+el.deleteWalkablePointButton.addEventListener("click", () => deleteWalkablePoint());
+el.resetWalkableButton.addEventListener("click", () => resetWalkablePolygon());
+el.clearWalkableButton.addEventListener("click", () => clearWalkablePolygon());
+el.addHotspotButton.addEventListener("click", () => addDraftHotspot());
+el.applyDefinitionsButton.addEventListener("click", () => applyDefinitions());
+el.exportMode.addEventListener("change", renderExport);
+el.refreshExportButton.addEventListener("click", renderExport);
+el.copyExportButton.addEventListener("click", (event) => copyText(el.exportText.value, event.currentTarget));
+el.copySceneButton.addEventListener("click", (event) => copyText(sceneExport(scene()), event.currentTarget));
+el.copyAllButton.addEventListener("click", (event) => copyText(allExport(), event.currentTarget));
+document.addEventListener("keydown", onKeyDown);
+
+renderSceneSelect();
+loadSceneImage(scene());
+renderAll();
+</script>
+</body>
+</html>

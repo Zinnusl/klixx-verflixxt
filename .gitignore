@@ -1,0 +1,27 @@
+# Rust build output
+/target/
+
+# Trunk/GitHub Pages build output
+/web/dist/
+
+# Local scratch and test artifacts
+/tmp/
+/test-results/
+
+# Python helper caches
+__pycache__/
+*.py[cod]
+
+# Logs and local process output
+*.log
+
+# OS and editor metadata
+.DS_Store
+._*
+*~
+.swp
+.swo
+
+# Local environment files
+.env
+.env.*
