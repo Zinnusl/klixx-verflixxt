@@ -98,16 +98,3 @@ Download:
 ```bash
 ./scripts/klixx_video_rooms.py download --limit 0 --dry-run
 ```
-
-## Fanprojekt-Grenzen
-
-Das Projekt sollte eigene Platzhaltergrafik und eigene Texte verwenden, solange
-keine Erlaubnis für offizielle Assets vorliegt. Die Mechaniken und Rituale der
-Sendung können aufgegriffen werden; Logos, Clips, Musik und echte
-Personenabbildungen sollten vor einer öffentlichen Veröffentlichung geklärt
-werden.
-
-Die Bürogebäude-Nachbildung basiert nur auf öffentlich auffindbaren Angaben:
-Adresse, Führungsbeschreibung und Presseberichte über Gebäudeteile, Räume,
-Regie-/Servertechnik und Kabelwege. Sie ist eine stilisierte Fan-Rekonstruktion,
-kein offizieller Grundriss.
