@@ -4,7 +4,7 @@ use macroquad::miniquad::conf::{Platform, WebGLVersion};
 use macroquad::prelude::*;
 use serde::{Deserialize, Serialize};
 
-const SAVE_KEY: &str = "klixx_rust_save_v10_consequence_routes";
+const SAVE_KEY: &str = "klixx_rust_save_v11_archive_case";
 const VW: f32 = 1280.0;
 const VH: f32 = 720.0;
 const INVENTORY_X: f32 = 540.0;
@@ -15,6 +15,8 @@ const INVENTORY_COLUMNS: usize = 9;
 const PLAYER_DRAW_W: f32 = 180.0;
 const PLAYER_DRAW_H: f32 = 240.0;
 const PLAYER_FOOT_ANCHOR_Y: f32 = 0.97;
+const PLAYER_DEPTH_MIN_SCALE: f32 = 0.68;
+const PLAYER_DEPTH_MAX_SCALE: f32 = 1.0;
 
 #[allow(dead_code)]
 #[derive(Clone, Copy, Debug, PartialEq, Eq, Serialize, Deserialize)]
@@ -84,7 +86,7 @@ impl Default for GameState {
             inventory: Vec::new(),
             flags: HashSet::new(),
             log: vec![
-                "Ein Host ist nach dem Öffnen eines Videoeintrags nicht mehr erreichbar. Die Regie dokumentiert den letzten sichtbaren Frame und prüft begehbare Bereiche."
+                "Fall 000 ist offen: Ein Host ist in einem geöffneten Klixx-Frame verschwunden. Die Regie braucht stabile Gegenwart, Stadtzeit und Clip-Anker, bevor der Rettungslauf starten kann."
                     .to_string(),
             ],
             complete: false,
@@ -248,8 +250,8 @@ const STUDIO_HOTSPOTS: &[HotspotSpec] = &[
         name: "Büroflur",
         pct: pct(5.43, 25.47, 6.09, 42.92),
         kind: HotspotKind::Exit,
-        look: "Die Tür zum Büroflur steht offen.",
-        inspect: "Im Flur hängen Tagesplan, Raumbelegung und Materiallisten.",
+        look: "Die Tür zum Büroflur steht offen. Dahinter hängt die Falltafel, viel zu ordentlich für einen verschwundenen Host.",
+        inspect: "Im Flur hängen Tagesplan, Raumbelegung und die erste Chronologie von Folge 000.",
         talk_id: None,
     },
     HotspotSpec {
@@ -257,8 +259,8 @@ const STUDIO_HOTSPOTS: &[HotspotSpec] = &[
         name: "Regie",
         pct: pct(94.43, 26.61, 4.85, 51.83),
         kind: HotspotKind::Exit,
-        look: "Hinter der Scheibe liegt die Regie mit Monitorwand und Grafikplatz.",
-        inspect: "Dort laufen Bild, Ton und Grafik zusammen. Die Signalroute muss eindeutig beschriftet sein.",
+        look: "Hinter der Scheibe liegt die Regie. Auf der Monitorwand wartet ein Standbild, das zu tief wirkt.",
+        inspect: "Dort laufen Bild, Ton, Grafik und der geöffnete Archivframe zusammen. Die Signalroute muss eindeutig beschriftet sein.",
         talk_id: None,
     },
     HotspotSpec {
@@ -266,8 +268,8 @@ const STUDIO_HOTSPOTS: &[HotspotSpec] = &[
         name: "Greenscreen-Fläche",
         pct: pct(38.65, 16.75, 32.76, 47.22),
         kind: HotspotKind::Prop,
-        look: "Die grüne Fläche füllt den hinteren Teil des Studios.",
-        inspect: "Der Stoff ist sauber gespannt. Für die Probe fehlen neue Bodenmarken.",
+        look: "Die grüne Fläche füllt den hinteren Teil des Studios. Sie ist weniger Hintergrund als leere Zeit.",
+        inspect: "Der Stoff ist sauber gespannt. Damit der Host zurück in die Gegenwart fallen kann, fehlen neue Bodenmarken.",
         talk_id: None,
     },
     HotspotSpec {
@@ -275,8 +277,8 @@ const STUDIO_HOTSPOTS: &[HotspotSpec] = &[
         name: "Bodenmarken",
         pct: pct(38.87, 63.25, 22.0, 9.0),
         kind: HotspotKind::Prop,
-        look: "Alte Tape-Reste markieren Positionen, die nicht mehr zu diesem Aufbau passen.",
-        inspect: "Für die Probe braucht das Studio klare neue Standpunkte.",
+        look: "Alte Tape-Reste markieren Positionen aus Sendungen, die schon vorbei sein sollten.",
+        inspect: "Für den Rettungslauf braucht das Studio klare Standpunkte. Sonst landet jemand im falschen Take.",
         talk_id: None,
     },
     HotspotSpec {
@@ -284,8 +286,8 @@ const STUDIO_HOTSPOTS: &[HotspotSpec] = &[
         name: "Klixx-Tisch",
         pct: pct(23.54, 51.11, 16.68, 24.39),
         kind: HotspotKind::Prop,
-        look: "Ein schmaler Tisch steht vor der Greenscreen-Fläche.",
-        inspect: "Die Oberfläche ist frei. Die spätere Kameraposition hängt von den Bodenmarken ab.",
+        look: "Ein schmaler Tisch steht vor der Greenscreen-Fläche. Darauf klebt noch ein Zettel: keine Tipps nach der Auflösung.",
+        inspect: "Die Oberfläche ist frei. Die spätere Kameraposition hängt von den Bodenmarken und vom stabilen Frame-Anker ab.",
         talk_id: None,
     },
     HotspotSpec {
@@ -293,8 +295,8 @@ const STUDIO_HOTSPOTS: &[HotspotSpec] = &[
         name: "Chat-Vorschau",
         pct: pct(19.94, 29.56, 4.57, 18.36),
         kind: HotspotKind::Prop,
-        look: "Ein Testmonitor zeigt Platzhalter für Chat und Einblendungen.",
-        inspect: "Die Vorschau enthält noch keine Bauchbinde. Am Grafikplatz fehlt die freigegebene Karte.",
+        look: "Ein Testmonitor zeigt Platzhalter für Chat, Host-Karte und eine merkwürdig selbstsichere Klickzahl.",
+        inspect: "Die Vorschau enthält noch keine Host-Karte. Am Grafikplatz fehlt die freigegebene Karte mit dem richtigen Host-Namen.",
         talk_id: None,
     },
     HotspotSpec {
@@ -302,8 +304,8 @@ const STUDIO_HOTSPOTS: &[HotspotSpec] = &[
         name: "Studiokamera",
         pct: pct(62.34, 41.44, 10.75, 34.69),
         kind: HotspotKind::Prop,
-        look: "Die Kamera ist auf Tisch und Greenscreen eingerichtet.",
-        inspect: "Der Bildausschnitt ist eng. Licht und Standpositionen müssen vor dem Probelauf geprüft werden.",
+        look: "Die Kamera ist auf Tisch und Greenscreen eingerichtet. Ihr Sucher zeigt eine halbe Sekunde Zukunft.",
+        inspect: "Der Bildausschnitt ist eng. Licht, Standpositionen und der Clip-Anker müssen vor dem Rettungslauf geprüft werden.",
         talk_id: None,
     },
     HotspotSpec {
@@ -311,17 +313,17 @@ const STUDIO_HOTSPOTS: &[HotspotSpec] = &[
         name: "Aufnahmeleitung",
         pct: pct(75.74, 37.92, 4.67, 34.25),
         kind: HotspotKind::Character,
-        look: "Die Aufnahmeleitung steht mit Headset und Klemmbrett am Rand des Studios.",
-        inspect: "Sie koordiniert Raumbelegung, Zeitplan und Rückmeldungen aus der Regie.",
+        look: "Die Aufnahmeleitung steht mit Headset, Klemmbrett und dem Gesichtsausdruck einer Person, die gerade Zeitreisen in den Drehplan schreiben musste.",
+        inspect: "Sie koordiniert Raumbelegung, Zeitplan, Rückmeldungen aus der Regie und alles, was nicht offiziell Paradox heißt.",
         talk_id: Some("mentor"),
     },
     HotspotSpec {
         id: "greenscreen_setup",
-        name: "Probelauf-Setup",
+        name: "Rückhol-Setup",
         pct: pct(49.18, 35.89, 23.0, 37.0),
         kind: HotspotKind::Prop,
-        look: "Hier werden Kamera, Greenscreen und Regiesignal für den Probelauf zusammengeführt.",
-        inspect: "Der Probelauf braucht Plan, Bodenmarken, Signalweg, Grafik, Timing und eine Lichtreferenz.",
+        look: "Hier laufen Kamera, Greenscreen und Regiesignal zusammen. Wenn der Host zurückkommt, dann genau hier.",
+        inspect: "Der Rettungslauf braucht Fallakte, Bodenmarken, Signalweg, Grafik, stabilisierten Clip, Timing und eine Lichtreferenz.",
         talk_id: None,
     },
 ];
@@ -342,7 +344,7 @@ const OFFICE_HALL_HOTSPOTS: &[HotspotSpec] = &[
         pct: pct(16.33, 25.78, 6.92, 41.67),
         kind: HotspotKind::Exit,
         look: "Die Studiotür führt zurück zum Greenscreen-Aufbau.",
-        inspect: "Das On-Air-Licht ist aus. Der Raum wartet auf den Probelauf.",
+        inspect: "Das On-Air-Licht ist aus. Der Raum wartet auf den Rettungslauf.",
         talk_id: None,
     },
     HotspotSpec {
@@ -369,16 +371,16 @@ const OFFICE_HALL_HOTSPOTS: &[HotspotSpec] = &[
         pct: pct(73.18, 27.39, 5.92, 37.31),
         kind: HotspotKind::Exit,
         look: "Ein Ausgang führt aus dem Gebäude Richtung Schanzenviertel.",
-        inspect: "Der Laufzettel nennt ein Außenmotiv im Schanzenviertel.",
+        inspect: "Die Fallakte nennt ein Außenmotiv im Schanzenviertel.",
         talk_id: None,
     },
     HotspotSpec {
         id: "dispo_board",
-        name: "Dispo-Board",
+        name: "Falltafel 000",
         pct: pct(24.53, 31.94, 8.02, 22.67),
         kind: HotspotKind::Pickup,
-        look: "Farbcodes, Zeiten und Raumnummern füllen das Dispo-Board.",
-        inspect: "Dein Name steht neben Greenscreen-Probe, Regiecheck und Außenmotiv.",
+        look: "Farbcodes, Zeiten und Raumnummern füllen die Tafel. Ein roter Faden verbindet Regie, Stadt und einen Schimmelbrüder-Frame.",
+        inspect: "Dein Name steht neben Fall 000: Gegenwart markieren, Signal benennen, Stadtzeit sichern, Clip-Anker stabilisieren.",
         talk_id: None,
     },
     HotspotSpec {
@@ -386,8 +388,8 @@ const OFFICE_HALL_HOTSPOTS: &[HotspotSpec] = &[
         name: "Techniklager",
         pct: pct(43.54, 26.25, 13.0, 40.83),
         kind: HotspotKind::Prop,
-        look: "Kamerataschen, Kabel, Mikrofone und Kleinteile stehen griffbereit.",
-        inspect: "Die Fächer sind beschriftet. Für die aktuelle Aufgabe wird hier kein weiteres Material benötigt.",
+        look: "Kamerataschen, Kabel, Mikrofone und Kleinteile stehen griffbereit. Die Schublade für Zeitreisen ist leer beschriftet.",
+        inspect: "Die Fächer sind beschriftet. Für Fall 000 sind nur die vorhandenen Anker relevant, nicht noch mehr Technik.",
         talk_id: None,
     },
     HotspotSpec {
@@ -396,7 +398,7 @@ const OFFICE_HALL_HOTSPOTS: &[HotspotSpec] = &[
         pct: pct(60.8, 13.11, 8.98, 50.06),
         kind: HotspotKind::Prop,
         look: "Eine Treppe hinauf Richtung Morning Call und langes Büro.",
-        inspect: "Die Treppe führt in die Büros. Für den Probelauf ist der Weg nicht relevant.",
+        inspect: "Die Treppe führt in die Büros. Für Fall 000 ist der Weg nicht relevant.",
         talk_id: None,
     },
     HotspotSpec {
@@ -404,8 +406,8 @@ const OFFICE_HALL_HOTSPOTS: &[HotspotSpec] = &[
         name: "Gebäudeplan",
         pct: pct(92.8, 31.69, 6.51, 21.64),
         kind: HotspotKind::Prop,
-        look: "Ein Plan der Häuser 9, 11 und 15.",
-        inspect: "Studio, Serverraum und Szenenbau sind eingezeichnet. Der Außenstandort ist nicht Teil des Gebäudeplans.",
+        look: "Ein Plan der Häuser 9, 11 und 15. Jemand hat eine rote Linie eingezeichnet, dann wieder ausradiert, dann wieder eingezeichnet.",
+        inspect: "Studio, Serverraum und Szenenbau sind eingezeichnet. Der Außenstandort fehlt, als hätte die Stadt erst später in den Fall eingegriffen.",
         talk_id: None,
     },
 ];
@@ -482,8 +484,8 @@ const SERVER_ROOM_HOTSPOTS: &[HotspotSpec] = &[
         name: "Video-Hub",
         pct: pct(41.82, 21.31, 19.34, 49.67),
         kind: HotspotKind::Prop,
-        look: "Die Kreuzschiene verteilt die Signale durch Räume und Studios.",
-        inspect: "Die Route von Nummer 11 ins Studio ist aktiv. Sie braucht ein lesbares Label.",
+        look: "Die Kreuzschiene verteilt Signale durch Räume, Studios und heute leider auch durch offene Frames.",
+        inspect: "Die Route von Nummer 11 ins Studio ist aktiv. Sie braucht ein lesbares Label, damit der Rückweg nicht im Archiv rauscht.",
         talk_id: None,
     },
     HotspotSpec {
@@ -491,9 +493,9 @@ const SERVER_ROOM_HOTSPOTS: &[HotspotSpec] = &[
         name: "80-m-SDI-Rolle",
         pct: pct(70.59, 51.56, 13.15, 23.97),
         kind: HotspotKind::Prop,
-        look: "Eine schwere Rolle SDI-Kabel liegt am Boden.",
+        look: "Eine schwere Rolle SDI-Kabel liegt am Boden. Achtzig Meter Gegenwart auf Plastik gewickelt.",
         inspect:
-            "Die Kabellänge reicht bis ins Studio. Die Strecke muss eindeutig beschriftet werden.",
+            "Die Kabellänge reicht bis ins Studio. Die Strecke muss eindeutig beschriftet werden, bevor jemand ihr blind folgt.",
         talk_id: None,
     },
     HotspotSpec {
@@ -501,8 +503,8 @@ const SERVER_ROOM_HOTSPOTS: &[HotspotSpec] = &[
         name: "Labeldrucker",
         pct: pct(62.8, 41.41, 5.2, 9.53),
         kind: HotspotKind::Pickup,
-        look: "Ein kleiner Labeldrucker steht neben dem Patchfeld.",
-        inspect: "Das vorbereitete Etikett benennt die Greenscreen-Route.",
+        look: "Ein kleiner Labeldrucker steht neben dem Patchfeld und spuckt Etiketten aus, als seien Namen Schutzzauber.",
+        inspect: "Das vorbereitete Etikett benennt die Greenscreen-Route. Ohne Namen ist jedes Kabel nur eine Ausrede.",
         talk_id: None,
     },
 ];
@@ -523,7 +525,7 @@ const SET_WORKSHOP_HOTSPOTS: &[HotspotSpec] = &[
         pct: pct(14.65, 13.39, 24.0, 56.89),
         kind: HotspotKind::Prop,
         look: "Kulissenteile lehnen dicht an der Wand.",
-        inspect: "Die Kulissenteile sind beschriftet und eingelagert. Sie werden für diese Greenscreen-Probe nicht verwendet.",
+        inspect: "Die Kulissenteile sind beschriftet und eingelagert. Für Fall 000 zählt hier nur das Tape.",
         talk_id: None,
     },
     HotspotSpec {
@@ -576,11 +578,11 @@ const CONTROL_ROOM_HOTSPOTS: &[HotspotSpec] = &[
     },
     HotspotSpec {
         id: "rehearsal_monitor",
-        name: "Probenmonitor",
+        name: "Anker-Monitor",
         pct: pct(32.57, 46.47, 3.46, 7.31),
         kind: HotspotKind::Prop,
-        look: "Der Monitor zeigt das Studio und einen leeren Hintergrundkanal.",
-        inspect: "Bild und Ton liegen an. Für den Hintergrund fehlen Grafikdaten und Referenzen.",
+        look: "Der Monitor zeigt das Studio, den leeren Hintergrundkanal und einen Host-Schatten, der immer einen Frame zu spät ist.",
+        inspect: "Bild und Ton liegen an. Für den Rückholpunkt fehlen Grafikdaten, Stadtbezug und der stabile Schimmelbrüder-Frame.",
         talk_id: None,
     },
     HotspotSpec {
@@ -588,8 +590,8 @@ const CONTROL_ROOM_HOTSPOTS: &[HotspotSpec] = &[
         name: "Grafikplatz",
         pct: pct(66.11, 42.47, 12.64, 26.81),
         kind: HotspotKind::Prop,
-        look: "Der Grafikplatz ist für Bauchbinden und Einblendungen vorbereitet.",
-        inspect: "Im System ist ein leerer Platzhalter. Die freigegebene Bauchbindenkarte fehlt.",
+        look: "Der Grafikplatz ist für Host-Karten, Einblendungen und die Identität des vermissten Hosts vorbereitet.",
+        inspect: "Im System ist ein leerer Platzhalter. Die freigegebene Karte fehlt, und ohne Namen findet der Frame niemanden.",
         talk_id: None,
     },
     HotspotSpec {
@@ -598,7 +600,7 @@ const CONTROL_ROOM_HOTSPOTS: &[HotspotSpec] = &[
         pct: pct(56.29, 43.81, 6.9, 16.53),
         kind: HotspotKind::Character,
         look: "Eine Stimme aus der Gegensprechanlage.",
-        inspect: "Die Gegensprechanlage ist offen. Die Regie wartet auf den vollständigen Probelauf.",
+        inspect: "Die Gegensprechanlage ist offen. Die Regie wartet auf den vollständigen Rettungslauf.",
         talk_id: Some("mentor"),
     },
     HotspotSpec {
@@ -611,78 +613,39 @@ const CONTROL_ROOM_HOTSPOTS: &[HotspotSpec] = &[
         talk_id: None,
     },
     HotspotSpec {
-        id: "video_kliemannsland_road",
-        name: "Straßenvideo",
-        pct: pct(67.84, 15.17, 10.98, 16.69),
-        kind: HotspotKind::Exit,
-        look: "Ein Monitor zeigt einen Straßenframe aus dem Videoarchiv.",
-        inspect: "Der Frame enthält eine erkennbare Standfläche. Er kann als begehbarer Videoraum geöffnet werden.",
-        talk_id: None,
-    },
-    HotspotSpec {
         id: "video_schimmelbrueder",
-        name: "Schimmelbrüder-Video",
+        name: "Schimmelbrüder-Frame",
         pct: pct(63.58, 33.36, 3.9, 7.94),
         kind: HotspotKind::Exit,
-        look: "Ein Monitor zeigt eine Fertigungshalle mit langen Formenreihen.",
-        inspect: "Der Frame enthält Hallenboden, Gussformen und eine markante Musterbahn. Die Figur kann dort stehen.",
+        look: "Der Monitor zeigt eine Fertigungshalle aus dem Schimmelbrüder-Video. Das Standbild flackert nicht wie eine Aufnahme, sondern wie ein Datum.",
+        inspect: "Die Regie kann diesen Frame öffnen. Die Figur muss hinein, weil der Host-Echo dort an Musterbahn und Frame-Probe hängt.",
         talk_id: None,
     },
-];
-
-const VIDEO_ROAD_HOTSPOTS: &[HotspotSpec] = &[
     HotspotSpec {
-        id: "control_room",
-        name: "Zurück zur Regie",
-        pct: pct(3.0, 62.0, 10.0, 25.0),
+        id: "video_icemachine",
+        name: "Eismaschinen-Frame",
+        pct: pct(68.2, 33.36, 3.9, 7.94),
         kind: HotspotKind::Exit,
-        look: "Der Rückweg zur Regie liegt am linken Bildrand.",
-        inspect: "Die Verbindung zur Regie ist aktiv.",
+        look: "Ein Archivmonitor zeigt die Eismaschine aus dem Feedback-Video. Der Raum wirkt geputzt, aber noch nicht abgeschlossen.",
+        inspect: "Der Frame ist als neuer Videoraum markiert. Die Auswahlnotiz sagt: nicht wirklich begehbar, eher ein sauberer Inspektionsraum.",
         talk_id: None,
     },
     HotspotSpec {
-        id: "walkable_lane",
-        name: "Standspur",
-        pct: pct(49.0, 73.0, 24.0, 18.0),
+        id: "video_brassband",
+        name: "Band-Frame",
+        pct: pct(72.82, 33.36, 3.9, 7.94),
+        kind: HotspotKind::Exit,
+        look: "Ein weiterer Monitor hält eine Band mitten im Spielen fest. Das Standbild hat mehr Publikum im Ton als im Bild.",
+        inspect: "Dieser Frame ist als begehbarer Videoraum freigegeben. Die Instrumente sollten genug Szene haben, um darin zu stöbern.",
+        talk_id: None,
+    },
+    HotspotSpec {
+        id: "mixing_console",
+        name: "Mischpult",
+        pct: pct(82.71, 43.58, 17.11, 22.39),
         kind: HotspotKind::Prop,
-        look: "Am Straßenrand liegt eine helle, begehbare Spur.",
-        inspect: "Die Spur ist breit genug für die Figur und führt bis zur rechten Fahrspur.",
-        talk_id: None,
-    },
-    HotspotSpec {
-        id: "road_marker",
-        name: "Routenmarker",
-        pct: pct(36.0, 56.0, 11.0, 23.0),
-        kind: HotspotKind::Pickup,
-        look: "Ein Marker liegt auf der begehbaren Spur.",
-        inspect: "Der Marker ist dem Straßenframe zugeordnet und kann als Referenz für den Ausgang dienen.",
-        talk_id: None,
-    },
-    HotspotSpec {
-        id: "traffic_totem",
-        name: "Markierungsgruppe",
-        pct: pct(43.0, 35.0, 18.0, 37.0),
-        kind: HotspotKind::Prop,
-        look: "Mehrere rot-weiße Markierungen stehen entlang der Fahrspur.",
-        inspect: "Die Markierungen ordnen den Frame nach Vordergrund, Mittelgrund und Hintergrund.",
-        talk_id: None,
-    },
-    HotspotSpec {
-        id: "archive_exit_sign",
-        name: "Ausfahrtschild",
-        pct: pct(72.0, 48.0, 16.0, 24.0),
-        kind: HotspotKind::Prop,
-        look: "Ein dunkles Schild liegt über der rechten Fahrspur.",
-        inspect: "Der Ausgang ist an den Marker aus diesem Straßenframe gekoppelt.",
-        talk_id: None,
-    },
-    HotspotSpec {
-        id: "distant_gate",
-        name: "Straßenende",
-        pct: pct(83.0, 39.0, 12.0, 30.0),
-        kind: HotspotKind::Prop,
-        look: "Am rechten Bildrand endet die begehbare Straßenfläche.",
-        inspect: "Der Anschluss zum nächsten Clip ist noch gesperrt.",
+        look: "Das Mischpult füllt den rechten Regieplatz. Die Fader stehen wie eine kleine Stadt aus Schiebereglern.",
+        inspect: "Ton, Talkback und Archivkanal liegen hier an. Für Fall 000 ist wichtig: Der geöffnete Frame darf nicht auf den Studio-Rückweg gemischt werden.",
         talk_id: None,
     },
 ];
@@ -702,8 +665,8 @@ const VIDEO_SCHIMMEL_HOTSPOTS: &[HotspotSpec] = &[
         name: "Gießtisch",
         pct: pct(6.18, 12.56, 12.9, 40.64),
         kind: HotspotKind::Prop,
-        look: "Eine lange Arbeitsfläche zieht sich in den linken Bildrand.",
-        inspect: "Die roten Markierungen kennzeichnen wiederkehrende Arbeitsschritte an der Gusslinie.",
+        look: "Eine lange Arbeitsfläche zieht sich in den linken Bildrand. Jeder Fleck wirkt wie ein Standbild aus einem anderen Versuch.",
+        inspect: "Die roten Markierungen kennzeichnen wiederkehrende Arbeitsschritte an der Gusslinie. Nichts daran ist freundlich zu Fingern.",
         talk_id: None,
     },
     HotspotSpec {
@@ -711,8 +674,8 @@ const VIDEO_SCHIMMEL_HOTSPOTS: &[HotspotSpec] = &[
         name: "Formenreihe",
         pct: pct(19.61, 27.44, 21.06, 39.05),
         kind: HotspotKind::Prop,
-        look: "Mehrere runde Formen stehen in zwei Reihen.",
-        inspect: "Die Formen unterscheiden sich in Füllstand und Helligkeit. Die Reihenfolge läuft von links nach rechts.",
+        look: "Mehrere runde Formen stehen in zwei Reihen. In einer spiegelt sich kurz das Studio, obwohl es hier nicht sein kann.",
+        inspect: "Die Formen unterscheiden sich in Füllstand und Helligkeit. Die Reihenfolge läuft von links nach rechts: leer, voll, leer, voll.",
         talk_id: None,
     },
     HotspotSpec {
@@ -720,17 +683,17 @@ const VIDEO_SCHIMMEL_HOTSPOTS: &[HotspotSpec] = &[
         name: "Musterbahn",
         pct: pct(55.0, 17.0, 31.0, 42.0),
         kind: HotspotKind::Prop,
-        look: "Auf der rechten Bahn liegt ein helles Zickzackmuster.",
-        inspect: "Das Muster entspricht der Reihenfolge der Formen: leer, voll, leer, voll.",
+        look: "Auf der rechten Bahn liegt ein helles Zickzackmuster. Es sieht weniger gedruckt als gespeichert aus.",
+        inspect: "Das Muster entspricht der Reihenfolge der Formen: leer, voll, leer, voll. Der Ausgang akzeptiert nur diese saubere Zuordnung.",
         talk_id: None,
     },
     HotspotSpec {
         id: "mold_token",
-        name: "Formprobe",
+        name: "Frame-Probe",
         pct: pct(41.3, 80.56, 8.97, 13.22),
         kind: HotspotKind::Pickup,
-        look: "Ein einzelnes helles Stück liegt am Rand der Gusslinie.",
-        inspect: "Die Probe ist ein bewegliches Teil aus der Formenreihe und kann mitgenommen werden.",
+        look: "Ein einzelnes helles Stück liegt am Rand der Gusslinie. Es hält die Form, aber nicht ganz die Gegenwart.",
+        inspect: "Die Probe ist ein bewegliches Teil aus der Formenreihe. Sie trägt genug Materialspur, um den Host-Echo am Ausgang zu kalibrieren.",
         talk_id: None,
     },
     HotspotSpec {
@@ -738,8 +701,8 @@ const VIDEO_SCHIMMEL_HOTSPOTS: &[HotspotSpec] = &[
         name: "Clip-Ausgang",
         pct: pct(86.48, 29.36, 13.35, 53.11),
         kind: HotspotKind::Prop,
-        look: "Am rechten Rand liegt der Ausgang aus dem geöffneten Clip.",
-        inspect: "Der Ausgang ist mit der Musterbahn und der Formprobe verknüpft.",
+        look: "Am rechten Rand liegt der Ausgang aus dem geöffneten Clip. Dahinter ist nicht schwarz, sondern Regielicht.",
+        inspect: "Der Ausgang ist mit der Musterbahn und der Frame-Probe verknüpft. Ohne Zuordnung bleibt er nur ein Schnitt.",
         talk_id: None,
     },
     HotspotSpec {
@@ -747,65 +710,95 @@ const VIDEO_SCHIMMEL_HOTSPOTS: &[HotspotSpec] = &[
         name: "Hallenboden",
         pct: pct(7.57, 66.0, 79.24, 34.0),
         kind: HotspotKind::Prop,
-        look: "Der Hallenboden ist zwischen Formenreihe und Musterbahn begehbar.",
-        inspect: "Der Frame enthält eine durchgehende Standfläche vor der Formenreihe.",
+        look: "Der Hallenboden ist zwischen Formenreihe und Musterbahn begehbar. Jeder Schritt klingt leicht zeitversetzt.",
+        inspect: "Der Frame enthält eine durchgehende Standfläche vor der Formenreihe. Gut: Man kann darin gehen. Schlecht: Man kann darin bleiben.",
         talk_id: None,
     },
 ];
 
-const VIDEO_SEWER_HOTSPOTS: &[HotspotSpec] = &[
+const VIDEO_ICEMACHINE_HOTSPOTS: &[HotspotSpec] = &[
     HotspotSpec {
         id: "control_room",
         name: "Zurück zur Regie",
-        pct: pct(4.0, 65.0, 10.0, 22.0),
+        pct: pct(3.31, 17.11, 6.67, 46.22),
         kind: HotspotKind::Exit,
-        look: "Der Rückweg zur Regie liegt am linken unteren Bildrand.",
-        inspect: "Die Verbindung zur Regie ist aktiv.",
+        look: "Links bleibt die Rückverbindung zur Regie offen.",
+        inspect: "Der Videoraum ist nur als Standbild stabil. Ein Schritt zurück führt wieder auf die Monitore.",
         talk_id: None,
     },
     HotspotSpec {
-        id: "archive_hatch",
-        name: "Archivluke",
-        pct: pct(72.0, 40.0, 13.0, 32.0),
+        id: "ice_machine",
+        name: "Eismaschine",
+        pct: pct(51.02, 8.53, 19.4, 64.31),
         kind: HotspotKind::Prop,
-        look: "Eine runde Luke sitzt in der Rohrwand.",
-        inspect: "Die Luke ist mit einem Timecode-Schloss versehen.",
+        look: "Die Eismaschine steht im Zentrum des Frames, halb Gerät, halb Verdächtige.",
+        inspect: "Jede gereinigte Kante glänzt minimal anders. Hier wurde nicht nur sauber gemacht, sondern ein Zustand eingefroren.",
         talk_id: None,
     },
     HotspotSpec {
-        id: "flow_arrow",
-        name: "Flusspfeil",
-        pct: pct(42.0, 73.0, 13.0, 8.0),
+        id: "cleaning_bucket",
+        name: "Reinigungseimer",
+        pct: pct(11.84, 49.22, 12.48, 28.06),
         kind: HotspotKind::Prop,
-        look: "Ein Pfeil ist auf dem Boden markiert.",
-        inspect: "Die Pfeilrichtung definiert die Reihenfolge: Zulauf, Ablauf, Gegenlauf.",
+        look: "Ein Eimer mit Putzzeug steht im unteren Bildbereich.",
+        inspect: "Die Mittel riechen scharf genug, um jeden Kommentar aus dem Clip zu lösen.",
         talk_id: None,
     },
     HotspotSpec {
-        id: "inspection_tripod",
-        name: "Inspektionsstativ",
-        pct: pct(19.0, 44.0, 11.0, 34.0),
+        id: "service_counter",
+        name: "Arbeitsfläche",
+        pct: pct(64.38, 39.83, 35.62, 17.89),
         kind: HotspotKind::Prop,
-        look: "Ein Inspektionsstativ steht am linken Rand.",
-        inspect: "Die Optik ist auf die Luke ausgerichtet.",
+        look: "Die Arbeitsfläche sammelt Lappen, Schalen und ein paar sehr praktische Schatten.",
+        inspect: "Auf der Fläche liegen keine Schlüssel, aber klare Hinweise auf eine wiederholte Reinigungsszene.",
+        talk_id: None,
+    },
+];
+
+const VIDEO_BRASSBAND_HOTSPOTS: &[HotspotSpec] = &[
+    HotspotSpec {
+        id: "control_room",
+        name: "Zurück zur Regie",
+        pct: pct(4.17, 19.59, 7.85, 45.08),
+        kind: HotspotKind::Exit,
+        look: "Am linken Rand bleibt der Schnitt zurück in die Regie sichtbar.",
+        inspect: "Der Ausgang hängt wie ein stiller Taktstrich am Bildrand.",
         talk_id: None,
     },
     HotspotSpec {
-        id: "wet_note",
-        name: "Nasser Zettel",
-        pct: pct(58.5, 80.0, 5.5, 5.5),
-        kind: HotspotKind::Pickup,
-        look: "Ein Stück Papier klebt im Schmutzwasser.",
-        inspect: "Die Tinte ist verlaufen. Nur ein Timecode und drei Pfeile sind noch lesbar.",
+        id: "brass_players",
+        name: "Bläsergruppe",
+        pct: pct(39.74, 32.17, 41.55, 34.53),
+        kind: HotspotKind::Character,
+        look: "Die Band steht mitten im Einsatz. Niemand bewegt sich, aber die Haltung sieht nach dem nächsten Takt aus.",
+        inspect: "Man kann fast erkennen, wer gerade Luft holt und wer nur so tut.",
         talk_id: None,
     },
     HotspotSpec {
-        id: "lost_signal",
-        name: "Fehlender Bildbereich",
-        pct: pct(43.0, 20.0, 22.0, 32.0),
+        id: "tuba_bell",
+        name: "Tuba",
+        pct: pct(57.84, 25.61, 5.8, 21.53),
         kind: HotspotKind::Prop,
-        look: "In der Bildmitte fehlt ein Teil des Videoframes.",
-        inspect: "Der fehlende Bereich verweist auf einen nicht geladenen Frame im Archiv.",
+        look: "Der Trichter der Tuba fängt Licht wie ein zweiter Monitor.",
+        inspect: "In der Spiegelung liegt ein Stück Regieblau. Der Frame ist also nicht ganz von hier.",
+        talk_id: None,
+    },
+    HotspotSpec {
+        id: "music_stand",
+        name: "Notenständer",
+        pct: pct(45.48, 46.92, 4.51, 20.33),
+        kind: HotspotKind::Prop,
+        look: "Ein Notenständer hält den Ablauf, auch wenn der Clip selbst pausiert.",
+        inspect: "Die Noten sehen eher wie Schnittmarken aus: kurz, kurz, lang, Ausgang.",
+        talk_id: None,
+    },
+    HotspotSpec {
+        id: "stage_floor",
+        name: "Bodenmarke",
+        pct: pct(4.27, 79.03, 72.0, 18.0),
+        kind: HotspotKind::Prop,
+        look: "Der Boden vor der Band ist frei genug für ein paar vorsichtige Schritte.",
+        inspect: "Die freie Fläche trägt keine Kabel, aber eine klare Standposition für die Figur.",
         talk_id: None,
     },
 ];
@@ -826,7 +819,7 @@ const SCHANZENSTRASSE_HOTSPOTS: &[HotspotSpec] = &[
         pct: pct(73.14, 31.94, 26.86, 39.17),
         kind: HotspotKind::Exit,
         look: "Die Straße führt weiter zum Bahnhof Sternschanze.",
-        inspect: "Die Bahnhofsuhr kann als Zeitreferenz für den Probelauf dienen.",
+        inspect: "Die Bahnhofsuhr kann als Zeitreferenz für den Rettungslauf dienen.",
         talk_id: None,
     },
     HotspotSpec {
@@ -835,13 +828,13 @@ const SCHANZENSTRASSE_HOTSPOTS: &[HotspotSpec] = &[
         pct: pct(37.38, 27.78, 14.0, 42.92),
         kind: HotspotKind::Exit,
         look: "Ein Abzweig führt Richtung Karoviertel.",
-        inspect: "Der Laufzettel nennt dort eine Druckfreigabe.",
+        inspect: "Die Fallakte nennt dort eine Druckfreigabe.",
         talk_id: None,
     },
     HotspotSpec {
         id: "street_mural",
         name: "Wandbild",
-        pct: pct(12.47, 4.28, 20.47, 56.33),
+        pct: pct(12.52, 4.28, 20.47, 53.55),
         kind: HotspotKind::Prop,
         look: "Ein Wandbild bedeckt die Ecke.",
         inspect: "Die Farbfläche ist für die aktuelle Greenscreen-Referenz nicht vorgesehen.",
@@ -852,8 +845,8 @@ const SCHANZENSTRASSE_HOTSPOTS: &[HotspotSpec] = &[
         name: "Kiosk",
         pct: pct(58.48, 41.11, 11.0, 20.56),
         kind: HotspotKind::Prop,
-        look: "Ein Kiosk steht an der Kreuzung.",
-        inspect: "Der Kiosk ist geschlossen und für den Probelauf nicht relevant.",
+        look: "Ein Kiosk steht an der Kreuzung. Die Auslage besteht aus Kaffee, Klebeband und sehr entschlossenen Preisschildern.",
+        inspect: "Durch das Seitenfenster hängt eine Rolle Transparentband halb aus dem Spender.",
         talk_id: None,
     },
     HotspotSpec {
@@ -862,7 +855,7 @@ const SCHANZENSTRASSE_HOTSPOTS: &[HotspotSpec] = &[
         pct: pct(32.73, 31.86, 3.05, 12.25),
         kind: HotspotKind::Prop,
         look: "Ein schmaler Aushang klebt am Laternenmast.",
-        inspect: "Der Aushang nennt Timing, Grafikfreigabe und Lichtreferenz.",
+        inspect: "Der Aushang nennt Bahnhofsuhr, Wasserturmlicht und ein reflektierendes Kofferschild am Durchgang.",
         talk_id: None,
     },
 ];
@@ -891,8 +884,8 @@ const STATION_HOTSPOTS: &[HotspotSpec] = &[
         name: "Bahnhofsuhr",
         pct: pct(41.8, 22.44, 4.19, 12.17),
         kind: HotspotKind::Prop,
-        look: "Die Bahnhofsuhr hängt über dem Durchgang.",
-        inspect: "Die Uhr liefert eine eindeutige Zeitmarke für die Außenreferenz.",
+        look: "Die Bahnhofsuhr hängt über dem Durchgang. Sie ist das unromantischste Zeitportal Hamburgs.",
+        inspect: "Die Uhr liefert eine eindeutige Zeitmarke für die Außenreferenz. Der Host braucht eine Minute, die nicht diskutiert.",
         talk_id: None,
     },
     HotspotSpec {
@@ -902,7 +895,7 @@ const STATION_HOTSPOTS: &[HotspotSpec] = &[
         kind: HotspotKind::Prop,
         look: "Ein Schild weist zum Bahnsteig.",
         inspect:
-            "Das Schild bestätigt die Richtung zum Bahnsteig. Für den Probelauf wird nur die Uhr benötigt.",
+            "Das Schild bestätigt die Richtung zum Bahnsteig. Für Fall 000 wird nur die Uhr benötigt.",
         talk_id: None,
     },
     HotspotSpec {
@@ -910,10 +903,19 @@ const STATION_HOTSPOTS: &[HotspotSpec] = &[
         name: "Straßenmusiker-Koffer",
         pct: pct(31.07, 57.42, 7.21, 17.33),
         kind: HotspotKind::Character,
-        look: "Ein offener Koffer liegt vor einem Straßenmusiker.",
+        look: "Ein offener Koffer liegt vor einem Straßenmusiker. Eine Reflexfolie hält das Spendenschild sichtbar und wirft Regielicht in die falsche Richtung.",
         inspect:
-            "Der Musiker steht am Durchgang. Er kennt die Wege zwischen Bahnhof und Park.",
+            "Der Musiker steht am Durchgang. Wer seinen Reflektor will, muss erst beweisen, dass diese Rettungsaktion nicht nur eine sehr komplizierte Ausrede ist.",
         talk_id: Some("busker"),
+    },
+    HotspotSpec {
+        id: "public_phone",
+        name: "Öffentliches Telefon",
+        pct: pct(70.45, 52.89, 2.27, 12.25),
+        kind: HotspotKind::Prop,
+        look: "Ein öffentliches Telefon hängt am Rand des Durchgangs, als hätte jemand vergessen, ihm mitzuteilen, welches Jahrzehnt gerade ist.",
+        inspect: "Der Hörer ist kalt, die Leitung tot. Als Stadtzeit-Anker taugt es weniger als die Bahnhofsuhr.",
+        talk_id: None,
     },
 ];
 
@@ -941,9 +943,9 @@ const PARK_HOTSPOTS: &[HotspotSpec] = &[
         name: "Wasserturm",
         pct: pct(36.46, 6.61, 10.31, 48.36),
         kind: HotspotKind::Prop,
-        look: "Der Wasserturm steht oberhalb des Parks.",
+        look: "Der Wasserturm steht oberhalb des Parks. Sein Backstein hält das Abendlicht wie ein Farbfeld.",
         inspect:
-            "Die Backsteinfläche liefert eine klare Lichtreferenz für den Greenscreen-Hintergrund.",
+            "Die Backsteinfläche liefert eine klare Lichtreferenz für den Greenscreen-Hintergrund und damit einen zweiten Anker in der Gegenwart.",
         talk_id: None,
     },
     HotspotSpec {
@@ -951,8 +953,8 @@ const PARK_HOTSPOTS: &[HotspotSpec] = &[
         name: "Lichtreflektor",
         pct: pct(64.37, 62.22, 5.53, 13.64),
         kind: HotspotKind::Pickup,
-        look: "Ein kleiner Reflektor liegt neben dem Weg.",
-        inspect: "Der Reflektor kann die Lichtreferenz für das Studio übernehmen.",
+        look: "Ein kleiner Reflektor liegt neben dem Weg. Er sieht mobil aus, bis die Schrauben ihre Meinung äußern.",
+        inspect: "Er ist festgeschraubt. Der brauchbare mobile Reflektor hängt am Koffer des Straßenmusikers.",
         talk_id: None,
     },
     HotspotSpec {
@@ -981,8 +983,8 @@ const KARO_HOTSPOTS: &[HotspotSpec] = &[
         name: "Copyshop",
         pct: pct(31.78, 17.03, 21.01, 47.64),
         kind: HotspotKind::Pickup,
-        look: "Im Copyshop liegen Farbfächer und frisch geschnittene Karten.",
-        inspect: "Eine freigegebene Karte für die Bauchbinde liegt am Tresen.",
+        look: "Im Copyshop liegen Farbfächer, frisch geschnittene Karten und ein Laminiergerät mit zu viel Selbstvertrauen.",
+        inspect: "Eine freigegebene Host-Karte liegt am Tresen. Der gleiche Tresen kann ein Kofferschild drucken, wenn der Wortlaut stimmt.",
         talk_id: None,
     },
     HotspotSpec {
@@ -991,7 +993,7 @@ const KARO_HOTSPOTS: &[HotspotSpec] = &[
         pct: pct(65.62, 29.06, 18.86, 36.5),
         kind: HotspotKind::Prop,
         look: "Ein kleiner Laden mit Plakaten im Fenster.",
-        inspect: "Der Laden ist nicht Teil des aktuellen Laufzettels.",
+        inspect: "Im Fenster steht: Kein Ankauf von Ideen, die nur fast eine Platte sind.",
         talk_id: None,
     },
     HotspotSpec {
@@ -999,8 +1001,8 @@ const KARO_HOTSPOTS: &[HotspotSpec] = &[
         name: "Marktkisten",
         pct: pct(16.34, 59.78, 14.0, 16.25),
         kind: HotspotKind::Prop,
-        look: "Kisten und Kartons stehen am Rand des Gehwegs.",
-        inspect: "Die Kisten gehören zu einem anderen Geschäft und sind nicht relevant.",
+        look: "Kisten und Kartons stehen am Rand des Gehwegs. Eine davon wirkt, als hätte sie auf einen Nebenquest gewartet.",
+        inspect: "Ein Stück Karton ist stabil genug für ein provisorisches Schild.",
         talk_id: None,
     },
 ];
@@ -1027,7 +1029,7 @@ const HOSPITAL_HOTSPOTS: &[HotspotSpec] = &[
     HotspotSpec {
         id: "nurse_station",
         name: "Pflegekraft",
-        pct: pct(52.8, 17.0, 11.0, 70.0),
+        pct: pct(67.34, 35.39, 11.68, 36.11),
         kind: HotspotKind::Character,
         look: "Die Pflegekraft prüft Akte und Monitor.",
         inspect: "Sie wartet auf klare Werte und eine sachliche Erklärung.",
@@ -1045,7 +1047,7 @@ const HOSPITAL_HOTSPOTS: &[HotspotSpec] = &[
     HotspotSpec {
         id: "hospital_exit",
         name: "Korridortür",
-        pct: pct(91.44, 1.08, 6.45, 80.67),
+        pct: pct(86.98, 0.11, 6.02, 70.81),
         kind: HotspotKind::Prop,
         look: "Die Tür führt in den Krankenhauskorridor.",
         inspect: "Ohne Entlassungsbogen endet der Weg an der Stationsschleuse.",
@@ -1057,7 +1059,7 @@ const SPRINKLER_COURTYARD_HOTSPOTS: &[HotspotSpec] = &[
     HotspotSpec {
         id: "alarm_panel",
         name: "Alarmfeld",
-        pct: pct(40.37, 22.5, 4.42, 18.03),
+        pct: pct(38.06, 20.83, 4.42, 18.03),
         kind: HotspotKind::Prop,
         look: "Das Alarmfeld protokolliert den Sprinklerlauf.",
         inspect: "Der ausgelöste Kreis muss bestätigt werden, bevor jemand zurück in den Bau darf.",
@@ -1066,7 +1068,7 @@ const SPRINKLER_COURTYARD_HOTSPOTS: &[HotspotSpec] = &[
     HotspotSpec {
         id: "extinguisher_cabinet",
         name: "Löschschrank",
-        pct: pct(46.46, 24.55, 6.01, 27.34),
+        pct: pct(43.77, 22.74, 6.01, 27.34),
         kind: HotspotKind::Prop,
         look: "Der Schrank ist geöffnet, aber vollständig.",
         inspect: "Es fehlt kein Löscher. Der Schaden ist Wasser, nicht Feuer.",
@@ -1075,7 +1077,7 @@ const SPRINKLER_COURTYARD_HOTSPOTS: &[HotspotSpec] = &[
     HotspotSpec {
         id: "safety_officer",
         name: "Sicherheitsdienst",
-        pct: pct(66.92, 27.06, 8.0, 32.0),
+        pct: pct(67.4, 21.92, 8.32, 56.31),
         kind: HotspotKind::Character,
         look: "Der Sicherheitsdienst schreibt den Vorfall auf.",
         inspect: "Er lässt dich erst nach technischer Rückmeldung zurück.",
@@ -1084,10 +1086,19 @@ const SPRINKLER_COURTYARD_HOTSPOTS: &[HotspotSpec] = &[
     HotspotSpec {
         id: "fire_return_door",
         name: "Rückweg ins Gebäude",
-        pct: pct(24.34, 9.28, 13.78, 60.97),
+        pct: pct(22.24, 7.89, 13.78, 60.97),
         kind: HotspotKind::Prop,
         look: "Die Tür zurück zum Produktionsgebäude ist nass, aber offen.",
         inspect: "Der Rückweg ist erst nach Alarm- und Materialprüfung frei.",
+        talk_id: None,
+    },
+    HotspotSpec {
+        id: "cable_bin",
+        name: "Kabelmüll in Tonne",
+        pct: pct(0.0, 82.75, 15.76, 17.25),
+        kind: HotspotKind::Prop,
+        look: "In der Tonne liegt nasser Kabelmüll. Jedes Ende sieht aus, als hätte es eine Erklärung vorbereitet.",
+        inspect: "Die Kabelreste sind bereits ausgesondert. Der Sprinkleralarm hängt nicht an ihnen, sondern am bestätigten Alarmkreis.",
         talk_id: None,
     },
 ];
@@ -1114,7 +1125,7 @@ const PROP_STORAGE_COLLAPSE_HOTSPOTS: &[HotspotSpec] = &[
     HotspotSpec {
         id: "workshop_gap",
         name: "Freier Spalt",
-        pct: pct(87.91, 6.95, 3.17, 69.86),
+        pct: pct(25.65, 30.14, 10.37, 42.92),
         kind: HotspotKind::Prop,
         look: "Zwischen den Teilen bleibt ein schmaler Spalt.",
         inspect: "Der Spalt reicht nur, wenn die Strebe hält und der Riegel offen ist.",
@@ -1127,6 +1138,15 @@ const PROP_STORAGE_COLLAPSE_HOTSPOTS: &[HotspotSpec] = &[
         kind: HotspotKind::Prop,
         look: "Die Tür führt zurück in den Szenenbau.",
         inspect: "Der direkte Weg ist von Kulissenteilen blockiert.",
+        talk_id: None,
+    },
+    HotspotSpec {
+        id: "paint_cans",
+        name: "Farbdosen",
+        pct: pct(1.9, 76.22, 16.95, 16.0),
+        kind: HotspotKind::Prop,
+        look: "Farbdosen stapeln sich am Boden. Die Etiketten versprechen Bühnennebel, Betonoptik und Entscheidungen, die niemand dokumentiert hat.",
+        inspect: "Die Dosen sind zu schwer für schnelle Improvisation und zu nass für saubere Ausreden. Der Fluchtweg braucht Strebe und Notleine, nicht Farbe.",
         talk_id: None,
     },
 ];
@@ -1171,712 +1191,108 @@ const ARCHIVE_RECOVERY_HOTSPOTS: &[HotspotSpec] = &[
 ];
 
 const HOTSPOT_POLYGONS: &[HotspotPolygonSpec] = &[
-    HotspotPolygonSpec {
-        scene_id: "greenscreen_studio",
-        hotspot_id: "office_hall",
-        points: &[(5.43, 25.47), (11.52, 25.47), (11.52, 68.39), (5.43, 68.39)],
-    },
-    HotspotPolygonSpec {
-        scene_id: "greenscreen_studio",
-        hotspot_id: "control_room",
-        points: &[
-            (94.43, 26.61),
-            (99.28, 26.61),
-            (99.28, 78.44),
-            (94.35, 74.9),
-        ],
-    },
-    HotspotPolygonSpec {
-        scene_id: "greenscreen_studio",
-        hotspot_id: "greenscreen_wall",
-        points: &[
-            (38.65, 16.75),
-            (71.41, 16.75),
-            (71.41, 63.97),
-            (38.65, 63.97),
-        ],
-    },
-    HotspotPolygonSpec {
-        scene_id: "greenscreen_studio",
-        hotspot_id: "floor_marks",
-        points: &[
-            (38.87, 63.25),
-            (60.87, 63.25),
-            (60.87, 72.25),
-            (38.87, 72.25),
-        ],
-    },
-    HotspotPolygonSpec {
-        scene_id: "greenscreen_studio",
-        hotspot_id: "klixx_table",
-        points: &[(23.54, 51.11), (40.22, 51.11), (40.22, 75.5), (23.54, 75.5)],
-    },
-    HotspotPolygonSpec {
-        scene_id: "greenscreen_studio",
-        hotspot_id: "chat_preview",
-        points: &[
-            (19.94, 29.56),
-            (24.51, 29.56),
-            (24.51, 47.92),
-            (19.94, 47.92),
-        ],
-    },
-    HotspotPolygonSpec {
-        scene_id: "greenscreen_studio",
-        hotspot_id: "camera_one",
-        points: &[
-            (62.34, 41.44),
-            (73.09, 41.44),
-            (73.09, 76.13),
-            (62.34, 76.13),
-        ],
-    },
-    HotspotPolygonSpec {
-        scene_id: "greenscreen_studio",
-        hotspot_id: "mentor_shadow",
-        points: &[
-            (75.74, 37.92),
-            (80.41, 37.92),
-            (80.41, 72.17),
-            (75.74, 72.17),
-        ],
-    },
-    HotspotPolygonSpec {
-        scene_id: "greenscreen_studio",
-        hotspot_id: "greenscreen_setup",
-        points: &[
-            (49.18, 35.89),
-            (72.18, 35.89),
-            (72.18, 72.89),
-            (49.18, 72.89),
-        ],
-    },
-    HotspotPolygonSpec {
-        scene_id: "office_hall",
-        hotspot_id: "building_courtyard",
-        points: &[(2.49, 21.81), (9.07, 21.81), (9.07, 68.67), (2.49, 68.67)],
-    },
-    HotspotPolygonSpec {
-        scene_id: "office_hall",
-        hotspot_id: "greenscreen_studio",
-        points: &[
-            (16.33, 25.78),
-            (23.25, 25.78),
-            (23.25, 67.45),
-            (16.33, 67.45),
-        ],
-    },
-    HotspotPolygonSpec {
-        scene_id: "office_hall",
-        hotspot_id: "control_room",
-        points: &[
-            (34.16, 26.25),
-            (40.41, 26.25),
-            (40.41, 67.14),
-            (34.16, 67.14),
-        ],
-    },
-    HotspotPolygonSpec {
-        scene_id: "office_hall",
-        hotspot_id: "server_room",
-        points: &[(84.65, 27.42), (89.7, 27.42), (89.7, 67.98), (84.65, 67.98)],
-    },
-    HotspotPolygonSpec {
-        scene_id: "office_hall",
-        hotspot_id: "schanzenstrasse",
-        points: &[(73.18, 27.39), (79.1, 27.39), (79.1, 64.7), (73.18, 64.7)],
-    },
-    HotspotPolygonSpec {
-        scene_id: "office_hall",
-        hotspot_id: "dispo_board",
-        points: &[
-            (24.53, 31.94),
-            (32.55, 31.94),
-            (32.55, 54.61),
-            (24.53, 54.61),
-        ],
-    },
-    HotspotPolygonSpec {
-        scene_id: "office_hall",
-        hotspot_id: "equipment_storage",
-        points: &[
-            (43.54, 26.25),
-            (56.54, 26.25),
-            (56.54, 67.08),
-            (43.54, 67.08),
-        ],
-    },
-    HotspotPolygonSpec {
-        scene_id: "office_hall",
-        hotspot_id: "staircase",
-        points: &[(60.8, 13.11), (69.78, 13.11), (69.78, 63.17), (60.8, 63.17)],
-    },
-    HotspotPolygonSpec {
-        scene_id: "office_hall",
-        hotspot_id: "route_map",
-        points: &[(92.8, 31.69), (99.31, 31.69), (99.31, 53.33), (92.8, 53.33)],
-    },
-    HotspotPolygonSpec {
-        scene_id: "building_courtyard",
-        hotspot_id: "office_hall",
-        points: &[
-            (50.44, 31.58),
-            (57.89, 31.58),
-            (57.89, 63.36),
-            (50.44, 63.36),
-        ],
-    },
-    HotspotPolygonSpec {
-        scene_id: "building_courtyard",
-        hotspot_id: "set_workshop",
-        points: &[(80.72, 33.5), (85.89, 33.5), (85.89, 67.42), (80.72, 67.42)],
-    },
-    HotspotPolygonSpec {
-        scene_id: "building_courtyard",
-        hotspot_id: "schanzenstrasse",
-        points: &[(7.67, 25.97), (15.42, 25.97), (15.42, 73.3), (7.67, 73.3)],
-    },
-    HotspotPolygonSpec {
-        scene_id: "building_courtyard",
-        hotspot_id: "loading_zone",
-        points: &[
-            (19.56, 46.33),
-            (37.56, 46.33),
-            (37.56, 72.02),
-            (19.56, 72.02),
-        ],
-    },
-    HotspotPolygonSpec {
-        scene_id: "building_courtyard",
-        hotspot_id: "address_plate",
-        points: &[
-            (68.55, 30.78),
-            (72.59, 30.78),
-            (72.59, 43.59),
-            (68.55, 43.59),
-        ],
-    },
-    HotspotPolygonSpec {
-        scene_id: "control_room",
-        hotspot_id: "office_hall",
-        points: &[(3.39, 23.92), (10.72, 23.92), (10.72, 68.56), (3.39, 68.56)],
-    },
-    HotspotPolygonSpec {
-        scene_id: "control_room",
-        hotspot_id: "greenscreen_studio",
-        points: &[
-            (22.16, 15.14),
-            (46.91, 15.14),
-            (46.91, 44.03),
-            (22.16, 44.03),
-        ],
-    },
-    HotspotPolygonSpec {
-        scene_id: "control_room",
-        hotspot_id: "rehearsal_monitor",
-        points: &[
-            (32.57, 46.47),
-            (36.03, 46.47),
-            (36.03, 53.78),
-            (32.57, 53.78),
-        ],
-    },
-    HotspotPolygonSpec {
-        scene_id: "control_room",
-        hotspot_id: "graphics_terminal",
-        points: &[
-            (66.11, 42.47),
-            (78.75, 42.47),
-            (78.75, 69.28),
-            (66.11, 69.28),
-        ],
-    },
-    HotspotPolygonSpec {
-        scene_id: "control_room",
-        hotspot_id: "intercom_voice",
-        points: &[
-            (56.29, 43.81),
-            (63.19, 43.81),
-            (63.19, 60.34),
-            (56.29, 60.34),
-        ],
-    },
-    HotspotPolygonSpec {
-        scene_id: "control_room",
-        hotspot_id: "on_air_lamp",
-        points: &[(87.66, 10.25), (92.0, 10.25), (92.0, 16.25), (87.66, 16.25)],
-    },
-    HotspotPolygonSpec {
-        scene_id: "control_room",
-        hotspot_id: "video_kliemannsland_road",
-        points: &[
-            (67.84, 15.17),
-            (78.82, 15.17),
-            (78.82, 31.86),
-            (67.84, 31.86),
-        ],
-    },
-    HotspotPolygonSpec {
-        scene_id: "control_room",
-        hotspot_id: "video_schimmelbrueder",
-        points: &[(63.58, 33.36), (67.48, 33.36), (67.48, 41.3), (63.58, 41.3)],
-    },
-    HotspotPolygonSpec {
-        scene_id: "video_kliemannsland_road",
-        hotspot_id: "control_room",
-        points: &[(3.0, 62.0), (13.0, 62.0), (13.0, 87.0), (3.0, 87.0)],
-    },
-    HotspotPolygonSpec {
-        scene_id: "video_kliemannsland_road",
-        hotspot_id: "walkable_lane",
-        points: &[(49.0, 73.0), (73.0, 73.0), (73.0, 91.0), (49.0, 91.0)],
-    },
-    HotspotPolygonSpec {
-        scene_id: "video_kliemannsland_road",
-        hotspot_id: "road_marker",
-        points: &[(36.0, 56.0), (47.0, 56.0), (47.0, 79.0), (36.0, 79.0)],
-    },
-    HotspotPolygonSpec {
-        scene_id: "video_kliemannsland_road",
-        hotspot_id: "traffic_totem",
-        points: &[(43.0, 35.0), (61.0, 35.0), (61.0, 72.0), (43.0, 72.0)],
-    },
-    HotspotPolygonSpec {
-        scene_id: "video_kliemannsland_road",
-        hotspot_id: "archive_exit_sign",
-        points: &[(72.0, 48.0), (88.0, 48.0), (88.0, 72.0), (72.0, 72.0)],
-    },
-    HotspotPolygonSpec {
-        scene_id: "video_kliemannsland_road",
-        hotspot_id: "distant_gate",
-        points: &[(83.0, 39.0), (95.0, 39.0), (95.0, 69.0), (83.0, 69.0)],
-    },
-    HotspotPolygonSpec {
-        scene_id: "video_schimmelbrueder",
-        hotspot_id: "control_room",
-        points: &[(1.32, 21.94), (7.94, 21.94), (7.94, 38.19), (1.32, 38.19)],
-    },
-    HotspotPolygonSpec {
-        scene_id: "video_schimmelbrueder",
-        hotspot_id: "casting_table",
-        points: &[
-            (26.61, 21.7),
-            (40.11, 24.06),
-            (16.56, 55.31),
-            (8.87, 54.34),
-            (9.14, 31.56),
-        ],
-    },
-    HotspotPolygonSpec {
-        scene_id: "video_schimmelbrueder",
-        hotspot_id: "mold_rack",
-        points: &[
-            (50.38, 18.37),
-            (57.15, 19.48),
-            (40.67, 66.49),
-            (19.61, 66.49),
-        ],
-    },
-    HotspotPolygonSpec {
-        scene_id: "video_schimmelbrueder",
-        hotspot_id: "patterned_belt",
-        points: &[
-            (61.56, 12.12),
-            (72.2, 11.56),
-            (85.81, 57.67),
-            (54.57, 58.23),
-        ],
-    },
-    HotspotPolygonSpec {
-        scene_id: "video_schimmelbrueder",
-        hotspot_id: "mold_token",
-        points: &[(41.3, 80.56), (50.27, 80.56), (50.27, 93.78), (41.3, 93.78)],
-    },
-    HotspotPolygonSpec {
-        scene_id: "video_schimmelbrueder",
-        hotspot_id: "song_exit_gate",
-        points: &[
-            (86.48, 29.36),
-            (99.83, 29.36),
-            (99.83, 82.47),
-            (86.48, 82.47),
-        ],
-    },
-    HotspotPolygonSpec {
-        scene_id: "video_schimmelbrueder",
-        hotspot_id: "factory_floor",
-        points: &[(7.57, 66.0), (86.81, 66.0), (86.81, 100.0), (7.57, 100.0)],
-    },
-    HotspotPolygonSpec {
-        scene_id: "video_sewer_archive",
-        hotspot_id: "control_room",
-        points: &[(4.0, 65.0), (14.0, 65.0), (14.0, 87.0), (4.0, 87.0)],
-    },
-    HotspotPolygonSpec {
-        scene_id: "video_sewer_archive",
-        hotspot_id: "archive_hatch",
-        points: &[(72.0, 40.0), (85.0, 40.0), (85.0, 72.0), (72.0, 72.0)],
-    },
-    HotspotPolygonSpec {
-        scene_id: "video_sewer_archive",
-        hotspot_id: "flow_arrow",
-        points: &[(42.0, 73.0), (55.0, 73.0), (55.0, 81.0), (42.0, 81.0)],
-    },
-    HotspotPolygonSpec {
-        scene_id: "video_sewer_archive",
-        hotspot_id: "inspection_tripod",
-        points: &[(19.0, 44.0), (30.0, 44.0), (30.0, 78.0), (19.0, 78.0)],
-    },
-    HotspotPolygonSpec {
-        scene_id: "video_sewer_archive",
-        hotspot_id: "wet_note",
-        points: &[(58.5, 80.0), (64.0, 80.0), (64.0, 85.5), (58.5, 85.5)],
-    },
-    HotspotPolygonSpec {
-        scene_id: "video_sewer_archive",
-        hotspot_id: "lost_signal",
-        points: &[(43.0, 20.0), (65.0, 20.0), (65.0, 52.0), (43.0, 52.0)],
-    },
-    HotspotPolygonSpec {
-        scene_id: "server_room",
-        hotspot_id: "office_hall",
-        points: &[(4.35, 25.69), (9.86, 25.69), (9.86, 71.58), (4.35, 71.58)],
-    },
-    HotspotPolygonSpec {
-        scene_id: "server_room",
-        hotspot_id: "server_racks",
-        points: &[(17.17, 19.3), (39.04, 19.3), (39.04, 72.16), (17.17, 72.16)],
-    },
-    HotspotPolygonSpec {
-        scene_id: "server_room",
-        hotspot_id: "video_hub",
-        points: &[
-            (41.82, 21.31),
-            (61.16, 21.31),
-            (61.16, 70.98),
-            (41.82, 70.98),
-        ],
-    },
-    HotspotPolygonSpec {
-        scene_id: "server_room",
-        hotspot_id: "sdi_spool",
-        points: &[
-            (70.59, 51.56),
-            (83.74, 51.56),
-            (83.74, 75.53),
-            (70.59, 75.53),
-        ],
-    },
-    HotspotPolygonSpec {
-        scene_id: "server_room",
-        hotspot_id: "sdi_label_printer",
-        points: &[(62.8, 41.41), (68.0, 41.41), (68.0, 50.94), (62.8, 50.94)],
-    },
-    HotspotPolygonSpec {
-        scene_id: "set_workshop",
-        hotspot_id: "building_courtyard",
-        points: &[(4.19, 27.92), (9.21, 27.92), (9.21, 72.7), (4.19, 72.7)],
-    },
-    HotspotPolygonSpec {
-        scene_id: "set_workshop",
-        hotspot_id: "set_pieces",
-        points: &[
-            (14.65, 13.39),
-            (38.65, 13.39),
-            (38.65, 70.28),
-            (14.65, 70.28),
-        ],
-    },
-    HotspotPolygonSpec {
-        scene_id: "set_workshop",
-        hotspot_id: "gaffer_roll",
-        points: &[(57.0, 51.33), (60.27, 51.33), (60.27, 57.5), (57.0, 57.5)],
-    },
-    HotspotPolygonSpec {
-        scene_id: "set_workshop",
-        hotspot_id: "bike_workshop_trace",
-        points: &[
-            (67.49, 13.28),
-            (83.49, 13.28),
-            (83.49, 35.28),
-            (67.49, 35.28),
-        ],
-    },
-    HotspotPolygonSpec {
-        scene_id: "set_workshop",
-        hotspot_id: "studio_door_15",
-        points: &[
-            (85.53, 29.31),
-            (93.01, 29.31),
-            (93.01, 67.28),
-            (85.53, 67.28),
-        ],
-    },
-    HotspotPolygonSpec {
-        scene_id: "schanzenstrasse",
-        hotspot_id: "building_courtyard",
-        points: &[(3.12, 38.39), (10.1, 38.39), (10.1, 70.89), (3.12, 70.89)],
-    },
-    HotspotPolygonSpec {
-        scene_id: "schanzenstrasse",
-        hotspot_id: "sternschanze_station",
-        points: &[
-            (73.14, 31.94),
-            (100.0, 31.94),
-            (100.0, 71.11),
-            (73.14, 71.11),
-        ],
-    },
-    HotspotPolygonSpec {
-        scene_id: "schanzenstrasse",
-        hotspot_id: "karoviertel",
-        points: &[(37.38, 27.78), (51.38, 27.78), (51.38, 70.7), (37.38, 70.7)],
-    },
-    HotspotPolygonSpec {
-        scene_id: "schanzenstrasse",
-        hotspot_id: "street_mural",
-        points: &[(12.47, 4.28), (32.94, 4.28), (32.94, 60.61), (12.47, 60.61)],
-    },
-    HotspotPolygonSpec {
-        scene_id: "schanzenstrasse",
-        hotspot_id: "corner_kiosk",
-        points: &[
-            (58.48, 41.11),
-            (69.48, 41.11),
-            (69.48, 61.67),
-            (58.48, 61.67),
-        ],
-    },
-    HotspotPolygonSpec {
-        scene_id: "schanzenstrasse",
-        hotspot_id: "city_notice",
-        points: &[
-            (32.73, 31.86),
-            (35.78, 31.86),
-            (35.78, 44.11),
-            (32.73, 44.11),
-        ],
-    },
-    HotspotPolygonSpec {
-        scene_id: "sternschanze_station",
-        hotspot_id: "schanzenstrasse",
-        points: &[(6.31, 28.86), (20.31, 28.86), (20.31, 69.08), (6.31, 69.08)],
-    },
-    HotspotPolygonSpec {
-        scene_id: "sternschanze_station",
-        hotspot_id: "schanzenpark",
-        points: &[
-            (79.88, 32.63),
-            (95.44, 32.63),
-            (95.44, 64.44),
-            (79.88, 64.44),
-        ],
-    },
-    HotspotPolygonSpec {
-        scene_id: "sternschanze_station",
-        hotspot_id: "station_clock",
-        points: &[(41.8, 22.44), (45.99, 22.44), (45.99, 34.61), (41.8, 34.61)],
-    },
-    HotspotPolygonSpec {
-        scene_id: "sternschanze_station",
-        hotspot_id: "platform_sign",
-        points: &[
-            (65.74, 31.95),
-            (73.08, 31.95),
-            (73.08, 40.45),
-            (65.74, 40.45),
-        ],
-    },
-    HotspotPolygonSpec {
-        scene_id: "sternschanze_station",
-        hotspot_id: "busker_case",
-        points: &[
-            (31.07, 57.42),
-            (38.28, 57.42),
-            (38.28, 74.75),
-            (31.07, 74.75),
-        ],
-    },
-    HotspotPolygonSpec {
-        scene_id: "schanzenpark",
-        hotspot_id: "sternschanze_station",
-        points: &[(5.54, 53.33), (25.94, 53.33), (25.94, 74.36), (5.54, 74.36)],
-    },
-    HotspotPolygonSpec {
-        scene_id: "schanzenpark",
-        hotspot_id: "schanzenstrasse",
-        points: &[(5.9, 75.11), (18.9, 75.11), (18.9, 91.11), (5.9, 91.11)],
-    },
-    HotspotPolygonSpec {
-        scene_id: "schanzenpark",
-        hotspot_id: "water_tower",
-        points: &[(36.46, 6.61), (46.77, 6.61), (46.77, 54.97), (36.46, 54.97)],
-    },
-    HotspotPolygonSpec {
-        scene_id: "schanzenpark",
-        hotspot_id: "city_reflector",
-        points: &[(64.37, 62.22), (69.9, 62.22), (69.9, 75.86), (64.37, 75.86)],
-    },
-    HotspotPolygonSpec {
-        scene_id: "schanzenpark",
-        hotspot_id: "tv_tower_view",
-        points: &[
-            (74.12, 24.45),
-            (77.09, 24.45),
-            (77.09, 58.28),
-            (74.12, 58.28),
-        ],
-    },
-    HotspotPolygonSpec {
-        scene_id: "karoviertel",
-        hotspot_id: "schanzenstrasse",
-        points: &[(7.71, 14.28), (21.71, 14.28), (21.71, 64.5), (7.71, 64.5)],
-    },
-    HotspotPolygonSpec {
-        scene_id: "karoviertel",
-        hotspot_id: "print_shop",
-        points: &[
-            (31.78, 17.03),
-            (52.79, 17.03),
-            (52.79, 64.67),
-            (31.78, 64.67),
-        ],
-    },
-    HotspotPolygonSpec {
-        scene_id: "karoviertel",
-        hotspot_id: "record_store",
-        points: &[
-            (65.62, 29.06),
-            (84.48, 29.06),
-            (84.48, 65.56),
-            (65.62, 65.56),
-        ],
-    },
-    HotspotPolygonSpec {
-        scene_id: "karoviertel",
-        hotspot_id: "market_boxes",
-        points: &[
-            (16.34, 59.78),
-            (30.34, 59.78),
-            (30.34, 76.03),
-            (16.34, 76.03),
-        ],
-    },
-    HotspotPolygonSpec {
-        scene_id: "hospital_room",
-        hotspot_id: "hospital_monitor",
-        points: &[(46.4, 31.8), (50.99, 31.8), (50.99, 42.05), (46.4, 42.05)],
-    },
-    HotspotPolygonSpec {
-        scene_id: "hospital_room",
-        hotspot_id: "call_button",
-        points: &[
-            (43.52, 35.83),
-            (45.83, 35.83),
-            (45.83, 45.41),
-            (43.52, 45.41),
-        ],
-    },
-    HotspotPolygonSpec {
-        scene_id: "hospital_room",
-        hotspot_id: "nurse_station",
-        points: &[(52.8, 17.0), (63.8, 17.0), (63.8, 87.0), (52.8, 87.0)],
-    },
-    HotspotPolygonSpec {
-        scene_id: "hospital_room",
-        hotspot_id: "discharge_clipboard",
-        points: &[
-            (11.04, 69.58),
-            (20.49, 69.58),
-            (20.49, 81.58),
-            (11.04, 81.58),
-        ],
-    },
-    HotspotPolygonSpec {
-        scene_id: "hospital_room",
-        hotspot_id: "hospital_exit",
-        points: &[(91.44, 1.08), (97.89, 1.08), (97.89, 81.75), (91.44, 81.75)],
-    },
-    HotspotPolygonSpec {
-        scene_id: "sprinkler_courtyard",
-        hotspot_id: "alarm_panel",
-        points: &[(40.37, 22.5), (44.79, 22.5), (44.79, 40.53), (40.37, 40.53)],
-    },
-    HotspotPolygonSpec {
-        scene_id: "sprinkler_courtyard",
-        hotspot_id: "extinguisher_cabinet",
-        points: &[
-            (46.46, 24.55),
-            (52.47, 24.55),
-            (52.47, 51.89),
-            (46.46, 51.89),
-        ],
-    },
-    HotspotPolygonSpec {
-        scene_id: "sprinkler_courtyard",
-        hotspot_id: "safety_officer",
-        points: &[
-            (66.92, 27.06),
-            (74.92, 27.06),
-            (74.92, 59.06),
-            (66.92, 59.06),
-        ],
-    },
-    HotspotPolygonSpec {
-        scene_id: "sprinkler_courtyard",
-        hotspot_id: "fire_return_door",
-        points: &[(24.34, 9.28), (38.12, 9.28), (38.12, 70.25), (24.34, 70.25)],
-    },
-    HotspotPolygonSpec {
-        scene_id: "prop_storage_collapse",
-        hotspot_id: "brace_beam",
-        points: &[(47.03, 0.0), (60.03, 0.0), (60.03, 73.42), (47.03, 73.42)],
-    },
-    HotspotPolygonSpec {
-        scene_id: "prop_storage_collapse",
-        hotspot_id: "release_rope",
-        points: &[(64.86, 0.0), (69.86, 0.0), (69.86, 40.0), (64.86, 40.0)],
-    },
-    HotspotPolygonSpec {
-        scene_id: "prop_storage_collapse",
-        hotspot_id: "workshop_gap",
-        points: &[(87.91, 6.95), (91.08, 6.95), (91.08, 76.81), (87.91, 76.81)],
-    },
-    HotspotPolygonSpec {
-        scene_id: "prop_storage_collapse",
-        hotspot_id: "collapse_exit",
-        points: &[(74.72, 10.5), (84.01, 10.5), (84.01, 71.81), (74.72, 71.81)],
-    },
-    HotspotPolygonSpec {
-        scene_id: "archive_recovery",
-        hotspot_id: "archive_drive",
-        points: &[(0.87, 34.11), (12.87, 34.11), (12.87, 66.95), (0.87, 66.95)],
-    },
-    HotspotPolygonSpec {
-        scene_id: "archive_recovery",
-        hotspot_id: "recovery_terminal",
-        points: &[
-            (49.46, 12.03),
-            (72.24, 12.03),
-            (72.24, 55.73),
-            (49.46, 55.73),
-        ],
-    },
-    HotspotPolygonSpec {
-        scene_id: "archive_recovery",
-        hotspot_id: "checksum_printout",
-        points: &[
-            (67.68, 54.69),
-            (81.24, 54.69),
-            (81.24, 74.39),
-            (67.68, 74.39),
-        ],
-    },
-    HotspotPolygonSpec {
-        scene_id: "archive_recovery",
-        hotspot_id: "control_room_return",
-        points: &[(27.84, 0.0), (40.3, 0.0), (40.3, 63.11), (27.84, 63.11)],
-    },
+    HotspotPolygonSpec { scene_id: "greenscreen_studio", hotspot_id: "office_hall", points: &[(5.43, 25.47), (11.52, 25.47), (11.52, 68.39), (5.43, 68.39)] },
+    HotspotPolygonSpec { scene_id: "greenscreen_studio", hotspot_id: "control_room", points: &[(94.43, 26.61), (99.28, 26.61), (99.28, 78.44), (94.35, 74.9)] },
+    HotspotPolygonSpec { scene_id: "greenscreen_studio", hotspot_id: "greenscreen_wall", points: &[(38.65, 16.75), (71.41, 16.75), (71.41, 63.97), (38.65, 63.97)] },
+    HotspotPolygonSpec { scene_id: "greenscreen_studio", hotspot_id: "floor_marks", points: &[(38.87, 63.25), (60.87, 63.25), (60.87, 72.25), (38.87, 72.25)] },
+    HotspotPolygonSpec { scene_id: "greenscreen_studio", hotspot_id: "klixx_table", points: &[(23.54, 51.11), (40.22, 51.11), (40.22, 75.5), (23.54, 75.5)] },
+    HotspotPolygonSpec { scene_id: "greenscreen_studio", hotspot_id: "chat_preview", points: &[(19.94, 29.56), (24.51, 29.56), (24.51, 47.92), (19.94, 47.92)] },
+    HotspotPolygonSpec { scene_id: "greenscreen_studio", hotspot_id: "camera_one", points: &[(62.34, 41.44), (73.09, 41.44), (73.09, 76.13), (62.34, 76.13)] },
+    HotspotPolygonSpec { scene_id: "greenscreen_studio", hotspot_id: "mentor_shadow", points: &[(75.74, 37.92), (80.41, 37.92), (80.41, 72.17), (75.74, 72.17)] },
+    HotspotPolygonSpec { scene_id: "greenscreen_studio", hotspot_id: "greenscreen_setup", points: &[(49.18, 35.89), (72.18, 35.89), (72.18, 72.89), (49.18, 72.89)] },
+    HotspotPolygonSpec { scene_id: "office_hall", hotspot_id: "building_courtyard", points: &[(2.49, 21.81), (9.07, 21.81), (9.07, 68.67), (2.49, 68.67)] },
+    HotspotPolygonSpec { scene_id: "office_hall", hotspot_id: "greenscreen_studio", points: &[(16.33, 25.78), (23.25, 25.78), (23.25, 67.45), (16.33, 67.45)] },
+    HotspotPolygonSpec { scene_id: "office_hall", hotspot_id: "control_room", points: &[(34.16, 26.25), (40.41, 26.25), (40.41, 67.14), (34.16, 67.14)] },
+    HotspotPolygonSpec { scene_id: "office_hall", hotspot_id: "server_room", points: &[(84.65, 27.42), (89.7, 27.42), (89.7, 67.98), (84.65, 67.98)] },
+    HotspotPolygonSpec { scene_id: "office_hall", hotspot_id: "schanzenstrasse", points: &[(73.18, 27.39), (79.1, 27.39), (79.1, 64.7), (73.18, 64.7)] },
+    HotspotPolygonSpec { scene_id: "office_hall", hotspot_id: "dispo_board", points: &[(24.53, 31.94), (32.55, 31.94), (32.55, 54.61), (24.53, 54.61)] },
+    HotspotPolygonSpec { scene_id: "office_hall", hotspot_id: "equipment_storage", points: &[(43.54, 26.25), (56.54, 26.25), (56.54, 67.08), (43.54, 67.08)] },
+    HotspotPolygonSpec { scene_id: "office_hall", hotspot_id: "staircase", points: &[(60.8, 13.11), (69.78, 13.11), (69.78, 63.17), (60.8, 63.17)] },
+    HotspotPolygonSpec { scene_id: "office_hall", hotspot_id: "route_map", points: &[(92.8, 31.69), (99.31, 31.69), (99.31, 53.33), (92.8, 53.33)] },
+    HotspotPolygonSpec { scene_id: "building_courtyard", hotspot_id: "office_hall", points: &[(50.44, 31.58), (57.89, 31.58), (57.89, 63.36), (50.44, 63.36)] },
+    HotspotPolygonSpec { scene_id: "building_courtyard", hotspot_id: "set_workshop", points: &[(80.72, 33.5), (85.89, 33.5), (85.89, 67.42), (80.72, 67.42)] },
+    HotspotPolygonSpec { scene_id: "building_courtyard", hotspot_id: "schanzenstrasse", points: &[(7.67, 25.97), (15.42, 25.97), (15.42, 73.3), (7.67, 73.3)] },
+    HotspotPolygonSpec { scene_id: "building_courtyard", hotspot_id: "loading_zone", points: &[(19.56, 46.33), (37.56, 46.33), (37.56, 72.02), (19.56, 72.02)] },
+    HotspotPolygonSpec { scene_id: "building_courtyard", hotspot_id: "address_plate", points: &[(68.55, 30.78), (72.59, 30.78), (72.59, 43.59), (68.55, 43.59)] },
+    HotspotPolygonSpec { scene_id: "control_room", hotspot_id: "office_hall", points: &[(3.39, 23.92), (10.72, 23.92), (10.72, 68.56), (3.39, 68.56)] },
+    HotspotPolygonSpec { scene_id: "control_room", hotspot_id: "greenscreen_studio", points: &[(22.16, 15.14), (46.91, 15.14), (46.91, 44.03), (22.16, 44.03)] },
+    HotspotPolygonSpec { scene_id: "control_room", hotspot_id: "rehearsal_monitor", points: &[(32.57, 46.47), (36.03, 46.47), (36.03, 53.78), (32.57, 53.78)] },
+    HotspotPolygonSpec { scene_id: "control_room", hotspot_id: "graphics_terminal", points: &[(66.11, 42.47), (78.75, 42.47), (78.75, 69.28), (66.11, 69.28)] },
+    HotspotPolygonSpec { scene_id: "control_room", hotspot_id: "intercom_voice", points: &[(56.29, 43.81), (63.19, 43.81), (63.19, 60.34), (56.29, 60.34)] },
+    HotspotPolygonSpec { scene_id: "control_room", hotspot_id: "on_air_lamp", points: &[(87.66, 10.25), (92.0, 10.25), (92.0, 16.25), (87.66, 16.25)] },
+    HotspotPolygonSpec { scene_id: "control_room", hotspot_id: "video_schimmelbrueder", points: &[(63.58, 33.36), (67.48, 33.36), (67.48, 41.3), (63.58, 41.3)] },
+    HotspotPolygonSpec { scene_id: "control_room", hotspot_id: "video_icemachine", points: &[(68.2, 33.36), (72.1, 33.36), (72.1, 41.3), (68.2, 41.3)] },
+    HotspotPolygonSpec { scene_id: "control_room", hotspot_id: "video_brassband", points: &[(72.82, 33.36), (76.72, 33.36), (76.72, 41.3), (72.82, 41.3)] },
+    HotspotPolygonSpec { scene_id: "control_room", hotspot_id: "mixing_console", points: &[(82.71, 43.58), (99.82, 43.58), (99.82, 65.97), (82.71, 65.97)] },
+    HotspotPolygonSpec { scene_id: "video_schimmelbrueder", hotspot_id: "control_room", points: &[(1.32, 21.94), (7.94, 21.94), (7.94, 38.19), (1.32, 38.19)] },
+    HotspotPolygonSpec { scene_id: "video_schimmelbrueder", hotspot_id: "casting_table", points: &[(26.61, 21.7), (40.11, 24.06), (16.56, 55.31), (8.87, 54.34), (9.14, 31.56)] },
+    HotspotPolygonSpec { scene_id: "video_schimmelbrueder", hotspot_id: "mold_rack", points: &[(50.38, 18.37), (57.15, 19.48), (40.67, 66.49), (19.61, 66.49)] },
+    HotspotPolygonSpec { scene_id: "video_schimmelbrueder", hotspot_id: "patterned_belt", points: &[(61.56, 12.12), (72.2, 11.56), (85.81, 57.67), (54.57, 58.23)] },
+    HotspotPolygonSpec { scene_id: "video_schimmelbrueder", hotspot_id: "mold_token", points: &[(41.3, 80.56), (50.27, 80.56), (50.27, 93.78), (41.3, 93.78)] },
+    HotspotPolygonSpec { scene_id: "video_schimmelbrueder", hotspot_id: "song_exit_gate", points: &[(86.48, 29.36), (99.83, 29.36), (99.83, 82.47), (86.48, 82.47)] },
+    HotspotPolygonSpec { scene_id: "video_schimmelbrueder", hotspot_id: "factory_floor", points: &[(7.57, 66.0), (86.81, 66.0), (86.81, 100.0), (7.57, 100.0)] },
+    HotspotPolygonSpec { scene_id: "video_icemachine", hotspot_id: "control_room", points: &[(3.31, 17.11), (9.98, 17.11), (9.98, 63.33), (3.31, 63.33)] },
+    HotspotPolygonSpec { scene_id: "video_icemachine", hotspot_id: "ice_machine", points: &[(51.02, 8.53), (70.42, 8.53), (70.42, 72.84), (51.02, 72.84)] },
+    HotspotPolygonSpec { scene_id: "video_icemachine", hotspot_id: "cleaning_bucket", points: &[(11.84, 49.22), (24.32, 49.22), (24.32, 77.28), (11.84, 77.28)] },
+    HotspotPolygonSpec { scene_id: "video_icemachine", hotspot_id: "service_counter", points: &[(64.38, 39.83), (100.0, 39.83), (100.0, 57.72), (64.38, 57.72)] },
+    HotspotPolygonSpec { scene_id: "video_brassband", hotspot_id: "control_room", points: &[(4.17, 19.59), (12.02, 19.59), (12.02, 64.67), (4.17, 64.67)] },
+    HotspotPolygonSpec { scene_id: "video_brassband", hotspot_id: "brass_players", points: &[(40.48, 34.41), (44.41, 31.08), (48.6, 45.94), (45.43, 50.24), (45.32, 65.94), (50.11, 66.35), (50.7, 47.88), (48.82, 36.22), (53.28, 33.02), (55.7, 43.16), (57.58, 65.1), (62.69, 63.58), (63.49, 46.35), (68.55, 31.77), (81.13, 34.27), (81.67, 65.8), (74.19, 70.1), (43.76, 71.08), (39.03, 64.69)] },
+    HotspotPolygonSpec { scene_id: "video_brassband", hotspot_id: "tuba_bell", points: &[(57.84, 25.61), (63.64, 25.61), (63.64, 47.14), (57.84, 47.14)] },
+    HotspotPolygonSpec { scene_id: "video_brassband", hotspot_id: "music_stand", points: &[(45.48, 46.92), (49.99, 46.92), (49.99, 67.25), (45.48, 67.25)] },
+    HotspotPolygonSpec { scene_id: "video_brassband", hotspot_id: "stage_floor", points: &[(4.27, 79.03), (76.27, 79.03), (76.27, 97.03), (4.27, 97.03)] },
+    HotspotPolygonSpec { scene_id: "server_room", hotspot_id: "office_hall", points: &[(4.35, 25.69), (9.86, 25.69), (9.86, 71.58), (4.35, 71.58)] },
+    HotspotPolygonSpec { scene_id: "server_room", hotspot_id: "server_racks", points: &[(17.17, 19.3), (39.04, 19.3), (39.04, 72.16), (17.17, 72.16)] },
+    HotspotPolygonSpec { scene_id: "server_room", hotspot_id: "video_hub", points: &[(41.82, 21.31), (61.16, 21.31), (61.16, 70.98), (41.82, 70.98)] },
+    HotspotPolygonSpec { scene_id: "server_room", hotspot_id: "sdi_spool", points: &[(70.59, 51.56), (83.74, 51.56), (83.74, 75.53), (70.59, 75.53)] },
+    HotspotPolygonSpec { scene_id: "server_room", hotspot_id: "sdi_label_printer", points: &[(62.8, 41.41), (68.0, 41.41), (68.0, 50.94), (62.8, 50.94)] },
+    HotspotPolygonSpec { scene_id: "server_room", hotspot_id: "cable_loop", points: &[(66.53, 26.92), (69.93, 26.92), (69.93, 42.64), (66.53, 42.64)] },
+    HotspotPolygonSpec { scene_id: "set_workshop", hotspot_id: "building_courtyard", points: &[(4.19, 27.92), (9.21, 27.92), (9.21, 72.7), (4.19, 72.7)] },
+    HotspotPolygonSpec { scene_id: "set_workshop", hotspot_id: "set_pieces", points: &[(14.65, 13.39), (38.65, 13.39), (38.65, 70.28), (14.65, 70.28)] },
+    HotspotPolygonSpec { scene_id: "set_workshop", hotspot_id: "gaffer_roll", points: &[(57.0, 51.33), (60.27, 51.33), (60.27, 57.5), (57.0, 57.5)] },
+    HotspotPolygonSpec { scene_id: "set_workshop", hotspot_id: "bike_workshop_trace", points: &[(67.49, 13.28), (83.49, 13.28), (83.49, 35.28), (67.49, 35.28)] },
+    HotspotPolygonSpec { scene_id: "set_workshop", hotspot_id: "studio_door_15", points: &[(85.53, 29.31), (93.01, 29.31), (93.01, 67.28), (85.53, 67.28)] },
+    HotspotPolygonSpec { scene_id: "set_workshop", hotspot_id: "brushes", points: &[(41.74, 46.5), (52.18, 46.5), (52.18, 56.39), (41.74, 56.39)] },
+    HotspotPolygonSpec { scene_id: "schanzenstrasse", hotspot_id: "building_courtyard", points: &[(3.12, 38.39), (10.1, 38.39), (10.1, 70.89), (3.12, 70.89)] },
+    HotspotPolygonSpec { scene_id: "schanzenstrasse", hotspot_id: "sternschanze_station", points: &[(73.14, 31.94), (100.0, 31.94), (100.0, 71.11), (73.14, 71.11)] },
+    HotspotPolygonSpec { scene_id: "schanzenstrasse", hotspot_id: "karoviertel", points: &[(37.38, 27.78), (51.38, 27.78), (51.38, 70.7), (37.38, 70.7)] },
+    HotspotPolygonSpec { scene_id: "schanzenstrasse", hotspot_id: "street_mural", points: &[(12.52, 4.28), (32.99, 4.28), (32.99, 57.83), (12.52, 57.83)] },
+    HotspotPolygonSpec { scene_id: "schanzenstrasse", hotspot_id: "corner_kiosk", points: &[(58.48, 41.11), (69.48, 41.11), (69.48, 61.67), (58.48, 61.67)] },
+    HotspotPolygonSpec { scene_id: "schanzenstrasse", hotspot_id: "city_notice", points: &[(32.73, 31.86), (35.78, 31.86), (35.78, 44.11), (32.73, 44.11)] },
+    HotspotPolygonSpec { scene_id: "schanzenstrasse", hotspot_id: "bicycle", points: &[(21.9, 57.34), (31.53, 57.34), (31.53, 71.67), (21.9, 71.67)] },
+    HotspotPolygonSpec { scene_id: "sternschanze_station", hotspot_id: "schanzenstrasse", points: &[(6.31, 28.86), (20.31, 28.86), (20.31, 69.08), (6.31, 69.08)] },
+    HotspotPolygonSpec { scene_id: "sternschanze_station", hotspot_id: "schanzenpark", points: &[(79.88, 32.63), (95.44, 32.63), (95.44, 64.44), (79.88, 64.44)] },
+    HotspotPolygonSpec { scene_id: "sternschanze_station", hotspot_id: "station_clock", points: &[(41.8, 22.44), (45.99, 22.44), (45.99, 34.61), (41.8, 34.61)] },
+    HotspotPolygonSpec { scene_id: "sternschanze_station", hotspot_id: "platform_sign", points: &[(65.74, 31.95), (73.08, 31.95), (73.08, 40.45), (65.74, 40.45)] },
+    HotspotPolygonSpec { scene_id: "sternschanze_station", hotspot_id: "busker_case", points: &[(31.07, 57.42), (38.28, 57.42), (38.28, 74.75), (31.07, 74.75)] },
+    HotspotPolygonSpec { scene_id: "sternschanze_station", hotspot_id: "public_phone", points: &[(70.45, 52.89), (72.72, 52.89), (72.72, 65.14), (70.45, 65.14)] },
+    HotspotPolygonSpec { scene_id: "schanzenpark", hotspot_id: "sternschanze_station", points: &[(5.54, 53.33), (25.94, 53.33), (25.94, 74.36), (5.54, 74.36)] },
+    HotspotPolygonSpec { scene_id: "schanzenpark", hotspot_id: "schanzenstrasse", points: &[(5.9, 75.11), (18.9, 75.11), (18.9, 91.11), (5.9, 91.11)] },
+    HotspotPolygonSpec { scene_id: "schanzenpark", hotspot_id: "water_tower", points: &[(36.46, 6.61), (46.77, 6.61), (46.77, 54.97), (36.46, 54.97)] },
+    HotspotPolygonSpec { scene_id: "schanzenpark", hotspot_id: "city_reflector", points: &[(64.37, 62.22), (69.9, 62.22), (69.9, 75.86), (64.37, 75.86)] },
+    HotspotPolygonSpec { scene_id: "schanzenpark", hotspot_id: "tv_tower_view", points: &[(74.12, 24.45), (77.09, 24.45), (77.09, 58.28), (74.12, 58.28)] },
+    HotspotPolygonSpec { scene_id: "karoviertel", hotspot_id: "schanzenstrasse", points: &[(7.71, 14.28), (21.71, 14.28), (21.71, 64.5), (7.71, 64.5)] },
+    HotspotPolygonSpec { scene_id: "karoviertel", hotspot_id: "print_shop", points: &[(31.78, 17.03), (52.79, 17.03), (52.79, 64.67), (31.78, 64.67)] },
+    HotspotPolygonSpec { scene_id: "karoviertel", hotspot_id: "record_store", points: &[(65.62, 29.06), (84.48, 29.06), (84.48, 65.56), (65.62, 65.56)] },
+    HotspotPolygonSpec { scene_id: "karoviertel", hotspot_id: "market_boxes", points: &[(16.34, 59.78), (30.34, 59.78), (30.34, 76.03), (16.34, 76.03)] },
+    HotspotPolygonSpec { scene_id: "hospital_room", hotspot_id: "hospital_monitor", points: &[(46.4, 31.8), (50.99, 31.8), (50.99, 42.05), (46.4, 42.05)] },
+    HotspotPolygonSpec { scene_id: "hospital_room", hotspot_id: "call_button", points: &[(43.52, 35.83), (45.83, 35.83), (45.83, 45.41), (43.52, 45.41)] },
+    HotspotPolygonSpec { scene_id: "hospital_room", hotspot_id: "nurse_station", points: &[(67.34, 35.39), (79.02, 35.39), (79.02, 71.5), (67.34, 71.5)] },
+    HotspotPolygonSpec { scene_id: "hospital_room", hotspot_id: "discharge_clipboard", points: &[(11.04, 69.58), (20.49, 69.58), (20.49, 81.58), (11.04, 81.58)] },
+    HotspotPolygonSpec { scene_id: "hospital_room", hotspot_id: "hospital_exit", points: &[(86.98, 0.11), (93.0, 0.11), (93.0, 70.92), (86.98, 70.92)] },
+    HotspotPolygonSpec { scene_id: "sprinkler_courtyard", hotspot_id: "alarm_panel", points: &[(38.06, 20.83), (42.48, 20.83), (42.48, 38.86), (38.06, 38.86)] },
+    HotspotPolygonSpec { scene_id: "sprinkler_courtyard", hotspot_id: "extinguisher_cabinet", points: &[(43.77, 22.74), (49.78, 22.74), (49.78, 50.08), (43.77, 50.08)] },
+    HotspotPolygonSpec { scene_id: "sprinkler_courtyard", hotspot_id: "safety_officer", points: &[(67.4, 21.92), (75.72, 21.92), (75.72, 78.23), (67.4, 78.23)] },
+    HotspotPolygonSpec { scene_id: "sprinkler_courtyard", hotspot_id: "fire_return_door", points: &[(22.24, 7.89), (36.02, 7.89), (36.02, 68.86), (22.24, 68.86)] },
+    HotspotPolygonSpec { scene_id: "sprinkler_courtyard", hotspot_id: "cable_bin", points: &[(0.0, 82.75), (15.76, 82.75), (15.76, 100.0), (0.0, 100.0)] },
+    HotspotPolygonSpec { scene_id: "prop_storage_collapse", hotspot_id: "brace_beam", points: &[(47.03, 0.0), (60.03, 0.0), (60.03, 73.42), (47.03, 73.42)] },
+    HotspotPolygonSpec { scene_id: "prop_storage_collapse", hotspot_id: "release_rope", points: &[(64.86, 0.0), (69.86, 0.0), (69.86, 40.0), (64.86, 40.0)] },
+    HotspotPolygonSpec { scene_id: "prop_storage_collapse", hotspot_id: "workshop_gap", points: &[(25.81, 35.52), (28.28, 43.44), (35.38, 71.63), (31.45, 69.83)] },
+    HotspotPolygonSpec { scene_id: "prop_storage_collapse", hotspot_id: "collapse_exit", points: &[(74.72, 10.5), (84.01, 10.5), (84.01, 71.81), (74.72, 71.81)] },
+    HotspotPolygonSpec { scene_id: "prop_storage_collapse", hotspot_id: "paint_cans", points: &[(1.9, 76.22), (18.85, 76.22), (18.85, 92.22), (1.9, 92.22)] },
+    HotspotPolygonSpec { scene_id: "archive_recovery", hotspot_id: "archive_drive", points: &[(0.87, 34.11), (12.87, 34.11), (12.87, 66.95), (0.87, 66.95)] },
+    HotspotPolygonSpec { scene_id: "archive_recovery", hotspot_id: "recovery_terminal", points: &[(49.46, 12.03), (72.24, 12.03), (72.24, 55.73), (49.46, 55.73)] },
+    HotspotPolygonSpec { scene_id: "archive_recovery", hotspot_id: "checksum_printout", points: &[(67.68, 54.69), (81.24, 54.69), (81.24, 74.39), (67.68, 74.39)] },
+    HotspotPolygonSpec { scene_id: "archive_recovery", hotspot_id: "control_room_return", points: &[(27.84, 0.0), (40.3, 0.0), (40.3, 63.11), (27.84, 63.11)] },
 ];
 
 const STUDIO_WALKABLE: &[(f32, f32)] = &[
@@ -1929,13 +1345,6 @@ const CONTROL_ROOM_WALKABLE: &[(f32, f32)] = &[
     (100.0, 100.0),
     (0.0, 100.0),
 ];
-const VIDEO_ROAD_WALKABLE: &[(f32, f32)] = &[
-    (24.0, 45.0),
-    (58.0, 47.0),
-    (90.0, 96.0),
-    (3.0, 96.0),
-    (10.0, 72.0),
-];
 const VIDEO_SCHIMMEL_WALKABLE: &[(f32, f32)] = &[
     (8.66, 64.76),
     (40.16, 66.56),
@@ -1950,8 +1359,30 @@ const VIDEO_SCHIMMEL_WALKABLE: &[(f32, f32)] = &[
     (0.0, 100.0),
     (0.0, 73.78),
 ];
-const VIDEO_SEWER_WALKABLE: &[(f32, f32)] =
-    &[(15.0, 72.0), (85.0, 72.0), (94.0, 96.0), (7.0, 96.0)];
+const VIDEO_ICEMACHINE_WALKABLE: &[(f32, f32)] = &[
+    (11.29, 63.3),
+    (12.26, 77.19),
+    (24.78, 77.6),
+    (25.32, 60.52),
+    (47.58, 66.08),
+    (64.14, 78.02),
+    (100.0, 97.88),
+    (100.0, 100.0),
+    (0.0, 100.0),
+    (0.0, 72.88),
+];
+const VIDEO_BRASSBAND_WALKABLE: &[(f32, f32)] = &[
+    (0.0, 73.58),
+    (15.16, 65.24),
+    (26.77, 62.05),
+    (33.23, 59.97),
+    (38.92, 59.83),
+    (39.52, 67.05),
+    (59.25, 66.77),
+    (75.48, 69.97),
+    (77.15, 100.0),
+    (0.0, 100.0),
+];
 const SERVER_ROOM_WALKABLE: &[(f32, f32)] = &[
     (0.0, 77.53),
     (9.46, 71.28),
@@ -2126,14 +1557,6 @@ const SCENES: &[SceneMeta] = &[
         hotspots: CONTROL_ROOM_HOTSPOTS,
     },
     SceneMeta {
-        id: "video_kliemannsland_road",
-        name: "Straßenvideo",
-        zone: "Videoarchiv",
-        token: (22.0, 84.0),
-        walkable: VIDEO_ROAD_WALKABLE,
-        hotspots: VIDEO_ROAD_HOTSPOTS,
-    },
-    SceneMeta {
         id: "video_schimmelbrueder",
         name: "Schimmelbrüder-Video",
         zone: "Videoarchiv",
@@ -2142,12 +1565,20 @@ const SCENES: &[SceneMeta] = &[
         hotspots: VIDEO_SCHIMMEL_HOTSPOTS,
     },
     SceneMeta {
-        id: "video_sewer_archive",
-        name: "Kanalvideo",
+        id: "video_icemachine",
+        name: "Eismaschinen-Video",
         zone: "Videoarchiv",
-        token: (20.0, 84.0),
-        walkable: VIDEO_SEWER_WALKABLE,
-        hotspots: VIDEO_SEWER_HOTSPOTS,
+        token: (50.0, 84.0),
+        walkable: VIDEO_ICEMACHINE_WALKABLE,
+        hotspots: VIDEO_ICEMACHINE_HOTSPOTS,
+    },
+    SceneMeta {
+        id: "video_brassband",
+        name: "Band-Video",
+        zone: "Videoarchiv",
+        token: (50.0, 84.0),
+        walkable: VIDEO_BRASSBAND_WALKABLE,
+        hotspots: VIDEO_BRASSBAND_HOTSPOTS,
     },
     SceneMeta {
         id: "server_room",
@@ -2245,68 +1676,66 @@ const SCENE_TEXTURE_VARIANTS: &[(&str, &str)] = &[
         "assets/scenes/archive_recovery_no_checksum.png",
     ),
     (
-        "video_kliemannsland_road_no_marker",
-        "assets/scenes/video_kliemannsland_road_no_marker.png",
-    ),
-    (
         "video_schimmelbrueder_no_token",
         "assets/scenes/video_schimmelbrueder_no_token.png",
-    ),
-    (
-        "video_sewer_archive_no_note",
-        "assets/scenes/video_sewer_archive_no_note.png",
     ),
 ];
 
 const ITEMS: &[ItemMeta] = &[
     ItemMeta {
         id: "call_sheet",
-        name: "Laufzettel",
-        short: "PLAN",
-        description: "Der Tagesplan für Studio, Regie und Außenreferenzen.",
+        name: "Fallakte 000",
+        short: "AKTE",
+        description: "Die Akte zum verschwundenen Host: Studio, Regie, Stadtzeit und Schimmelbrüder-Frame.",
     },
     ItemMeta {
         id: "gaffer_tape",
         name: "Gaffer-Tape",
         short: "TAPE",
-        description: "Eine Rolle für neue Bodenmarken im Studio.",
+        description: "Eine Rolle für neue Bodenmarken am Rückholpunkt.",
     },
     ItemMeta {
         id: "sdi_label",
         name: "SDI-Label",
         short: "SDI",
-        description: "Ein Etikett für die Signalroute von Haus 11 ins Studio.",
+        description: "Ein Etikett für die benannte Signalroute von Haus 11 ins Studio.",
     },
     ItemMeta {
         id: "lower_third_card",
-        name: "Bauchbindenkarte",
+        name: "Host-Karte",
         short: "GRAF",
-        description: "Farbkarte und Textfreigabe für die Bauchbinde in der Regie.",
+        description: "Farbkarte und Textfreigabe für den Host-Namen in der Regie.",
     },
     ItemMeta {
         id: "city_reflector",
-        name: "Lichtreflektor",
+        name: "Kofferreflektor",
         short: "LICH",
-        description: "Eine Lichtreferenz aus dem Park für das Studio.",
+        description: "Der geliehene Reflektor vom Straßenmusiker. Er trägt genug Stadtlicht für den Rückholpunkt.",
     },
     ItemMeta {
-        id: "wet_note",
-        name: "Nasser Timecode",
-        short: "TIME",
-        description: "Ein verwischter Timecode aus dem Kanalvideo: Zulauf, Ablauf, Gegenlauf.",
+        id: "cardboard_piece",
+        name: "Pappstück",
+        short: "PAPP",
+        description: "Ein festes Stück Karton aus den Marktkisten.",
     },
     ItemMeta {
-        id: "road_marker",
-        name: "Routenmarker",
-        short: "ROAD",
-        description: "Ein Marker aus dem Straßenvideo. Er zeigt, wo das Bild begehbar ist.",
+        id: "clear_tape",
+        name: "Transparentband",
+        short: "BAND",
+        description: "Klebeband vom Kiosk, offiziell zu kurz für jede sinnvolle Beschilderung.",
+    },
+    ItemMeta {
+        id: "busker_sign",
+        name: "Kofferschild",
+        short: "SCHD",
+        description: "Ein laminiertes Schild für den Straßenmusiker-Koffer und die kleinste legale Bestechung dieses Falls.",
     },
     ItemMeta {
         id: "mold_token",
-        name: "Formprobe",
+        name: "Frame-Probe",
         short: "FORM",
         description:
-            "Eine Probe aus der Schimmelbrüder-Halle. Sie gehört zur Musterfolge der Formenreihe.",
+            "Eine Probe aus der Schimmelbrüder-Halle. Sie gehört zur Musterfolge und hält ein Host-Echo.",
     },
     ItemMeta {
         id: "medical_release",
@@ -2324,49 +1753,55 @@ const ITEMS: &[ItemMeta] = &[
 
 const MENTOR_CHOICES: &[DialogueChoice] = &[
     DialogueChoice {
-        label: "Was ist der Auftrag?",
-        response: "Bereite den Probelauf vor. Du brauchst den Laufzettel, neue Bodenmarken, ein SDI-Label, die Bauchbindenkarte, eine Zeitreferenz von der Sternschanze und eine Lichtreferenz aus dem Park.",
+        label: "Was ist Fall 000?",
+        response: "Ein Host hat einen Archivframe geöffnet und ist nicht zurückgekommen. Wir stabilisieren erst die Gegenwart: Fallakte, Bodenmarken, SDI-Route, Host-Karte, Stadtzeit, Parklicht und der Schimmelbrüder-Frame.",
         flag: "mentor_goal_hint",
-        log: "Die Aufnahmeleitung verteilt den Auftrag: Studio markieren, Signal benennen, Grafik laden, Stadt referenzieren.",
+        log: "Die Aufnahmeleitung definiert Fall 000: Studio markieren, Signal benennen, Host-Karte laden, Stadt referenzieren, Archivframe stabilisieren.",
     },
     DialogueChoice {
         label: "Warum raus in die Stadt?",
-        response: "Der Hintergrund soll nicht frei erfunden werden. Die Regie braucht eine reale Zeitmarke, eine Lichtreferenz und eine freigegebene Grafikvorlage.",
+        response: "Weil ein Studio ohne Außenzeit nur behauptet, Gegenwart zu sein. Die Bahnhofsuhr liefert den Takt, der Wasserturm das Licht, und der Reflektor bringt beides zurück ins Bild.",
         flag: "mentor_city_hint",
-        log: "Die Stadt liefert Referenzen für Timing, Licht und Grafik.",
+        log: "Die Stadt liefert Zeit, Licht und einen mobilen Reflektor als Gegenwartsanker.",
     },
     DialogueChoice {
         label: "Warum ich?",
-        response: "Du bist als Praktikant eingeteilt und gerade verfügbar. Halte dich an den Laufzettel und dokumentiere die offenen Punkte.",
+        response: "Weil du noch nicht in der Aufnahme vorkommst. Der Frame kann dich schlechter einsortieren, und das ist heute ausnahmsweise eine Qualifikation.",
         flag: "mentor_intern_hint",
-        log: "Der Praktikant übernimmt die offenen Laufwege für den Probelauf.",
+        log: "Der Praktikant übernimmt die Laufwege, weil der geöffnete Frame ihn noch nicht kennt.",
     },
     DialogueChoice {
-        label: "Wie starte ich den Probelauf?",
-        response: "Wenn alle Punkte erledigt sind, starte das Setup im Greenscreen-Studio. Die Regie prüft dann Signal, Grafik und Licht.",
+        label: "Wie starte ich die Rettung?",
+        response: "Wenn alle Anker sitzen, starte das Setup im Greenscreen-Studio. Wenn nicht, füttern wir den Host mit einem halben Rückweg und hoffen, dass die Physik Humor hat.",
         flag: "mentor_rehearsal_hint",
-        log: "Der Probelauf wird am Setup im Greenscreen-Studio gestartet.",
+        log: "Der Rettungslauf wird am Setup im Greenscreen-Studio gestartet.",
     },
 ];
 
 const BUSKER_CHOICES: &[DialogueChoice] = &[
     DialogueChoice {
         label: "Welche Zeitreferenz passt?",
-        response: "Nimm die Bahnhofsuhr über dem Durchgang. Sie ist im Bild klar lesbar und wiederholt sich im Minutenrhythmus.",
+        response: "Nimm die Bahnhofsuhr über dem Durchgang. Sie ist im Bild klar lesbar, beleidigend pünktlich und lässt sich nicht vom Chat in Panik nullen.",
         flag: "busker_timing_hint",
-        log: "Der Musiker verweist auf die Bahnhofsuhr als Zeitreferenz für die Außenprobe.",
+        log: "Der Musiker verweist auf die Bahnhofsuhr als harte Zeitreferenz.",
     },
     DialogueChoice {
         label: "Kennst du den Weg zum Park?",
-        response: "Geh vom Bahnhof bergauf zum Wasserturm. Die Backsteinfläche liefert eine eindeutige Lichtreferenz.",
+        response: "Geh vom Bahnhof bergauf zum Wasserturm. Wenn der Backstein im Licht steht, weiß sogar eine Regie, welche Tageszeit sie behauptet.",
         flag: "busker_park_hint",
-        log: "Der Musiker empfiehlt das Parklicht am Wasserturm als Referenz.",
+        log: "Der Musiker empfiehlt das Parklicht am Wasserturm als Lichtanker.",
     },
     DialogueChoice {
         label: "Gibt es weitere Hinweise?",
-        response: "Für deine Aufgabe reichen Uhr, Parklicht und die Druckfreigabe im Karoviertel. Mehr steht nicht auf dem Laufzettel.",
+        response: "Der Aushang an der Schanze erwähnt ein Kofferlicht. Mein Koffer hat zufällig eins. Dieses Zufällig ist verhandelbar.",
         flag: "busker_scope_hint",
-        log: "Der Musiker bestätigt die Außenstationen: Bahnhof, Park und Karoviertel.",
+        log: "Der Musiker deutet an, dass sein Kofferreflektor zur Außenreferenz gehört.",
+    },
+    DialogueChoice {
+        label: "Kann ich den Reflektor leihen?",
+        response: "Nicht ohne Nachweis. Wer aus einem Archivfall kommt, braucht entweder einen Entlassungsbogen oder eine sehr gute Ballade. Du wirkst formularstärker.",
+        flag: "busker_reflector_requested",
+        log: "Der Musiker verleiht den Kofferreflektor nur gegen sichtbaren Entlassungsnachweis.",
     },
 ];
 
@@ -2380,7 +1815,7 @@ const NURSE_CHOICES: &[DialogueChoice] = &[
     DialogueChoice {
         label: "Darf ich zurück?",
         response: "Wenn Monitor und Akte vollständig sind, bekommst du den Bogen. Danach gehst du nicht allein an offene Technik.",
-        flag: "nurse_clearance",
+        flag: "nurse_clearance_requested",
         log: "Die Station gibt eine bedingte Entlassung frei: Monitor prüfen, Bogen mitnehmen.",
     },
 ];
@@ -2404,13 +1839,13 @@ const DIALOGUES: &[Dialogue] = &[
     Dialogue {
         id: "mentor",
         speaker: "Aufnahmeleitung",
-        opening: "Die Aufnahmeleitung bleibt am Studioeingang stehen und prüft den Laufzettel.",
+        opening: "Die Aufnahmeleitung bleibt am Studioeingang stehen und prüft eine Akte, deren Zeitstempel sich gerade selbst korrigiert.",
         choices: MENTOR_CHOICES,
     },
     Dialogue {
         id: "busker",
         speaker: "Straßenmusiker",
-        opening: "Der Straßenmusiker steht am Durchgang und zeigt auf die Bahnhofsuhr.",
+        opening: "Der Straßenmusiker steht am Durchgang, zeigt auf die Bahnhofsuhr und spielt etwas, das im Takt bleibt.",
         choices: BUSKER_CHOICES,
     },
     Dialogue {
@@ -2562,7 +1997,7 @@ impl Game {
             player_texture: None,
             inventory_icons: None,
             verb_icons: None,
-            status: "Die Regie hat einen Videoeintrag geöffnet. Der vermisste Host muss über begehbare Frames lokalisiert werden.".to_string(),
+            status: "Fall 000: Ein Host steckt in einem geöffneten Video-Frame. Stabilisiere Gegenwart, Stadtzeit und Clip-Anker.".to_string(),
             hover: None,
             modal,
             dialogue_response: None,
@@ -2599,7 +2034,7 @@ impl Game {
                 Modal::Milestone => {
                     if button_rect(540.0, 492.0, 200.0, 48.0).contains(mouse) {
                         self.modal = Modal::None;
-                        self.status = "Der Probelauf ist abgeschlossen. Die offenen Archivräume bleiben dokumentiert.".to_string();
+                        self.status = "Der Rettungslauf ist freigegeben. Die Host-Spur bleibt stabil, solange niemand den Frame wieder anzüngelt.".to_string();
                     }
                     return;
                 }
@@ -2622,7 +2057,7 @@ impl Game {
         }
 
         if button_rect(1162.0, 24.0, 92.0, 42.0).contains(mouse) {
-            self.hover = Some("Probe neu starten".to_string());
+            self.hover = Some("Fall neu starten".to_string());
             if clicked {
                 self.reset();
                 return;
@@ -2731,6 +2166,28 @@ impl Game {
             for (i, choice) in dialogue.choices.iter().enumerate() {
                 let rect = dialogue_choice_rect(i, has_response);
                 if rect.contains(mouse) {
+                    if id == "nurse" && choice.flag == "nurse_clearance_requested" {
+                        self.state.flags.insert(choice.flag.to_string());
+                        if self.flag("hospital_vitals_checked") {
+                            self.state.flags.insert("nurse_clearance".to_string());
+                            self.add_log(choice.log);
+                            self.dialogue_response = Some(DialogueResponse {
+                                dialogue_id: id,
+                                text: "Die Werte sind stabil. Der Bogen ist freigegeben. Und die Zunge bleibt bitte im Mund.",
+                            });
+                        } else {
+                            self.add_log(
+                                "Die Pflegekraft verweigert die Freigabe bis zum Monitorcheck.",
+                            );
+                            self.dialogue_response = Some(DialogueResponse {
+                                dialogue_id: id,
+                                text: "Erst der Monitor. Ich unterschreibe nicht gegen ein Bauchgefühl, auch nicht gegen deins.",
+                            });
+                        }
+                        self.status = format!("{} antwortet.", dialogue.speaker);
+                        save_state(&self.state);
+                        return;
+                    }
                     if !choice.flag.is_empty() {
                         self.state.flags.insert(choice.flag.to_string());
                     }
@@ -2801,8 +2258,6 @@ impl Game {
             }
             HotspotKind::Prop => match id {
                 "greenscreen_setup" => self.use_hotspot(id),
-                "archive_hatch" => self.use_hotspot(id),
-                "archive_exit_sign" | "distant_gate" => self.use_hotspot(id),
                 _ => self.inspect(id),
             },
         }
@@ -2827,24 +2282,34 @@ impl Game {
                     "Du stubst in laufende Technik. Das Signal findet einen schnelleren Weg durch dich.",
                 );
             }
-            "traffic_totem" => self.set_flag_log(
-                "road_order_checked",
-                "Die Markierungsgruppe reagiert auf den Stoß: nah, mittel, fern.",
-                "Die Markierungen sind jetzt nach Bildtiefe sortiert.",
-            ),
+            "call_button" => self.call_nurse("Du stubst den Rufknopf mit einem Finger an. Das System akzeptiert die primitive Schnittstelle."),
+            "hospital_monitor" => {
+                self.status = "Der Monitor piept einmal beleidigt. Medizinische Geräte mögen keine Meinungsumfragen per Finger.".to_string();
+            }
+            "nurse_station" => {
+                self.status = "Die Pflegekraft tritt einen halben Schritt zurück. Der Befund lautet: Sozialer Abstand stabil.".to_string();
+            }
+            "discharge_clipboard" => {
+                self.status = "Das Klemmbrett klackt. Es wirkt dadurch amtlicher, aber nicht freigegebener.".to_string();
+            }
+            "hospital_exit" => {
+                self.status = "Die Korridortür bewegt sich keinen Millimeter. Sie ist eine Tür, kein Gong.".to_string();
+            }
+            "busker_case" => {
+                self.status = "Der Koffer scheppert. Der Straßenmusiker nickt im Takt, aber nicht im Sinne einer Zustimmung.".to_string();
+            }
+            "corner_kiosk" => {
+                self.status = "Der Kiosk antwortet mit dem dumpfen Geräusch geschlossener Ladenöffnungszeiten.".to_string();
+            }
+            "record_store" => {
+                self.status = "Die Scheibe vibriert kurz. Drinnen fällt kein einziges Urteil über deinen Musikgeschmack um.".to_string();
+            }
             "mold_rack" | "casting_table" | "set_pieces" => self.trigger_consequence(
                 DeathKind::Fall,
                 "Du bringst eine instabile Reihe aus dem Gleichgewicht. Die Szene endet unter Material.",
             ),
-            "lost_signal" => self.trigger_consequence(
-                DeathKind::Signal,
-                "Du berührst den fehlenden Bildbereich. Der Frame verliert die Synchronität.",
-            ),
             _ => {
-                self.status = format!(
-                    "Du stubst {} an. Es gibt keine verwertbare Bewegung.",
-                    hotspot.name
-                );
+                self.status = poke_response(id, hotspot.name).to_string();
             }
         }
     }
@@ -2861,34 +2326,52 @@ impl Game {
                     "Du berührst laufende Technik mit der Zunge. Der Stromschlag ist real.",
                 );
             }
+            "rehearsal_monitor" => {
+                self.trigger_consequence(
+                    DeathKind::Signal,
+                    "Du anzüngelst den Anker-Monitor. Der offene Frame kippt in Störsignal, und die Rettungsroutine zieht dich ins Archiv.",
+                );
+            }
+            "nurse_station" => {
+                self.status = "Die Pflegekraft sagt ohne Pause: \"Nein.\" Danach schreibt sie etwas in die Akte, das du nicht lesen möchtest.".to_string();
+            }
+            "call_button" => {
+                self.call_nurse("Du drückst den Rufknopf mit der Zunge. Der Knopf funktioniert. Deine Würde nicht.");
+            }
+            "hospital_monitor" => {
+                self.status = "Die Pflegekraft ruft aus dem Flur: \"Der Monitor misst Werte. Er sammelt keine Speichelproben.\"".to_string();
+            }
+            "discharge_clipboard" => {
+                self.status = "Der Entlassungsbogen schmeckt nach Papier, Toner und einer schlechten Entscheidung mit Durchschlag.".to_string();
+            }
+            "hospital_exit" => {
+                self.status = "Die Türklinke schmeckt nach Desinfektionsmittel und Verwaltungsgebäude. Beides bleibt im Gedächtnis.".to_string();
+            }
+            "busker_case" => {
+                self.status = "Der Straßenmusiker zieht den Koffer weg. \"Münzen ja. Zunge nein.\""
+                    .to_string();
+            }
+            "market_boxes" => {
+                self.status = "Die Pappe schmeckt nach Regen, Tomatenkiste und einem Umzug, der nie stattgefunden hat.".to_string();
+            }
+            "corner_kiosk" => {
+                self.status = "Das Kioskfenster schmeckt nach Stadtstaub. Das Band bleibt trotzdem hinter der Scheibe.".to_string();
+            }
             "greenscreen_wall" | "floor_marks" | "gaffer_roll" | "chat_preview" => {
                 self.trigger_consequence(
                     DeathKind::Fire,
                     "Du probierst Produktionsmaterial mit der Zunge, reißt reflexartig am Aufbau und löst den Sprinkleralarm aus.",
                 );
             }
-            "wet_note" | "flow_arrow" | "archive_hatch" => {
-                self.set_flag_log(
-                    "wet_note_smell_checked",
-                    "Der nasse Timecode wird eindeutig dem Kanal und der Luke zugeordnet. Die Methode bleibt fragwürdig.",
-                    "Der Timecode ist zugeordnet. Die Methode war unnötig direkt.",
-                );
-            }
             "mold_rack" | "mold_token" => {
                 self.set_flag_log(
                     "mold_material_checked",
                     "Die Materialprobe ist über Oberfläche und Geschmack zugeordnet.",
-                    "Die Formprobe ist zugeordnet. Das Protokoll erwähnt nicht die Methode.",
-                );
-            }
-            "lost_signal" => {
-                self.trigger_consequence(
-                    DeathKind::Signal,
-                    "Du prüfst einen fehlenden Bildbereich mit der Zunge. Die Regie muss den Frame technisch bergen.",
+                    "Die Frame-Probe ist zugeordnet. Das Protokoll erwähnt nicht die Methode.",
                 );
             }
             _ => {
-                self.status = format!("{} lässt sich hier nicht sinnvoll anzüngeln.", hotspot.name);
+                self.status = tongue_response(id, hotspot.name).to_string();
             }
         }
     }
@@ -2899,32 +2382,43 @@ impl Game {
         };
 
         match id {
+            "nurse_station" => {
+                self.status = "Die Pflegekraft riecht nach Desinfektionsmittel, Kaffee und zwölf Stunden professioneller Geduld.".to_string();
+            }
+            "call_button" => {
+                self.status = "Der Rufknopf riecht nach Plastik und Menschen, die zu spät beschlossen haben, Hilfe zu brauchen.".to_string();
+            }
+            "hospital_monitor" => {
+                self.status = "Der Monitor riecht nach warmem Staub. Das ist kein Vitalwert, aber immerhin reproduzierbar.".to_string();
+            }
+            "discharge_clipboard" => {
+                self.status = "Der Bogen riecht nach Formularschrank. Du bekommst kurz den Drang, in Blockschrift zu gehen.".to_string();
+            }
+            "hospital_exit" => {
+                self.status =
+                    "Aus dem Korridor kommt Suppe, Reinigungsmittel und eine sehr müde Durchsage."
+                        .to_string();
+            }
+            "busker_case" => {
+                self.status = "Der Koffer riecht nach Münzen, altem Filz und einem Reflektor, der viel zu wichtig geworden ist.".to_string();
+            }
+            "record_store" => {
+                self.status = "Der Plattenladen riecht nach Papierhüllen und Menschen, die Pressungen erklären.".to_string();
+            }
             "mold_rack" | "mold_token" => self.set_flag_log(
                 "mold_material_checked",
                 "Der Geruch bestätigt: Die helle Probe gehört zur frischen Formenreihe.",
-                "Die Formprobe ist über Materialgeruch zugeordnet.",
+                "Die Frame-Probe ist über Materialgeruch zugeordnet.",
             ),
-            "archive_hatch" if self.has_item("wet_note") => self.set_flag_log(
-                "wet_note_smell_checked",
-                "Der Geruch an Luke und Timecode passt zusammen: gleicher nasser Papier- und Metallton.",
-                "Die Archivluke gehört zum nassen Timecode.",
-            ),
-            "wet_note" => self.set_flag_log(
-                "wet_note_smell_checked",
-                "Der nasse Timecode riecht nach Kanalwasser und frischer Tinte.",
-                "Der Timecode ist frisch genug, um zur Archivluke zu gehören.",
-            ),
-            "factory_floor" => self.status =
-                "Der Boden riecht nach feuchtem Material, nicht nach einem Ausgang.".to_string(),
+            "factory_floor" => {
+                self.status =
+                    "Der Boden riecht nach feuchtem Material, nicht nach einem Ausgang.".to_string()
+            }
             "greenscreen_wall" => {
                 self.status = "Der Stoff riecht nach trockenem Molton und Staub.".to_string();
             }
-            "lost_signal" => self.trigger_consequence(
-                DeathKind::Signal,
-                "Der fehlende Bildbereich riecht nach heißem Videocodec. Danach riecht nichts mehr.",
-            ),
             _ => {
-                self.status = format!("{} liefert keinen nützlichen Geruch.", hotspot.name);
+                self.status = smell_response(id, hotspot.name).to_string();
             }
         }
     }
@@ -2939,8 +2433,8 @@ impl Game {
             "dispo_board" => self.take_item(
                 "call_sheet",
                 "call_sheet_taken",
-                "Laufzettel aufgehoben.",
-                "Laufzettel aufgehoben: Studio, Regie und Außenreferenzen sind als Auftrag vermerkt.",
+                "Fallakte 000 aufgehoben.",
+                "Fallakte 000 gesichert: Studio, Regie, Stadtzeit und Schimmelbrüder-Frame sind als Anker vermerkt.",
             ),
             "gaffer_roll" => self.take_item(
                 "gaffer_tape",
@@ -2957,32 +2451,29 @@ impl Game {
             "print_shop" => self.take_item(
                 "lower_third_card",
                 "lower_third_card_taken",
-                "Bauchbindenkarte aufgehoben.",
-                "Die freigegebene Bauchbindenkarte wurde im Copyshop abgeholt.",
+                "Host-Karte aufgehoben.",
+                "Die freigegebene Host-Karte wurde im Copyshop abgeholt.",
             ),
-            "city_reflector" => self.take_item(
-                "city_reflector",
-                "city_reflector_taken",
-                "Lichtreflektor aufgehoben.",
-                "Der Lichtreflektor wurde als Referenzmaterial für das Studio aufgenommen.",
+            "city_reflector" => {
+                self.status = "Der Parkreflektor ist festgeschraubt. Der mobile Reflektor hängt am Koffer des Straßenmusikers.".to_string();
+            }
+            "market_boxes" => self.take_item(
+                "cardboard_piece",
+                "cardboard_piece_taken",
+                "Pappstück aufgehoben.",
+                "Ein stabiles Pappstück aus den Marktkisten wurde als Schildrohling gesichert.",
             ),
-            "wet_note" => self.take_item(
-                "wet_note",
-                "wet_note_taken",
-                "Nassen Timecode aufgehoben.",
-                "Im Kanalvideo liegt ein verwischter Timecode: Zulauf, Ablauf, Gegenlauf.",
+            "corner_kiosk" => self.take_item(
+                "clear_tape",
+                "clear_tape_taken",
+                "Transparentband aufgehoben.",
+                "Das kurze Transparentband vom Kiosk ist jetzt Teil der Außenlogistik.",
             ),
             "mold_token" => self.take_item(
                 "mold_token",
                 "mold_token_taken",
-                "Formprobe aufgehoben.",
-                "Die Formprobe aus der Schimmelbrüder-Halle wurde gesichert.",
-            ),
-            "road_marker" => self.take_item(
-                "road_marker",
-                "road_marker_taken",
-                "Routenmarker aufgehoben.",
-                "Der Marker aus dem Straßenframe wurde gesichert.",
+                "Frame-Probe aufgehoben.",
+                "Die Frame-Probe aus der Schimmelbrüder-Halle wurde gesichert.",
             ),
             "discharge_clipboard" => self.try_take_medical_release(),
             "checksum_printout" => self.take_item(
@@ -2995,9 +2486,21 @@ impl Game {
                 self.status = format!("{} lässt sich noch nicht sinnvoll aufheben.", hotspot.name);
             }
             _ => {
-                self.status = format!("{} ist kein loser Gegenstand.", hotspot.name);
+                self.status = pickup_response(id, hotspot.name).to_string();
             }
         }
+    }
+
+    fn call_nurse(&mut self, status: &str) {
+        if self.flag("nurse_called") {
+            self.status = "Der Ruf ist schon raus. Die Pflegekraft steht im Zimmer und ist jetzt vor allem über die Wiederholung informiert.".to_string();
+            return;
+        }
+        self.set_flag_log(
+            "nurse_called",
+            "Der Rufknopf wurde ausgelöst. Die Pflegekraft kommt ins Zimmer.",
+            status,
+        );
     }
 
     fn use_hotspot(&mut self, id: &str) {
@@ -3007,6 +2510,10 @@ impl Game {
         };
 
         if hotspot.kind == HotspotKind::Exit {
+            if id == "video_schimmelbrueder" {
+                self.enter_schimmel_video();
+                return;
+            }
             self.travel(
                 hotspot.id,
                 &format!("Du gehst zu {}.", current_scene(hotspot.id).name),
@@ -3015,11 +2522,9 @@ impl Game {
         }
 
         match id {
-            "call_button" => self.set_flag_log(
-                "nurse_called",
-                "Der Rufknopf wurde benutzt. Die Pflegekraft kommt ins Zimmer.",
-                "Die Pflegekraft ist informiert.",
-            ),
+            "call_button" => {
+                self.call_nurse("Der Rufknopf wurde benutzt. Die Pflegekraft kommt ins Zimmer.")
+            }
             "hospital_exit" => self.try_leave_hospital(),
             "alarm_panel" => self.set_flag_log(
                 "fire_alarm_logged",
@@ -3045,8 +2550,6 @@ impl Game {
             "workshop_gap" | "collapse_exit" => self.try_escape_collapse(),
             "recovery_terminal" => self.try_close_recovery_session(),
             "control_room_return" => self.try_return_from_recovery(),
-            "archive_hatch" => self.try_open_archive_hatch(),
-            "archive_exit_sign" | "distant_gate" => self.try_open_road_exit(),
             "song_exit_gate" => self.try_open_schimmel_exit(),
             "greenscreen_setup" => self.try_finish_loop(),
             _ if hotspot.talk_id.is_some() => self.talk(id),
@@ -3055,7 +2558,7 @@ impl Game {
                 self.status = format!("{target} ist ein Gegenstand. Nimm ihn mit Aufheben.");
             }
             _ => {
-                self.status = format!("{} hat hier keine Benutzen-Funktion.", hotspot.name);
+                self.status = use_response(id, hotspot.name).to_string();
             }
         }
     }
@@ -3070,8 +2573,8 @@ impl Game {
         match id {
             "dispo_board" => self.set_flag_log(
                 "dispo_checked",
-                "Die Dispo-Tafel bestätigt: Studio, Regie, Außenreferenzen.",
-                "Der Tagesplan bestätigt die Reihenfolge der Aufgaben.",
+                "Die Falltafel bestätigt: Studio, Regie, Stadtzeit und Schimmelbrüder-Frame.",
+                "Fall 000 bestätigt die Reihenfolge der Anker.",
             ),
             "route_map" => self.set_flag_log(
                 "campus_mapped",
@@ -3093,20 +2596,15 @@ impl Game {
                 "Das Licht am Wasserturm wurde als Referenz dokumentiert.",
                 "Lichtreferenz im Schanzenpark dokumentiert.",
             ),
+            "city_notice" => self.set_flag_log(
+                "city_notice_checked",
+                "Der Drehhinweis nennt Bahnhofsuhr, Wasserturmlicht und ein reflektierendes Kofferschild am Durchgang.",
+                "Der Aushang verweist auf den Kofferreflektor des Straßenmusikers.",
+            ),
             "graphics_terminal" => self.set_flag_log(
                 "graphics_slot_checked",
-                "Der Grafikplatz wartet auf die freigegebene Bauchbindenkarte.",
-                "Die Regie benötigt die freigegebene Bauchbindenkarte.",
-            ),
-            "walkable_lane" => self.set_flag_log(
-                "road_plane_checked",
-                "Die Standspur ist breit genug für die Figur.",
-                "Begehbare Ebene im Straßenframe bestätigt.",
-            ),
-            "traffic_totem" => self.set_flag_log(
-                "road_order_seen",
-                "Die Markierungen sortieren die Tiefe. Anstubsen bestätigt die Reihenfolge: nah, mittel, fern.",
-                "Die Markierungsgruppe zeigt die Tiefenreihenfolge. Stubse sie zur Bestätigung an.",
+                "Der Grafikplatz wartet auf die freigegebene Host-Karte.",
+                "Die Regie benötigt die freigegebene Host-Karte.",
             ),
             "factory_floor" => self.set_flag_log(
                 "schimmel_floor_checked",
@@ -3122,21 +2620,6 @@ impl Game {
                 "mold_pattern_checked",
                 "Die Musterbahn wiederholt die Abfolge der Formen.",
                 "Musterbahn als Zuordnung zur Formenfolge dokumentiert.",
-            ),
-            "flow_arrow" => self.set_flag_log(
-                "sewer_flow_checked",
-                "Der Flusspfeil markiert die Reihenfolge: Zulauf, Ablauf, Gegenlauf.",
-                "Der Pfeil markiert die Reihenfolge für den Timecode.",
-            ),
-            "inspection_tripod" => self.set_flag_log(
-                "sewer_tripod_checked",
-                "Das Inspektionsstativ ist auf die Luke ausgerichtet.",
-                "Das Stativ ist auf die Archivluke ausgerichtet.",
-            ),
-            "lost_signal" => self.set_flag_log(
-                "sewer_signal_seen",
-                "Im Videoframe fehlt ein Bildbereich.",
-                "Fehlender Bildbereich im Kanalvideo dokumentiert.",
             ),
             "hospital_monitor" => self.set_flag_log(
                 "hospital_vitals_checked",
@@ -3179,7 +2662,11 @@ impl Game {
             self.modal = Modal::Dialogue(dialogue_id);
             self.dialogue_response = None;
         } else {
-            self.status = "Hier ist niemand, der antwortet.".to_string();
+            let name = self
+                .hotspot(id)
+                .map(|hotspot| hotspot.name)
+                .unwrap_or("Hier");
+            self.status = talk_response(id, name).to_string();
         }
     }
 
@@ -3202,32 +2689,80 @@ impl Game {
             ("graphics_terminal" | "chat_preview" | "greenscreen_setup", "lower_third_card") => {
                 self.set_flag_log(
                     "graphic_loaded",
-                    "Die Bauchbindenkarte ist am Grafikplatz eingepflegt.",
-                    "Bauchbinde geladen.",
+                    "Die Host-Karte ist am Grafikplatz eingepflegt.",
+                    "Host-Karte geladen.",
+                );
+            }
+            ("dispo_board" | "mentor_shadow" | "intercom_voice", "call_sheet") => {
+                self.set_flag_log(
+                    "case_briefed",
+                    "Die Fallakte 000 wurde mit der Produktionsleitung abgeglichen.",
+                    "Fallakte abgeglichen: Die Ankerliste ist verbindlich.",
+                );
+            }
+            ("route_map", "call_sheet") => {
+                self.set_flag_log(
+                    "campus_mapped",
+                    "Die Fallakte wurde mit dem Gebäudeplan abgeglichen: Haus 9, Haus 11 und Haus 15 bilden die Studio-Gegenwart.",
+                    "Fallroute auf dem Gebäudeplan markiert.",
+                );
+            }
+            ("station_clock", "call_sheet") => {
+                self.set_flag_log(
+                    "station_timed",
+                    "Die Bahnhofsuhr wurde in Fallakte 000 als harte Zeitmarke eingetragen.",
+                    "Zeitmarke in der Fallakte notiert.",
+                );
+            }
+            ("water_tower", "call_sheet") => {
+                self.set_flag_log(
+                    "city_light_checked",
+                    "Das Wasserturmlicht wurde in Fallakte 000 als Lichtreferenz eingetragen.",
+                    "Lichtreferenz in der Fallakte notiert.",
                 );
             }
             ("camera_one" | "greenscreen_setup", "city_reflector") => {
                 self.set_flag_log(
                     "city_reflector_placed",
                     "Der Lichtreflektor wurde am Studio-Setup platziert.",
-                    "Lichtreferenz platziert.",
+                    "Stadtlicht am Rückholpunkt platziert.",
                 );
+            }
+            ("mold_rack", "mold_token") => {
+                self.set_flag_log(
+                    "mold_material_checked",
+                    "Die Frame-Probe wurde mit der Formenreihe abgeglichen.",
+                    "Frame-Probe passt zur Formenreihe.",
+                );
+            }
+            ("patterned_belt", "mold_token") => {
+                self.set_flag_log(
+                    "mold_pattern_checked",
+                    "Die Frame-Probe wurde an der Musterbahn ausgerichtet.",
+                    "Musterfolge auf die Frame-Probe übertragen.",
+                );
+            }
+            ("print_shop", "cardboard_piece") => {
+                self.try_print_busker_sign();
+            }
+            ("busker_case", "medical_release") => {
+                self.try_show_release_to_busker();
+            }
+            ("busker_case", "busker_sign") => {
+                self.try_place_busker_sign();
+            }
+            ("busker_case", "clear_tape") => {
+                self.try_tape_busker_sign();
             }
             ("greenscreen_setup", "call_sheet") => {
                 self.set_flag_log(
                     "call_sheet_checked",
-                    "Der Laufzettel liegt am Setup.",
-                    "Laufzettel am Setup geprüft.",
+                    "Die Fallakte 000 liegt am Setup.",
+                    "Fallakte am Setup geprüft.",
                 );
                 self.try_finish_loop();
             }
-            ("archive_hatch", "wet_note") => {
-                self.try_open_archive_hatch();
-            }
-            ("archive_exit_sign" | "distant_gate", "road_marker") => {
-                self.try_open_road_exit();
-            }
-            ("song_exit_gate" | "patterned_belt", "mold_token") => {
+            ("song_exit_gate", "mold_token") => {
                 self.try_open_schimmel_exit();
             }
             ("hospital_exit", "medical_release") => {
@@ -3236,11 +2771,104 @@ impl Game {
             ("recovery_terminal", "checksum_note") => {
                 self.try_close_recovery_session();
             }
+            ("archive_drive", "checksum_note") => {
+                self.set_flag_log(
+                    "archive_drive_checked",
+                    "Die Prüfsumme passt zum Archivlaufwerk. Die Rettungssession hat eine Quelle.",
+                    "Prüfsumme am Laufwerk bestätigt.",
+                );
+            }
+            ("rehearsal_monitor" | "video_schimmelbrueder", "checksum_note") => {
+                self.status = "Die Prüfsumme gehört zur Rettungsstation, nicht zum geöffneten Frame. Der Monitor reagiert mit sehr altem Rauschen.".to_string();
+            }
+            ("nurse_station", "medical_release") => {
+                self.status = "Die Pflegekraft prüft den Entlassungsbogen und sagt: \"Gut. Dann bitte heute keine zweite Fachabteilung eröffnen.\"".to_string();
+            }
+            ("safety_officer", "medical_release") => {
+                self.status = "Der Sicherheitsdienst akzeptiert den Entlassungsbogen nicht als Brandschutzprotokoll, findet ihn aber dramaturgisch bemerkenswert.".to_string();
+            }
             _ => {
                 let item = item_meta(item_id).map(|i| i.name).unwrap_or("Das");
-                self.status = format!("{} passt hier nicht.", item);
+                self.status = funny_item_mismatch(hotspot_id, item_id)
+                    .map(str::to_string)
+                    .unwrap_or_else(|| {
+                        format!(
+                            "{item} passt hier nicht. Es wirkt kurz wie Adventure-Logik, ist aber nur Inventar-Akrobatik."
+                        )
+                    });
             }
         }
+    }
+
+    fn try_print_busker_sign(&mut self) {
+        if self.has_item("busker_sign") {
+            self.status =
+                "Der Copyshop hat das Kofferschild schon gedruckt. Mehr Laminat wäre Angeberei."
+                    .to_string();
+            return;
+        }
+        if !self.flag("city_notice_checked") {
+            self.status =
+                "Der Copyshop braucht den Wortlaut vom Drehhinweis an der Schanze.".to_string();
+            return;
+        }
+        self.take_item(
+            "busker_sign",
+            "busker_sign_printed",
+            "Kofferschild gedruckt.",
+            "Der Copyshop druckt ein wetterfestes Schild für den Straßenmusiker-Koffer.",
+        );
+    }
+
+    fn try_show_release_to_busker(&mut self) {
+        self.set_flag_log(
+            "busker_release_shown",
+            "Der Straßenmusiker akzeptiert den Entlassungsbogen als Nachweis, dass der Stromschlag offiziell überlebt wurde.",
+            "Der Musiker liest den Entlassungsbogen und nickt: offiziell lebendig reicht als Bonität.",
+        );
+        self.state
+            .flags
+            .insert("busker_reflector_requested".to_string());
+    }
+
+    fn try_place_busker_sign(&mut self) {
+        if !self.flag("busker_release_shown") {
+            self.status = "Der Musiker will erst den Entlassungsbogen sehen. Fremde Schilder bekommt er täglich.".to_string();
+            return;
+        }
+        self.set_flag_log(
+            "busker_sign_positioned",
+            "Das neue Schild liegt am Koffer des Straßenmusikers. Es braucht nur noch Klebeband.",
+            "Das Schild liegt richtig. Ohne Klebeband ist es nur ein sehr kurzes Flugblatt.",
+        );
+    }
+
+    fn try_tape_busker_sign(&mut self) {
+        if !self.flag("busker_release_shown") {
+            self.status = "Der Musiker lässt dich nicht an den Koffer, solange er deinen Entlassungsbogen nicht gesehen hat.".to_string();
+            return;
+        }
+        if !self.flag("busker_sign_positioned") {
+            self.status =
+                "Transparentband direkt auf Filz ist keine Reparatur, sondern moderne Kunst."
+                    .to_string();
+            return;
+        }
+        self.finish_busker_reflector();
+    }
+
+    fn finish_busker_reflector(&mut self) {
+        if self.flag("busker_case_fixed") || self.has_item("city_reflector") {
+            self.status =
+                "Der Koffer ist beschildert. Der Reflektor ist bereits geliehen.".to_string();
+            return;
+        }
+        self.state.flags.insert("busker_case_fixed".to_string());
+        self.add_item("city_reflector");
+        self.add_log("Der Straßenmusiker-Koffer ist neu beschildert. Der Kofferreflektor geht als Lichtreferenz mit.");
+        self.status =
+            "Der Musiker löst den Reflektor vom Koffer: \"Bring ihn zurück, bevor er berühmt wird.\""
+                .to_string();
     }
 
     fn try_take_medical_release(&mut self) {
@@ -3249,9 +2877,16 @@ impl Game {
                 .to_string();
             return;
         }
+        if !self.flag("nurse_clearance_requested") {
+            self.status =
+                "Sprich mit der Pflegekraft. Formulare entstehen hier nicht durch Blickkontakt."
+                    .to_string();
+            return;
+        }
         if !self.flag("nurse_clearance") {
             self.status =
-                "Sprich mit der Pflegekraft. Der Bogen ist noch nicht freigegeben.".to_string();
+                "Sprich noch einmal mit der Pflegekraft. Jetzt liegen die Monitorwerte vor."
+                    .to_string();
             return;
         }
         self.take_item(
@@ -3340,36 +2975,21 @@ impl Game {
         );
     }
 
-    fn try_open_road_exit(&mut self) {
-        if self.flag("road_video_cleared") {
-            self.status = "Die Ausfahrt im Straßenframe ist freigegeben.".to_string();
-            return;
-        }
-        if !self.flag("road_plane_checked") {
-            self.status = "Prüfe zuerst die Standfläche der Figur in diesem Frame.".to_string();
-            return;
-        }
-        if !self.has_item("road_marker") {
-            self.status = "Die Ausfahrt braucht den Marker aus dem Straßenvideo.".to_string();
-            return;
-        }
-        if !self.flag("road_order_checked") {
-            self.status =
-                "Der Marker allein reicht nicht. Stubse die rot-weißen Markierungen an, um die Bildtiefe zu bestätigen."
-                    .to_string();
-            return;
-        }
-        self.state.flags.insert("road_video_cleared".to_string());
-        self.add_log(
-            "Der Routenmarker wurde der Straßenausfahrt zugeordnet. Der Straßenframe ist als begehbarer Bereich dokumentiert.",
+    fn enter_schimmel_video(&mut self) {
+        self.state.flags.insert("video_entry_started".to_string());
+        self.add_log("Die Regie rastet den Schimmelbrüder-Frame ein. Der Monitor wird als begehbarer Raum und als fraglicher Zeitpunkt geöffnet.");
+        self.travel(
+            "video_schimmelbrueder",
+            "Das Monitorbild hält an, der Ton fällt weg, und die Figur tritt in den Schimmelbrüder-Frame.",
         );
-        self.status = "Die rechte Fahrspur ist freigegeben.".to_string();
     }
 
     fn try_open_schimmel_exit(&mut self) {
         if self.flag("schimmel_video_cleared") {
-            self.status =
-                "Der Clip-Ausgang ist freigegeben. Die Formenreihe bleibt begehbar.".to_string();
+            self.travel(
+                "control_room",
+                "Der Clip-Ausgang klappt zurück in die Regie. Im Monitor bleibt eine stabile Host-Spur stehen.",
+            );
             return;
         }
         if !self.flag("schimmel_floor_checked") {
@@ -3378,12 +2998,13 @@ impl Game {
             return;
         }
         if !self.has_item("mold_token") {
-            self.status = "Dem Clip-Ausgang fehlt eine Probe aus der Formenreihe.".to_string();
+            self.status =
+                "Dem Clip-Ausgang fehlt eine Frame-Probe aus der Formenreihe.".to_string();
             return;
         }
         if !self.flag("mold_material_checked") {
             self.status =
-                "Die Probe ist noch nicht zugeordnet. Rieche an der Formenreihe, bevor du sie am Ausgang benutzt."
+                "Die Probe ist noch nicht zugeordnet. Gleiche sie mit der Formenreihe ab, bevor du sie am Ausgang benutzt."
                     .to_string();
             return;
         }
@@ -3397,48 +3018,21 @@ impl Game {
             .flags
             .insert("schimmel_video_cleared".to_string());
         self.add_log(
-            "Die Formprobe wurde dem Clip-Ausgang zugeordnet. Der Schimmelbrüder-Frame ist freigegeben.",
+            "Die Frame-Probe wurde dem Clip-Ausgang zugeordnet. Der Schimmelbrüder-Frame hält jetzt eine stabile Host-Spur.",
         );
-        self.status = "Formprobe zugeordnet. Der Clip-Ausgang ist freigegeben.".to_string();
-    }
-
-    fn try_open_archive_hatch(&mut self) {
-        if self.flag("sewer_video_cleared") {
-            self.status = "Die Archivluke ist freigegeben.".to_string();
-            return;
-        }
-        if !self.has_item("wet_note") {
-            self.status =
-                "Die Luke will einen Timecode. Im Tunnel muss noch ein Hinweis liegen.".to_string();
-            return;
-        }
-        if !self.flag("sewer_flow_checked") {
-            self.status =
-                "Der Timecode allein reicht nicht. Die Pfeilrichtung bestimmt die Reihenfolge."
-                    .to_string();
-            return;
-        }
-        if !self.flag("wet_note_smell_checked") {
-            self.status =
-                "Der Timecode ist noch nicht der Luke zugeordnet. Rieche an Luke oder Hinweis."
-                    .to_string();
-            return;
-        }
-        self.state.flags.insert("sewer_video_cleared".to_string());
-        self.add_log(
-            "Der Timecode wurde der Archivluke zugeordnet. Der nächste Videoraum ist erreichbar.",
-        );
-        self.status = "Die Archivluke ist freigegeben.".to_string();
+        self.status =
+            "Frame-Probe zugeordnet. Der Host-Echo ist stabil, der Clip-Ausgang ist freigegeben."
+                .to_string();
     }
 
     fn try_finish_loop(&mut self) {
         if !self.has_item("call_sheet") {
-            self.status = "Der Laufzettel fehlt. Hol ihn am Dispo-Board.".to_string();
+            self.status = "Die Fallakte fehlt. Hol sie an der Falltafel im Büroflur.".to_string();
             return;
         }
         if !self.flag("greenscreen_marked") {
             self.status =
-                "Die Bodenmarken fehlen noch. Nutze das Gaffer-Tape im Studio.".to_string();
+                "Die Bodenmarken fehlen noch. Nutze das Gaffer-Tape am Rückholpunkt.".to_string();
             return;
         }
         if !self.flag("route_labeled") {
@@ -3448,7 +3042,13 @@ impl Game {
             return;
         }
         if !self.flag("graphic_loaded") {
-            self.status = "Die Bauchbinde fehlt am Grafikplatz.".to_string();
+            self.status = "Die Host-Karte fehlt am Grafikplatz.".to_string();
+            return;
+        }
+        if !self.flag("schimmel_video_cleared") {
+            self.status =
+                "Der Schimmelbrüder-Frame ist noch instabil. Öffne ihn in der Regie und bringe die Host-Spur zurück."
+                    .to_string();
             return;
         }
         if !self.flag("station_timed") {
@@ -3467,9 +3067,9 @@ impl Game {
             return;
         }
         self.state.complete = true;
-        self.state.flags.insert("rehearsal_ready".to_string());
-        self.add_log("Der Probelauf ist vollständig vorbereitet: Studio, Regie und Außenreferenzen sind abgeglichen.");
-        self.status = "Die Regie bestätigt den Probelauf.".to_string();
+        self.state.flags.insert("rescue_ready".to_string());
+        self.add_log("Der Rettungslauf ist vollständig vorbereitet: Gegenwart, Stadtzeit, Host-Karte und Clip-Anker sind abgeglichen.");
+        self.status = "Die Regie bestätigt den Rettungslauf.".to_string();
         self.modal = Modal::Milestone;
     }
 
@@ -3537,11 +3137,12 @@ impl Game {
             );
         }
 
-        self.draw_player();
+        self.draw_player(scene, rect);
     }
 
-    fn draw_player(&self) {
+    fn draw_player(&self, scene: &SceneMeta, scene_rect: Rect) {
         let token = self.player_pos;
+        let scale = player_depth_scale(token, scene, scene_rect);
         let frame = if self.walk_target.is_some() {
             walk_cycle_frame(get_time())
         } else {
@@ -3551,7 +3152,7 @@ impl Game {
         if let Some(texture) = &self.player_texture {
             let frame_w = texture.width() / 4.0;
             let frame_h = texture.height() / 4.0;
-            let dest = vec2(PLAYER_DRAW_W, PLAYER_DRAW_H);
+            let dest = vec2(PLAYER_DRAW_W * scale, PLAYER_DRAW_H * scale);
             draw_texture_ex(
                 texture,
                 token.x - dest.x * 0.5,
@@ -3571,11 +3172,12 @@ impl Game {
             return;
         }
 
+        let fallback = vec2(48.0 * scale, 96.0 * scale);
         let player_rect = Rect::new(
-            token.x - 24.0,
-            token.y - 96.0 * PLAYER_FOOT_ANCHOR_Y,
-            48.0,
-            96.0,
+            token.x - fallback.x * 0.5,
+            token.y - fallback.y * PLAYER_FOOT_ANCHOR_Y,
+            fallback.x,
+            fallback.y,
         );
         draw_placeholder_sprite(player_rect, "FIGUR", PlaceholderCategory::Character, false);
     }
@@ -3698,10 +3300,10 @@ impl Game {
     fn draw_milestone(&self, mouse: Vec2) {
         overlay();
         panel(Rect::new(270.0, 155.0, 740.0, 410.0));
-        centered_text("PROBELAUF", 640.0, 220.0, 18, amber());
-        centered_text("Probelauf freigegeben", 640.0, 270.0, 34, bone());
+        centered_text("FALL 000", 640.0, 220.0, 18, amber());
+        centered_text("Rettungslauf freigegeben", 640.0, 270.0, 34, bone());
         draw_text_wrapped(
-            "Signalweg, Bauchbinde, Bodenmarken, Zeitreferenz und Lichtreferenz sind vollständig. Die Regie kann den Greenscreen-Probelauf starten.",
+            "Signalweg, Host-Karte, Bodenmarken, Stadtzeit, Lichtreferenz und Schimmelbrüder-Frame sind stabil. Die Regie kann den vermissten Host an die Gegenwart zurückziehen.",
             350.0,
             320.0,
             580.0,
@@ -3729,10 +3331,15 @@ impl Game {
             "dispo_board" => !self.has_item("call_sheet"),
             "gaffer_roll" => !self.has_item("gaffer_tape"),
             "sdi_label_printer" => !self.has_item("sdi_label"),
-            "print_shop" => !self.has_item("lower_third_card"),
+            "print_shop" => {
+                !self.has_item("lower_third_card")
+                    || (!self.has_item("busker_sign")
+                        && self.has_item("cardboard_piece")
+                        && self.flag("city_notice_checked"))
+            }
             "city_reflector" => !self.has_item("city_reflector"),
-            "wet_note" => !self.has_item("wet_note"),
-            "road_marker" => !self.has_item("road_marker"),
+            "market_boxes" => !self.has_item("cardboard_piece"),
+            "corner_kiosk" => !self.has_item("clear_tape"),
             "mold_token" => !self.has_item("mold_token"),
             "nurse_station" => self.flag("nurse_called"),
             "discharge_clipboard" => !self.has_item("medical_release"),
@@ -3761,13 +3368,9 @@ impl Game {
             "hospital_room" if self.has_item("medical_release") => "hospital_room_no_clipboard",
             "hospital_room" if self.flag("nurse_called") => "hospital_room_nurse",
             "archive_recovery" if self.has_item("checksum_note") => "archive_recovery_no_checksum",
-            "video_kliemannsland_road" if self.has_item("road_marker") => {
-                "video_kliemannsland_road_no_marker"
-            }
             "video_schimmelbrueder" if self.has_item("mold_token") => {
                 "video_schimmelbrueder_no_token"
             }
-            "video_sewer_archive" if self.has_item("wet_note") => "video_sewer_archive_no_note",
             _ => scene_id,
         }
     }
@@ -3852,7 +3455,7 @@ impl Game {
     fn reset(&mut self) {
         clear_save();
         self.state = GameState::default();
-        self.status = "Probe neu gestartet. Der Laufzettel liegt wieder am Anfang.".to_string();
+        self.status = "Fall 000 neu gestartet. Die Fallakte liegt wieder am Anfang.".to_string();
         self.modal = Modal::None;
         self.dialogue_response = None;
         self.death = None;
@@ -3877,17 +3480,222 @@ fn item_meta(id: &str) -> Option<&'static ItemMeta> {
 
 fn pickup_target_name(id: &str) -> Option<&'static str> {
     match id {
-        "dispo_board" => Some("Laufzettel"),
+        "dispo_board" => Some("Fallakte 000"),
         "gaffer_roll" => Some("Gaffer-Tape"),
         "sdi_label_printer" => Some("SDI-Label"),
-        "print_shop" => Some("Bauchbindenkarte"),
-        "city_reflector" => Some("Lichtreflektor"),
-        "wet_note" => Some("Nasser Timecode"),
-        "mold_token" => Some("Formprobe"),
-        "road_marker" => Some("Routenmarker"),
+        "print_shop" => Some("Host-Karte"),
+        "city_reflector" => Some("Kofferreflektor"),
+        "market_boxes" => Some("Pappstück"),
+        "corner_kiosk" => Some("Transparentband"),
+        "mold_token" => Some("Frame-Probe"),
         "discharge_clipboard" => Some("Entlassungsbogen"),
         "checksum_printout" => Some("Prüfsummenzettel"),
         _ => None,
+    }
+}
+
+fn funny_item_mismatch(hotspot_id: &str, item_id: &str) -> Option<&'static str> {
+    match (hotspot_id, item_id) {
+        ("nurse_station", "mold_token") => {
+            Some("Die Pflegekraft akzeptiert keine Frame-Probe als zweiten Puls. Immerhin ist sie stabiler als deine Entscheidung.")
+        }
+        ("hospital_monitor", "medical_release") => {
+            Some("Der Monitor liest den Entlassungsbogen nicht ein. Er piept nur so, als hätte er kurz darüber nachgedacht.")
+        }
+        ("discharge_clipboard", "clear_tape") => {
+            Some("Das Formular ist schon an ein Klemmbrett gebunden. Mehr Klebeband wäre Verwaltungskunst.")
+        }
+        ("busker_case", "mold_token") => {
+            Some("Der Musiker sagt, seine Koffer hatten schon viel gesehen, aber keine freiwillige Frame-Probe.")
+        }
+        ("print_shop", "medical_release") => {
+            Some("Der Copyshop kann den Entlassungsbogen laminieren. Das würde ihn nicht gültiger machen, nur unangenehmer.")
+        }
+        ("graphics_terminal", "mold_token") => {
+            Some("Der Grafikplatz erkennt die Frame-Probe als Bildmaterial, das ausdrücklich nicht in eine Host-Karte gehört.")
+        }
+        ("station_clock", "sdi_label") => {
+            Some("Das SDI-Label an die Bahnhofsuhr zu kleben würde die Zeit nicht routen, nur Hausmeister wecken.")
+        }
+        ("water_tower", "clear_tape") => {
+            Some("Transparentband gegen Backstein und Tageslicht: mutig, aber nicht lichttechnisch.")
+        }
+        ("video_hub", "mold_token") => {
+            Some("Die Frame-Probe gehört in den Clip. Die Kreuzschiene ist schon mit normalen Signalen beleidigt genug.")
+        }
+        ("klixx_table", "medical_release") => {
+            Some("Der Entlassungsbogen auf dem Klixx-Tisch wirkt wie ein sehr defensiver Tippzettel.")
+        }
+        ("record_store", "sdi_label") => {
+            Some("Das SDI-Label passt auf keine Platte. Der Verkäufer würde es trotzdem nach Genre sortieren.")
+        }
+        ("corner_kiosk", "medical_release") => {
+            Some("Der Kiosk akzeptiert keine Entlassungsbögen als Zahlungsmittel. Das Gesundheitssystem auch nicht.")
+        }
+        ("greenscreen_setup", "busker_sign") => {
+            Some("Das Kofferschild im Studio würde nur beweisen, dass der Straßenmusiker nicht hier ist.")
+        }
+        ("song_exit_gate", "call_sheet") => {
+            Some("Die Fallakte erklärt den Ausgang. Sie öffnet ihn nicht. Bürokratie hat Grenzen, auch im Archiv.")
+        }
+        _ => None,
+    }
+}
+
+fn poke_response(id: &str, name: &str) -> String {
+    match id {
+        "dispo_board" => "Die Falltafel wackelt. Die Akte bleibt genau dort, wo man sie eigentlich aufheben sollte.".to_string(),
+        "route_map" => "Der Plan knistert. Gebäude 9, 11 und 15 rücken nicht näher zusammen, aber die rote Route sieht jetzt genervt aus.".to_string(),
+        "equipment_storage" => "Du stubst die Lagertür an. Dahinter antwortet ein Regal mit sehr vielen Dingen, die nicht deine Aufgabe sind.".to_string(),
+        "staircase" => "Die Treppe bleibt Treppe. Sie hat seit Jahren Erfahrung darin, Leute ohne Drama hoch und runter zu lassen.".to_string(),
+        "loading_zone" => "Eine Rollkiste klackt. Der Hof klingt kurz wie ein sehr kleines Schlagzeug.".to_string(),
+        "address_plate" => "Das Schild gibt ein trockenes Metallgeräusch von sich. Die Adresse bleibt korrekt.".to_string(),
+        "greenscreen_wall" => "Der Stoff federt zurück. Für einen Moment sieht die ganze Wand aus, als würde sie dich beurteilen.".to_string(),
+        "floor_marks" => "Die alten Marken lösen sich nicht. Sie wissen, wie man auf einem Studioboden überlebt.".to_string(),
+        "klixx_table" => "Der Tisch ruckt kaum. Jemand hat ihn offenbar schon gegen genau solche Praktikanten gesichert.".to_string(),
+        "chat_preview" => "Der Chatpreview springt nicht an. Die Kommentare bleiben als potenzielle Bedrohung gespeichert.".to_string(),
+        "camera_one" => "Die Kamera schwingt minimal nach. Die Regie hätte das gesehen, wenn sie dich nicht schon kennen würde.".to_string(),
+        "mentor_shadow" | "intercom_voice" => "Die Gegensprechanlage knackt. Eine Stimme sagt: \"Bitte keine haptische Kommunikation mit der Regie.\"".to_string(),
+        "greenscreen_setup" => "Das Setup nimmt den Stoß als Regieimpuls, verwirft ihn und bleibt ungerettet.".to_string(),
+        "rehearsal_monitor" => "Der Monitor flackert. Für einen Moment steht der Host-Schatten an zwei Orten und entscheidet sich für keinen.".to_string(),
+        "mixing_console" => "Ein Fader schnippt zurück. Die Regie klingt danach genau null Prozent geretteter.".to_string(),
+        "video_schimmelbrueder" => "Der Schimmelbrüder-Frame flackert zurück. Das Bild fühlt sich tiefer an, als ein Monitor sollte.".to_string(),
+        "casting_table" => "Der Gießtisch antwortet dumpf. In der Formenhalle klingt selbst ein Fehler industriell.".to_string(),
+        "mold_token" => "Die Frame-Probe klickt leicht gegen den Boden. Irgendwo in der Regie zuckt eine Pegelanzeige.".to_string(),
+        "patterned_belt" => "Das Muster bleibt stur. Es ist ein Rätsel, kein Teppich.".to_string(),
+        "factory_floor" => "Der Hallenboden nimmt den Stoß kommentarlos. Er hat größere Maschinen überlebt.".to_string(),
+        "song_exit_gate" => "Der Clip-Ausgang summt. Er will keine Gewalt, sondern eine sauber zugeordnete Probe.".to_string(),
+        "alarm_panel" => "Das Alarmfeld klickt. Mehr Alarm als Alarm wäre organisatorisch schwierig.".to_string(),
+        "extinguisher_cabinet" => "Der Löschschrank scheppert vollständig. Genau das sollte er beweisen.".to_string(),
+        "safety_officer" => "Der Sicherheitsdienst notiert: \"Stupst Dinge an.\" Du bekommst keinen Durchschlag.".to_string(),
+        "fire_return_door" => "Die nasse Tür schlägt nicht zurück. Arbeitsschutz ist manchmal enttäuschend unspektakulär.".to_string(),
+        "archive_drive" => "Das Archivlaufwerk klackt synchron zurück. Immerhin habt ihr jetzt einen gemeinsamen Takt.".to_string(),
+        "recovery_terminal" => "Das Terminal nimmt Stöße nicht als Prüfsumme. Es ist alt, aber nicht verzweifelt.".to_string(),
+        "checksum_printout" => "Der Ausdruck rutscht einen Millimeter. Die Prüfsumme bleibt beleidigend exakt.".to_string(),
+        "control_room_return" => "Die Tür zur Regie bleibt offen genug. Mehr Überzeugung braucht sie nicht.".to_string(),
+        "street_mural" => "Die Wand klingt massiv. Kunstkritik per Knöchel wird hier nicht archiviert.".to_string(),
+        "city_notice" => "Der Aushang flattert. Der Hinweis auf den Kofferreflektor bleibt dran.".to_string(),
+        "platform_sign" => "Das Schild wippt nicht. Es hat Pendler überlebt und ist entsprechend abgestumpft.".to_string(),
+        "public_phone" => "Die Münzrückgabe klackt. Das Telefon spendet nichts außer einem historischen Geräusch.".to_string(),
+        "station_clock" => "Die Uhr lässt sich nicht beeindrucken. Zeitreferenzen mögen keine körperliche Nähe.".to_string(),
+        "water_tower" => "Der Wasserturm reagiert nicht. Aus Sicht des Turms war das wahrscheinlich Wetter.".to_string(),
+        "city_reflector" => "Der festgeschraubte Parkreflektor klickt nur trocken. Mobil ist hier nichts.".to_string(),
+        "tv_tower_view" => "Du stubst in die Richtung des Fernsehturms. Hamburg bleibt an Ort und Stelle.".to_string(),
+        "print_shop" => "Der Tresen klackt. Der Copyshop druckt trotzdem nur Dinge, nicht Gefühle.".to_string(),
+        "market_boxes" => "Die Kisten rutschen gerade genug, um ein brauchbares Pappstück zu verraten.".to_string(),
+        "cable_bin" => "Die nassen Kabelreste klatschen gegen die Tonne. Niemand wirkt dadurch sicherer.".to_string(),
+        "paint_cans" => "Eine Farbdose rollt einen Zentimeter und entscheidet sich dann gegen weitere Handlung.".to_string(),
+        "brace_beam" | "release_rope" | "workshop_gap" | "collapse_exit" => "Das blockierte Material antwortet mit einem Geräusch, das nach Versicherung klingt.".to_string(),
+        _ => format!("Du stubst {name} an. Es passiert etwas Messbares, aber leider nichts Nützliches."),
+    }
+}
+
+fn tongue_response(id: &str, name: &str) -> String {
+    match id {
+        "dispo_board" => "Die Fallakte schmeckt nach Filzstift, Panik und einem Zeitstempel, der nicht ganz trocken ist.".to_string(),
+        "route_map" => "Der Gebäudeplan schmeckt nach Laminat. Haus 11 bleibt trotzdem unangenehm nah.".to_string(),
+        "greenscreen_wall" | "floor_marks" | "gaffer_roll" | "chat_preview" => "Produktionsmaterial mit der Zunge zu prüfen bleibt die schnellste Route zur Evakuierung.".to_string(),
+        "camera_one" => "Die Kamera hat keine Nahgrenze für Zungen. Die Regie leider auch nicht.".to_string(),
+        "mixing_console" => "Das Mischpult bleibt unangetastet. Deine Zunge hat heute schon genug Produktionswerte gefährdet.".to_string(),
+        "video_schimmelbrueder" => "Der Monitor schmeckt nach Staub und schlechtem Timing. Der Frame dahinter wirkt trotzdem begehbar.".to_string(),
+        "casting_table" => "Der Gießtisch schmeckt nach Metall und einer sehr langen Sicherheitsunterweisung.".to_string(),
+        "mold_token" => "Die Frame-Probe schmeckt nach feuchtem Material und einer Entscheidung, die nicht ins Protokoll kommt.".to_string(),
+        "patterned_belt" => "Das Muster mit der Zunge zu lesen zählt nicht als Mustererkennung.".to_string(),
+        "factory_floor" => "Der Hallenboden beantwortet die Frage, ob alte Industrie schmeckt: ja, nach nein.".to_string(),
+        "song_exit_gate" => "Der Clip-Ausgang akzeptiert keine biometrische Zungenprüfung.".to_string(),
+        "alarm_panel" | "extinguisher_cabinet" => "Brandschutztechnik wird nicht besser, wenn man sie anzüngelt. Sie wird nur persönlicher.".to_string(),
+        "safety_officer" => "Der Sicherheitsdienst sagt: \"Ich schreibe das nicht auf, weil dann jemand es lesen müsste.\"".to_string(),
+        "archive_drive" | "recovery_terminal" | "checksum_printout" => "Archivtechnik schmeckt nach altem Staub und neuer Reue.".to_string(),
+        "street_mural" => "Die Wand schmeckt nach Regen und sehr alter Farbe. Keine der Schichten gibt Questhinweise frei.".to_string(),
+        "city_notice" => "Der Aushang schmeckt nach Laternenmast. Der Hinweis wäre durch Lesen schneller gewesen.".to_string(),
+        "public_phone" => "Der Hörer schmeckt nach Altplastik und Entscheidungen aus Zeiten vor Touchscreens.".to_string(),
+        "station_clock" | "platform_sign" => "Öffentliche Infrastruktur ist nicht zum Probieren gedacht. Das erklärt einiges an Beschilderung.".to_string(),
+        "water_tower" | "tv_tower_view" => "Die Distanz verhindert das Schlimmste. Ausnahmsweise arbeitet Perspektive für dich.".to_string(),
+        "print_shop" => "Der Copyshop schmeckt schon von außen nach Toner. Das reicht als Diagnose.".to_string(),
+        "record_store" => "Vinylkultur mit der Zunge zu prüfen ist genau der Grund, warum manche Läden Schilder brauchen.".to_string(),
+        "cable_bin" => "Nasser Kabelmüll bleibt unprobiert. Der Arbeitsschutz bekommt ausnahmsweise gute Nachrichten.".to_string(),
+        "paint_cans" => "Die Farbdosen bleiben geschlossen. Geschmackstests an Bühnenfarbe sind kein Abkürzungs-Genre.".to_string(),
+        _ => format!("{name} bleibt nach kurzer Prüfung offiziell unangezüngelt. Das ist für alle besser."),
+    }
+}
+
+fn smell_response(id: &str, name: &str) -> String {
+    match id {
+        "dispo_board" => "Es riecht nach Filzstift, Papier und Entscheidungen, die jemand anders getroffen hat.".to_string(),
+        "route_map" => "Der Gebäudeplan riecht nach Laminat und alten Wegen. Der rote Faden ist leider geruchlos.".to_string(),
+        "klixx_table" => "Der Tisch riecht nach Studio, kaltem Kaffee und der Sorte Spannung, die kurz vor einer Auflösung entsteht.".to_string(),
+        "gaffer_roll" | "floor_marks" => "Es riecht nach Kleber, Staub und einem Boden, der schon bessere Takes gesehen hat.".to_string(),
+        "server_racks" | "sdi_label_printer" | "sdi_spool" | "video_hub" => "Es riecht nach warmem Plastik und Kabeln, die so tun, als wären sie beschriftet.".to_string(),
+        "rehearsal_monitor" | "video_schimmelbrueder" => "Der Monitor riecht nach Elektronik. Der geöffnete Frame dahinter riecht nach feuchter Fertigungshalle.".to_string(),
+        "mixing_console" => "Das Mischpult riecht nach warmen Fadern, Kaffee und Entscheidungen, die live niemand erklären will.".to_string(),
+        "casting_table" | "factory_floor" => "Die Halle riecht nach Metall, Formmasse und einem Song, der zu lange im Raum stand.".to_string(),
+        "patterned_belt" => "Die Musterbahn riecht neutral. Sie verlässt sich auf Augen, nicht Nasen.".to_string(),
+        "song_exit_gate" => "Der Ausgang riecht nach kaltem Strom und einem Schnittpunkt im Material.".to_string(),
+        "alarm_panel" | "extinguisher_cabinet" => "Es riecht nach nasser Wand, Löschschrank und Formularen mit drei Durchschlägen.".to_string(),
+        "safety_officer" => "Der Sicherheitsdienst riecht nach Regenjacke, Kaffee und berechtigter Skepsis.".to_string(),
+        "archive_drive" | "recovery_terminal" => "Es riecht nach Magnetband, Staub und einem Backup, das zu spät ernst genommen wurde.".to_string(),
+        "checksum_printout" => "Der Ausdruck riecht nach warmem Toner. Das ist die sinnlichste Prüfsumme, die du bekommst.".to_string(),
+        "city_notice" | "street_mural" => "Es riecht nach Straße, Kleister und Information, die lieber gelesen werden möchte.".to_string(),
+        "station_clock" | "platform_sign" => "Es riecht nach Bahnhof: Bremsstaub, Kaffee und exakt genug Zeitdruck.".to_string(),
+        "public_phone" => "Das Telefon riecht nach Regen, Metall und Gesprächsabbrüchen aus einer anderen Zeit.".to_string(),
+        "water_tower" => "Das Parklicht riecht nicht, aber die Luft dort erklärt, warum die Referenz brauchbar ist.".to_string(),
+        "print_shop" => "Der Copyshop riecht nach Papierstapel und der stillen Macht eines Schneidehebels.".to_string(),
+        "market_boxes" => "Die Kisten riechen nach Karton und Gemüsevergangenheit.".to_string(),
+        "cable_bin" => "Die Tonne riecht nach nassem PVC und der Sorte Reparatur, die niemand mehr versucht.".to_string(),
+        "paint_cans" => "Die Farbdosen riechen nach Kulisse, Lösungsmittel und sehr kurzer Belüftungsplanung.".to_string(),
+        _ => format!("{name} riecht nach Umgebung. Für einen Questhinweis ist das zu ehrlich."),
+    }
+}
+
+fn use_response(id: &str, name: &str) -> String {
+    match id {
+        "dispo_board" => "Die Tafel ist kein Gerät. Der brauchbare Teil ist die Fallakte, und die will aufgehoben werden.".to_string(),
+        "route_map" => "Der Plan lässt sich nicht benutzen. Er ist bereits das Maximum an Hilfe, das Papier leisten kann.".to_string(),
+        "rehearsal_monitor" => "Der Anker-Monitor wartet auf den stabilisierten Schimmelbrüder-Frame und auf vollständige Studio-Referenzen.".to_string(),
+        "mixing_console" => "Das Mischpult mischt Kanäle, keine Rettungslogik. Die wichtigen Anker bleiben Monitor, Grafikplatz und Studio-Rückweg.".to_string(),
+        "on_air_lamp" => "Die Lampe bleibt aus. Sie geht erst an, wenn die Rettung nicht mehr nach Praktikanten-Experiment aussieht.".to_string(),
+        "casting_table" | "mold_rack" | "patterned_belt" | "factory_floor" => "Die Fertigungshalle will keine Bedienung, sondern Beobachtung: Boden prüfen, Probe nehmen, Muster verstehen.".to_string(),
+        "mold_token" => "Die Frame-Probe ist kein Schalter. Sie muss an Formenreihe, Musterbahn und Clip-Ausgang Sinn ergeben.".to_string(),
+        "city_notice" => "Der Aushang lässt sich nicht benutzen. Lesen ist hier bereits die Interaktion mit dem höchsten Budget.".to_string(),
+        "public_phone" => "Das Telefon hat kein Freizeichen. Selbst die Vergangenheit geht nicht ran.".to_string(),
+        "record_store" => "Der Plattenladen ist keine Lösung, nur Atmosphäre mit Preisschildern.".to_string(),
+        "market_boxes" => "Die Kisten sind nur nützlich, wenn du das Pappstück aufhebst.".to_string(),
+        "corner_kiosk" => "Der Kiosk hilft nicht auf Knopfdruck. Das Transparentband ist die eigentliche Pointe.".to_string(),
+        "station_clock" => "Die Uhr benutzt dich bereits als Beobachter. Mehr Bedienung erlaubt sie nicht.".to_string(),
+        "water_tower" => "Der Wasserturm ist als Lichtreferenz nützlich, nicht als Gerät. Schau genau hin oder notiere ihn in der Fallakte.".to_string(),
+        "cable_bin" => "Die Kabeltonne ist Entsorgung, keine Ersatzteilquelle. Der Rückweg braucht das Brandschutzprotokoll.".to_string(),
+        "paint_cans" => "Farbe löst keine Blockade. Strebe sichern, Riegel lösen, dann raus.".to_string(),
+        "safety_officer" | "busker_case" | "nurse_station" | "mentor_shadow" | "intercom_voice" => "Das ist ein Mensch, kein Interface. Reden ist hier ausnahmsweise die moderne Lösung.".to_string(),
+        _ => format!("{name} hat keine sinnvolle Benutzen-Funktion. Nicht alles mit Rand ist ein Schalter."),
+    }
+}
+
+fn pickup_response(id: &str, name: &str) -> String {
+    match id {
+        "video_schimmelbrueder" => "Du kannst keinen Monitor aufheben, während du gerade planst, in ihn hineinzusteigen.".to_string(),
+        "rehearsal_monitor" | "graphics_terminal" | "mixing_console" | "video_hub" | "server_racks" => "Zu schwer, zu angeschlossen und zu teuer, um es in die Inventarleiste zu stopfen.".to_string(),
+        "safety_officer" | "nurse_station" | "busker_case" | "mentor_shadow" | "intercom_voice" => "Menschen gehören nicht ins Inventar. Diese Regel wurde nach langen Tests eingeführt.".to_string(),
+        "water_tower" | "tv_tower_view" => "Du hebst kurz die Augen. Das muss reichen.".to_string(),
+        "station_clock" => "Du kannst die Uhrzeit mitnehmen, aber nicht die Uhr. Notieren zählt in diesem Fall.".to_string(),
+        "public_phone" => "Das Telefon ist fest montiert. Außerdem will niemand erklären, warum du ein öffentliches Telefon in der Tasche hast.".to_string(),
+        "record_store" => "Einen ganzen Plattenladen mitzunehmen wäre logistisch stark, aber dramaturgisch unnötig.".to_string(),
+        "cable_bin" => "Nasser Kabelmüll ist technisch gesehen tragbar, aber nur, wenn man alle Lebensentscheidungen ignoriert.".to_string(),
+        "paint_cans" => "Die Farbdosen sind schwer, nass und exakt nicht das Werkzeug für diese Blockade.".to_string(),
+        _ => format!("{name} ist kein loser Gegenstand. Deine Taschen sind ehrgeizig, aber nicht unbegrenzt."),
+    }
+}
+
+fn talk_response(id: &str, name: &str) -> String {
+    match id {
+        "call_button" => "Der Rufknopf hat kein Gegensprechmodul. Er sagt nichts, aber er petzt zuverlässig.".to_string(),
+        "hospital_monitor" => "Der Monitor antwortet in Pieptönen. Die Übersetzung lautet vermutlich: Bitte nicht.".to_string(),
+        "rehearsal_monitor" | "video_schimmelbrueder" => "Der Monitor rauscht. Wenn er antwortet, ist das wahrscheinlich schon der falsche Teil der Geschichte.".to_string(),
+        "mold_token" => "Die Frame-Probe sagt nichts. Das ist beruhigend, weil du sonst ein viel größeres Formular bräuchtest.".to_string(),
+        "brass_players" => "Die Bläsergruppe antwortet gleichzeitig. Es klingt wie ein Akkord, aber die Aussage ist klar: erst auf die Eins, dann zurück zur Regie.".to_string(),
+        "station_clock" => "Die Uhr redet nicht. Sie macht ihre Aussage pro Minute einmal.".to_string(),
+        "record_store" => "Durch die Scheibe ist niemand gesprächsbereit. Das Urteil über deinen Geschmack findet intern statt.".to_string(),
+        "water_tower" | "tv_tower_view" => "Die Skyline antwortet nicht. Hamburg ist in dieser Beziehung stabil.".to_string(),
+        _ => format!("{name} hat keine Gesprächsebene. Du bekommst immerhin keine Widerrede."),
     }
 }
 
@@ -4019,7 +3827,7 @@ fn storage_remove(key: &str) {
 }
 
 #[cfg(not(target_arch = "wasm32"))]
-const NATIVE_SAVE_FILE: &str = "klixx.local-save.json";
+const NATIVE_SAVE_FILE: &str = "klixx.local-save-v11.json";
 
 #[cfg(not(target_arch = "wasm32"))]
 fn storage_get(_key: &str) -> Option<String> {
@@ -4189,6 +3997,27 @@ fn constrain_to_walkable(target: Vec2, scene: &SceneMeta, rect: Rect) -> Vec2 {
     }
 
     closest_point_on_polygon(target, &polygon)
+}
+
+fn player_depth_scale(point: Vec2, scene: &SceneMeta, rect: Rect) -> f32 {
+    if scene.walkable.len() < 3 {
+        return PLAYER_DEPTH_MAX_SCALE;
+    }
+
+    let (min_y, max_y) = scene
+        .walkable
+        .iter()
+        .map(|point| pct_point(rect, *point).y)
+        .fold((f32::INFINITY, f32::NEG_INFINITY), |(min_y, max_y), y| {
+            (min_y.min(y), max_y.max(y))
+        });
+    let span = max_y - min_y;
+    if !span.is_finite() || span < 8.0 {
+        return PLAYER_DEPTH_MAX_SCALE;
+    }
+
+    let depth = ((point.y - min_y) / span).clamp(0.0, 1.0);
+    PLAYER_DEPTH_MIN_SCALE + (PLAYER_DEPTH_MAX_SCALE - PLAYER_DEPTH_MIN_SCALE) * depth
 }
 
 fn point_in_polygon(point: Vec2, polygon: &[Vec2]) -> bool {
@@ -4819,8 +4648,9 @@ fn inventory_icon_source(item_id: &str, texture: &Texture2D) -> Option<Rect> {
         "sdi_label" => (2.0, 0.0),
         "lower_third_card" => (0.0, 1.0),
         "city_reflector" => (1.0, 1.0),
-        "wet_note" => (2.0, 1.0),
-        "road_marker" => (3.0, 0.0),
+        "cardboard_piece" => (0.0, 0.0),
+        "clear_tape" => (1.0, 0.0),
+        "busker_sign" => (0.0, 1.0),
         "mold_token" => (3.0, 1.0),
         "medical_release" => (4.0, 0.0),
         "checksum_note" => (4.0, 1.0),
@@ -4832,7 +4662,7 @@ fn inventory_icon_source(item_id: &str, texture: &Texture2D) -> Option<Rect> {
 }
 
 fn draw_footer_notebook(game: &Game) {
-    draw_text_ex("PROBENAKTE", 936.0, 628.0, text_params(14, ochre()));
+    draw_text_ex("FALLAKTE", 936.0, 628.0, text_params(14, ochre()));
     draw_text_ex(
         notebook_line(game, 0),
         936.0,
@@ -4894,54 +4724,40 @@ fn notebook_line(game: &Game, line: usize) -> &'static str {
             _ => "Benutzen: Tür zur Regie",
         };
     }
-    if game.state.scene == "video_kliemannsland_road" {
-        return match line {
-            0 if !game.flag("road_plane_checked") => "Ansehen: Standspur",
-            0 => "Begehbare Ebene gefunden",
-            1 if !game.has_item("road_marker") => "Aufheben: Routenmarker",
-            1 if !game.flag("road_order_checked") => "Anstubsen: Markierungen",
-            1 => "Tiefe gelesen",
-            2 if !game.flag("road_video_cleared") => "Benutzen: Marker an Ausfahrt",
-            _ => "Strassenvideo geloest",
-        };
-    }
-    if game.state.scene == "video_sewer_archive" {
-        return match line {
-            0 if !game.has_item("wet_note") => "Aufheben: Nasser Timecode",
-            0 => "Timecode im Inventar",
-            1 if !game.flag("sewer_flow_checked") => "Ansehen: Flusspfeil",
-            1 if !game.flag("wet_note_smell_checked") => "Riechen: Luke/Timecode",
-            1 => "Luke und Timecode passen",
-            2 if !game.flag("sewer_video_cleared") => "Timecode an Luke nutzen",
-            _ => "Kanalvideo geloest",
-        };
-    }
     if game.state.scene == "video_schimmelbrueder" {
         return match line {
             0 if !game.flag("schimmel_floor_checked") => "Ansehen: Hallenboden",
             0 => "Standflaeche gefunden",
-            1 if !game.has_item("mold_token") => "Aufheben: Formprobe",
-            1 if !game.flag("mold_material_checked") => "Riechen: Formenreihe",
-            1 if !game.flag("mold_pattern_checked") => "Musterbahn lesen",
-            1 => "Formenfolge dokumentiert",
-            2 if !game.flag("schimmel_video_cleared") => "Benutzen: Probe am Ausgang",
-            _ => "Schimmelvideo geloest",
+            1 if !game.has_item("mold_token") => "Aufheben: Frame-Probe",
+            1 if !game.flag("mold_material_checked") => "Probe mit Formenreihe",
+            1 if !game.flag("mold_pattern_checked") => "Probe an Musterbahn",
+            1 => "Probe kalibriert",
+            2 if !game.flag("schimmel_video_cleared") => "Frame-Probe am Ausgang",
+            _ => "Zurueck in die Regie",
         };
     }
     match line {
-        0 if !game.has_item("call_sheet") => "Aufheben: Laufzettel",
+        0 if !game.has_item("call_sheet") => "Aufheben: Fallakte 000",
         0 if !game.flag("greenscreen_marked") => "Bodenmarken mit Tape setzen",
         0 => "Greenscreen markiert",
         1 if !game.has_item("sdi_label") => "Aufheben: SDI-Label",
         1 if !game.flag("route_labeled") => "Signalweg beschriften",
-        1 if !game.has_item("lower_third_card") => "Aufheben: Bauchbindenkarte",
-        1 if !game.flag("graphic_loaded") => "Bauchbinde in Regie laden",
+        1 if !game.has_item("lower_third_card") => "Aufheben: Host-Karte",
+        1 if !game.flag("graphic_loaded") => "Host-Karte in Regie laden",
+        1 if !game.flag("schimmel_video_cleared") => "Regie: Archivframe sichern",
         1 => "Regie vorbereitet",
         2 if !game.flag("station_timed") => "Zeitreferenz am Bahnhof prüfen",
         2 if !game.flag("city_light_checked") => "Lichtreferenz am Wasserturm prüfen",
-        2 if !game.has_item("city_reflector") => "Aufheben: Lichtreflektor",
+        2 if !game.flag("city_notice_checked") => "Drehhinweis an der Schanze lesen",
+        2 if !game.has_item("cardboard_piece") => "Pappstück aus Marktkisten holen",
+        2 if !game.has_item("clear_tape") => "Transparentband am Kiosk holen",
+        2 if !game.has_item("busker_sign") => "Kofferschild im Copyshop drucken",
+        2 if !game.has_item("medical_release") => "Entlassungsbogen als Nachweis holen",
+        2 if !game.flag("busker_release_shown") => "Entlassung beim Musiker zeigen",
+        2 if !game.flag("busker_case_fixed") => "Schild am Koffer befestigen",
+        2 if !game.has_item("city_reflector") => "Kofferreflektor vom Musiker holen",
         2 if !game.flag("city_reflector_placed") => "Lichtreferenz im Studio setzen",
-        _ => "Benutzen: Probelauf starten",
+        _ => "Benutzen: Rettungslauf starten",
     }
 }
 
@@ -5323,16 +5139,50 @@ mod tests {
         game.travel("schanzenpark", "test");
         game.inspect("water_tower");
         assert!(game.flag("city_light_checked"));
-        game.pick_up_hotspot("city_reflector");
-        assert!(game.has_item("city_reflector"));
 
         game.travel("karoviertel", "test");
         game.pick_up_hotspot("print_shop");
         assert!(game.has_item("lower_third_card"));
+        game.pick_up_hotspot("market_boxes");
+        assert!(game.has_item("cardboard_piece"));
+
+        game.travel("schanzenstrasse", "test");
+        game.inspect("city_notice");
+        assert!(game.flag("city_notice_checked"));
+        game.pick_up_hotspot("corner_kiosk");
+        assert!(game.has_item("clear_tape"));
+        game.travel("karoviertel", "test");
+        assert!(game
+            .hotspots()
+            .iter()
+            .any(|hotspot| hotspot.id == "print_shop"));
+        game.handle_item_use("print_shop", "cardboard_piece");
+        assert!(game.has_item("busker_sign"));
+
+        game.add_item("medical_release");
+        game.travel("sternschanze_station", "test");
+        game.handle_item_use("busker_case", "medical_release");
+        assert!(game.flag("busker_release_shown"));
+        game.handle_item_use("busker_case", "busker_sign");
+        assert!(game.flag("busker_sign_positioned"));
+        game.handle_item_use("busker_case", "clear_tape");
+        assert!(game.flag("busker_case_fixed"));
+        assert!(game.has_item("city_reflector"));
 
         game.travel("control_room", "test");
         game.handle_item_use("graphics_terminal", "lower_third_card");
         assert!(game.flag("graphic_loaded"));
+        game.use_hotspot("video_schimmelbrueder");
+        game.inspect("factory_floor");
+        game.pick_up_hotspot("mold_token");
+        game.handle_item_use("mold_rack", "mold_token");
+        assert!(game.flag("mold_material_checked"));
+        game.handle_item_use("patterned_belt", "mold_token");
+        assert!(game.flag("mold_pattern_checked"));
+        game.handle_item_use("song_exit_gate", "mold_token");
+        assert!(game.flag("schimmel_video_cleared"));
+        game.use_hotspot("song_exit_gate");
+        assert_eq!(game.state.scene, "control_room");
 
         game.travel("greenscreen_studio", "test");
         game.handle_item_use("floor_marks", "gaffer_tape");
@@ -5344,20 +5194,20 @@ mod tests {
         game.use_hotspot("greenscreen_setup");
 
         assert!(game.state.complete);
-        assert!(game.flag("rehearsal_ready"));
+        assert!(game.flag("rescue_ready"));
         assert!(matches!(game.modal, Modal::Milestone));
 
         clear_save();
     }
 
     #[test]
-    fn rehearsal_requires_city_checks_and_setup_items() {
+    fn rescue_requires_city_checks_frame_and_setup_items() {
         clear_save();
         let mut game = Game::new(GameState::default());
 
         game.use_hotspot("greenscreen_setup");
         assert!(matches!(game.modal, Modal::None));
-        assert!(game.status.contains("Laufzettel"));
+        assert!(game.status.contains("Fallakte"));
 
         game.add_item("call_sheet");
         game.state.flags.insert("greenscreen_marked".to_string());
@@ -5366,6 +5216,13 @@ mod tests {
         game.state.flags.insert("station_timed".to_string());
         game.state.flags.insert("city_light_checked".to_string());
 
+        game.use_hotspot("greenscreen_setup");
+        assert!(!game.state.complete);
+        assert!(game.status.contains("Schimmelbrüder"));
+
+        game.state
+            .flags
+            .insert("schimmel_video_cleared".to_string());
         game.use_hotspot("greenscreen_setup");
         assert!(!game.state.complete);
         assert!(game.status.contains("Lichtreferenz"));
@@ -5388,8 +5245,8 @@ mod tests {
 
         let response = game.dialogue_response.as_ref().expect("dialogue response");
         assert_eq!(response.dialogue_id, "mentor");
-        assert!(response.text.contains("Laufzettel"));
-        assert!(!game.status.contains("Laufzettel"));
+        assert!(response.text.contains("Fallakte"));
+        assert!(!game.status.contains("Fallakte"));
 
         clear_save();
     }
@@ -5474,6 +5331,31 @@ mod tests {
     }
 
     #[test]
+    fn case_file_and_frame_probe_have_stateful_object_uses() {
+        clear_save();
+        let mut game = Game::new(GameState::default());
+
+        game.add_item("call_sheet");
+        game.travel("sternschanze_station", "test");
+        game.handle_item_use("station_clock", "call_sheet");
+        assert!(game.flag("station_timed"));
+        assert!(game.status.contains("Zeitmarke"));
+
+        game.travel("schanzenpark", "test");
+        game.handle_item_use("water_tower", "call_sheet");
+        assert!(game.flag("city_light_checked"));
+
+        game.travel("video_schimmelbrueder", "test");
+        game.add_item("mold_token");
+        game.handle_item_use("mold_rack", "mold_token");
+        assert!(game.flag("mold_material_checked"));
+        game.handle_item_use("patterned_belt", "mold_token");
+        assert!(game.flag("mold_pattern_checked"));
+
+        clear_save();
+    }
+
+    #[test]
     fn dangerous_verbs_trigger_consequence_routes() {
         clear_save();
         let mut game = Game::new(GameState::default());
@@ -5490,6 +5372,14 @@ mod tests {
         assert!(matches!(
             game.death.as_ref().map(|death| death.kind),
             Some(DeathKind::Fire)
+        ));
+
+        game.reset();
+        game.travel("control_room", "test");
+        game.tongue("rehearsal_monitor");
+        assert!(matches!(
+            game.death.as_ref().map(|death| death.kind),
+            Some(DeathKind::Signal)
         ));
 
         clear_save();
@@ -5516,8 +5406,11 @@ mod tests {
 
         game.look("hospital_monitor");
         assert!(game.flag("hospital_vitals_checked"));
-        game.use_hotspot("call_button");
+        game.poke("call_button");
         assert!(game.flag("nurse_called"));
+        game.state
+            .flags
+            .insert("nurse_clearance_requested".to_string());
         game.state.flags.insert("nurse_clearance".to_string());
         game.pick_up_hotspot("discharge_clipboard");
         assert!(game.has_item("medical_release"));
@@ -5525,6 +5418,77 @@ mod tests {
         game.state.verb = Verb::Smell;
         game.handle_hotspot("hospital_exit");
         assert_eq!(game.state.scene, "office_hall");
+
+        clear_save();
+    }
+
+    #[test]
+    fn hospital_and_city_have_specific_comedy_interactions() {
+        clear_save();
+        let mut game = Game::new(GameState::default());
+
+        game.travel("hospital_room", "test");
+        game.state.verb = Verb::Tongue;
+        game.handle_hotspot("nurse_station");
+        assert!(game.status.contains("Nein"));
+
+        game.state.verb = Verb::Poke;
+        game.handle_hotspot("call_button");
+        assert!(game.flag("nurse_called"));
+        let first_status = game.status.clone();
+        game.handle_hotspot("call_button");
+        assert_ne!(game.status, first_status);
+        assert!(game.status.contains("schon raus"));
+
+        game.travel("sternschanze_station", "test");
+        game.state.selected_item = Some("mold_token".to_string());
+        game.handle_hotspot("busker_case");
+        assert!(game.status.contains("Frame-Probe"));
+
+        clear_save();
+    }
+
+    #[test]
+    fn busker_reflector_chain_uses_release_and_city_items() {
+        clear_save();
+        let mut game = Game::new(GameState::default());
+
+        game.travel("schanzenpark", "test");
+        game.pick_up_hotspot("city_reflector");
+        assert!(!game.has_item("city_reflector"));
+        assert!(game.status.contains("Straßenmusikers"));
+
+        game.travel("karoviertel", "test");
+        game.handle_item_use("print_shop", "cardboard_piece");
+        assert!(!game.has_item("busker_sign"));
+        assert!(game.status.contains("Drehhinweis"));
+
+        game.add_item("cardboard_piece");
+        game.travel("schanzenstrasse", "test");
+        game.inspect("city_notice");
+        game.travel("karoviertel", "test");
+        assert!(game
+            .hotspots()
+            .iter()
+            .any(|hotspot| hotspot.id == "print_shop"));
+        game.handle_item_use("print_shop", "cardboard_piece");
+        assert!(game.has_item("busker_sign"));
+
+        game.travel("sternschanze_station", "test");
+        game.add_item("clear_tape");
+        game.handle_item_use("busker_case", "clear_tape");
+        assert!(!game.flag("busker_case_fixed"));
+        assert!(game.status.contains("Entlassungsbogen"));
+
+        game.add_item("medical_release");
+        game.handle_item_use("busker_case", "medical_release");
+        game.handle_item_use("busker_case", "clear_tape");
+        assert!(!game.flag("busker_case_fixed"));
+        assert!(game.status.contains("Transparentband"));
+        game.handle_item_use("busker_case", "busker_sign");
+        game.handle_item_use("busker_case", "clear_tape");
+        assert!(game.flag("busker_case_fixed"));
+        assert!(game.has_item("city_reflector"));
 
         clear_save();
     }
@@ -5566,46 +5530,6 @@ mod tests {
     }
 
     #[test]
-    fn walkable_video_room_can_be_solved() {
-        clear_save();
-        let mut game = Game::new(GameState::default());
-
-        game.travel("control_room", "test");
-        game.use_hotspot("video_kliemannsland_road");
-        assert_eq!(game.state.scene, "video_kliemannsland_road");
-        assert!(game.hotspot("road_marker").is_some());
-
-        game.use_hotspot("archive_exit_sign");
-        assert!(!game.flag("road_video_cleared"));
-        assert!(game.status.contains("Standfläche"));
-
-        game.inspect("walkable_lane");
-        assert!(game.flag("road_plane_checked"));
-
-        game.pick_up_hotspot("road_marker");
-        assert!(game.has_item("road_marker"));
-        assert!(game
-            .hotspots()
-            .iter()
-            .all(|hotspot| hotspot.id != "road_marker"));
-
-        game.handle_item_use("archive_exit_sign", "road_marker");
-        assert!(!game.flag("road_video_cleared"));
-        assert!(game.status.contains("rot-weißen"));
-
-        game.inspect("traffic_totem");
-        assert!(game.flag("road_order_seen"));
-        game.poke("traffic_totem");
-        assert!(game.flag("road_order_checked"));
-
-        game.handle_item_use("archive_exit_sign", "road_marker");
-        assert!(game.flag("road_video_cleared"));
-        assert!(game.status.contains("Fahrspur"));
-
-        clear_save();
-    }
-
-    #[test]
     fn schimmelbrueder_video_room_can_be_solved() {
         clear_save();
         let mut game = Game::new(GameState::default());
@@ -5613,6 +5537,8 @@ mod tests {
         game.travel("control_room", "test");
         game.use_hotspot("video_schimmelbrueder");
         assert_eq!(game.state.scene, "video_schimmelbrueder");
+        assert!(game.flag("video_entry_started"));
+        assert!(game.status.contains("Monitorbild"));
         assert!(game.hotspot("mold_token").is_some());
 
         game.use_hotspot("song_exit_gate");
@@ -5631,7 +5557,7 @@ mod tests {
 
         game.handle_item_use("song_exit_gate", "mold_token");
         assert!(!game.flag("schimmel_video_cleared"));
-        assert!(game.status.contains("Rieche"));
+        assert!(game.status.contains("Gleiche"));
 
         game.smell("mold_rack");
         assert!(game.flag("mold_material_checked"));
@@ -5641,6 +5567,8 @@ mod tests {
         game.handle_item_use("song_exit_gate", "mold_token");
         assert!(game.flag("schimmel_video_cleared"));
         assert!(game.status.contains("Clip-Ausgang"));
+        game.use_hotspot("song_exit_gate");
+        assert_eq!(game.state.scene, "control_room");
 
         clear_save();
     }
@@ -5663,6 +5591,117 @@ mod tests {
 
         assert!(hotspot_contains(scene, &hotspot, rect, inside));
         assert_eq!(hotspot_bounds(scene, &hotspot, rect), bounds);
+    }
+
+    #[test]
+    fn editor_added_hotspots_are_registered_with_polygons() {
+        for (scene_id, hotspot_id) in [
+            ("control_room", "mixing_console"),
+            ("sternschanze_station", "public_phone"),
+            ("sprinkler_courtyard", "cable_bin"),
+            ("prop_storage_collapse", "paint_cans"),
+        ] {
+            let scene = current_scene(scene_id);
+            let hotspot = scene
+                .hotspots
+                .iter()
+                .find(|hotspot| hotspot.id == hotspot_id)
+                .expect("editor-added hotspot is registered");
+
+            assert!(
+                hotspot_polygon(scene, hotspot).is_some(),
+                "{scene_id}/{hotspot_id} should use the editor polygon"
+            );
+        }
+    }
+
+    #[test]
+    fn selected_video_frames_are_registered_as_scenes() {
+        let control_room = current_scene("control_room");
+
+        for scene_id in ["video_icemachine", "video_brassband"] {
+            let scene = SCENES
+                .iter()
+                .find(|scene| scene.id == scene_id)
+                .expect("selected frame scene should be registered");
+            let asset_path = format!("assets/scenes/{scene_id}.png");
+
+            assert!(
+                std::path::Path::new(&asset_path).exists(),
+                "{asset_path} should exist for texture loading"
+            );
+            assert_eq!(
+                png_dimensions(&asset_path),
+                Some((1240, 480)),
+                "{asset_path} should be generated room art at scene resolution, not a raw picked frame"
+            );
+            assert_eq!(
+                file_fingerprint(&asset_path),
+                Some(expected_generated_room_asset_fingerprint(scene_id)),
+                "{asset_path} changed; keep this as generated room art and update the fingerprint after visual review"
+            );
+            assert!(
+                control_room
+                    .hotspots
+                    .iter()
+                    .any(|hotspot| hotspot.id == scene_id && hotspot.kind == HotspotKind::Exit),
+                "control room should link to {scene_id}"
+            );
+            assert!(
+                scene.hotspots.iter().any(
+                    |hotspot| hotspot.id == "control_room" && hotspot.kind == HotspotKind::Exit
+                ),
+                "{scene_id} should link back to the control room"
+            );
+
+            for hotspot in scene.hotspots {
+                assert!(
+                    hotspot_polygon(scene, hotspot).is_some(),
+                    "{scene_id}/{} should use an editor polygon",
+                    hotspot.id
+                );
+            }
+        }
+
+        let mut game = Game::new(GameState::default());
+        game.travel("video_brassband", "test");
+        assert!(
+            game.hotspots()
+                .iter()
+                .any(|hotspot| hotspot.id == "brass_players"
+                    && hotspot.kind == HotspotKind::Character)
+        );
+        game.talk("brass_players");
+        assert!(game.status.contains("Bläsergruppe"));
+        assert!(!game.status.contains("keine Gesprächsebene"));
+    }
+
+    fn png_dimensions(path: &str) -> Option<(u32, u32)> {
+        let bytes = std::fs::read(path).ok()?;
+        if bytes.len() < 24 || &bytes[0..8] != b"\x89PNG\r\n\x1a\n" {
+            return None;
+        }
+        Some((
+            u32::from_be_bytes(bytes[16..20].try_into().ok()?),
+            u32::from_be_bytes(bytes[20..24].try_into().ok()?),
+        ))
+    }
+
+    fn file_fingerprint(path: &str) -> Option<u64> {
+        let mut hash = 0xcbf29ce484222325_u64;
+        for byte in std::fs::read(path).ok()? {
+            hash ^= byte as u64;
+            hash = hash.wrapping_mul(0x100000001b3);
+        }
+        Some(hash)
+    }
+
+    fn expected_generated_room_asset_fingerprint(scene_id: &str) -> u64 {
+        match scene_id {
+            "video_icemachine" => 0xe896d354e47d79ce,
+            "video_brassband" => 0x4d495f1fdee4efd8,
+            _ => panic!("unexpected generated video scene id: {scene_id}"),
+        }
     }
 
     #[test]
@@ -5691,6 +5730,20 @@ mod tests {
         assert_eq!(
             hovered_hotspot(scene, &hotspots, rect, token_center).map(|hotspot| hotspot.id),
             Some("mold_token")
+        );
+    }
+
+    #[test]
+    fn player_gets_smaller_toward_top_of_walkable_polygon() {
+        let scene = current_scene("video_schimmelbrueder");
+        let rect = scene_rect();
+        let top = pct_point(rect, (56.56, 20.45));
+        let bottom = pct_point(rect, (0.0, 100.0));
+
+        assert!(player_depth_scale(top, scene, rect) < player_depth_scale(bottom, scene, rect));
+        assert_eq!(
+            player_depth_scale(bottom, scene, rect),
+            PLAYER_DEPTH_MAX_SCALE
         );
     }
 
@@ -5724,20 +5777,10 @@ mod tests {
             game.scene_texture_key("archive_recovery"),
             "archive_recovery_no_checksum"
         );
-        game.add_item("road_marker");
-        assert_eq!(
-            game.scene_texture_key("video_kliemannsland_road"),
-            "video_kliemannsland_road_no_marker"
-        );
         game.add_item("mold_token");
         assert_eq!(
             game.scene_texture_key("video_schimmelbrueder"),
             "video_schimmelbrueder_no_token"
-        );
-        game.add_item("wet_note");
-        assert_eq!(
-            game.scene_texture_key("video_sewer_archive"),
-            "video_sewer_archive_no_note"
         );
     }
 

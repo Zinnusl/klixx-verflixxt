@@ -108,32 +108,27 @@ click targets.
 
 ## Implemented Slice
 
-`video_kliemannsland_road` is the first playable video room:
+The current active generated video rooms are:
 
-- generated/local fallback asset: `assets/scenes/video_kliemannsland_road.png`,
-- editor entry: `web/hotspot-editor.html`,
-- route: Regie -> Straßenvideo,
-- puzzle: inspect the walkable road plane, take the route marker, inspect the
-  red-white road markings for depth order, use the route marker on the archive
-  exit sign.
+- `video_schimmelbrueder`: generated/local fallback asset
+  `assets/scenes/video_schimmelbrueder.png`; route Regie ->
+  Schimmelbrüder-Frame; puzzle: inspect the factory floor, take the form
+  sample, read the patterned belt, use the sample on the refrain gate.
+- `video_icemachine`: generated asset `assets/scenes/video_icemachine.png`;
+  route Regie -> Eismaschinen-Frame; inspection-focused service room with
+  machine, bucket and counter hotspots.
+- `video_brassband`: generated asset `assets/scenes/video_brassband.png`;
+  route Regie -> Band-Frame; talkable band group plus instrument and floor
+  hotspots.
 
-`video_schimmelbrueder` is the first manually picked frame promoted into a
-playable video room:
+The first Schimmelbrüder pass used a local pixel-art fallback after the image
+generation tool failed with a generic `UserError`. Later picked frames should
+still ship as original generated room art at the same scene asset paths, never
+as raw video screenshots.
 
-- selected reference frame: `tmp/klixx-video-rooms/frames/-cf1yCs-m8Q_verflixxte_hits_die_besten_songs_aus_200_folgen_verflixxte_klixx/pick_000075975ms.jpg`,
-- generated/local fallback asset: `assets/scenes/video_schimmelbrueder.png`,
-- editor entry: `web/hotspot-editor.html`,
-- route: Regie -> Schimmelbrüder-Video,
-- puzzle: inspect the factory floor, take the form sample, read the patterned
-  belt, use the sample on the refrain gate.
-
-The AI image-generation tool failed with a generic `UserError` during this pass,
-so the first slice uses a local pixel-art fallback asset. The room is wired so a
-future generated replacement can overwrite the same scene asset path.
-
-`video_sewer_archive` remains documented as a deprecated experiment only. The
-source frame looks into a narrow pipe and was rejected because it does not offer
-human-scale standing space.
+The previous Kliemannsland road and sewer archive experiments were removed from
+the playable slice. The sewer source frame looked into a narrow pipe and was
+rejected because it does not offer human-scale standing space.
 
 ## Selection Criteria
 
@@ -166,5 +161,5 @@ assets/walkable_video_frames.json
 tmp/klixx-video-rooms/walkable_candidate_sheet.jpg
 ```
 
-The sewer-pipe frame is explicitly rejected for future room generation because
-the original frame does not contain human-scale standing space.
+Tight insert frames such as the old sewer-pipe candidate should stay out of the
+shortlist unless the source frame itself contains human-scale standing space.

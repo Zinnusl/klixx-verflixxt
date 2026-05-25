@@ -1,65 +1,52 @@
 {
   "selection_rule": "Use only source frames that already contain a plausible standing or walking plane. Reject tight inserts, UI-only frames, tunnels too small for the protagonist, and frames where the walkable area must be invented.",
-  "rejected": [
-    {
-      "id": "sewer_pipe_insert",
-      "reason": "The source frame is inside a small pipe; a human-scale floor would have to be invented.",
-      "frame": "tmp/klixx-video-rooms/frames/2NBCX4yW5tk_das_video_ist_so_deep_wie_die_kanalisation_schmutzig_verflixxte_klixx_/01_01089s.jpg"
-    }
-  ],
+  "rejected": [],
   "candidates": [
     {
-      "id": "kliemannsland_road",
-      "rank": 1,
-      "source_url": "https://www.youtube.com/watch?v=yuQxtOc6UjU",
-      "frame": "tmp/klixx-video-rooms/frames/yuQxtOc6UjU_verflixxte_klixx_staffel_2_aus_dem_kliemannsland_mit_lars_paulsen_und_/01_01129s.jpg",
-      "why": "Clear road and roadside shoulder; easy to reinterpret as an outdoor hub with exits."
-    },
-    {
       "id": "tennis_court",
-      "rank": 2,
+      "rank": 1,
       "source_url": "https://www.youtube.com/watch?v=Hev5fxAMQ5c",
       "frame": "tmp/klixx-video-rooms/frames/Hev5fxAMQ5c_was_ist_mit_dem_f_m_ll_verflixxte_klixx_mit_lars_paulsen_florentin_wil/02_01726s.jpg",
       "why": "Large court surface with depth, lighting and clear boundaries."
     },
     {
       "id": "bathroom_tub_room",
-      "rank": 3,
+      "rank": 2,
       "source_url": "https://www.youtube.com/watch?v=Hev5fxAMQ5c",
       "frame": "tmp/klixx-video-rooms/frames/Hev5fxAMQ5c_was_ist_mit_dem_f_m_ll_verflixxte_klixx_mit_lars_paulsen_florentin_wil/01_00634s.jpg",
       "why": "A real small room with floor, wall, tub and clear object hotspots."
     },
     {
       "id": "grass_field",
-      "rank": 4,
+      "rank": 3,
       "source_url": "https://www.youtube.com/watch?v=jw5ogHDggOk",
       "frame": "tmp/klixx-video-rooms/frames/jw5ogHDggOk_wer_angelt_sich_den_sieg_verflixxte_klixx_mit_florentin_will_lars_paul/02_01790s.jpg",
       "why": "Open field with enough space for walking and crowd/object placement."
     },
     {
       "id": "wrestling_ring",
-      "rank": 5,
+      "rank": 4,
       "source_url": "https://www.youtube.com/watch?v=9QlFlAAbgwA",
       "frame": "tmp/klixx-video-rooms/frames/9QlFlAAbgwA_2_m_nner_2_unbekannte_nummern_ein_handy_verflixxte_klixx_mit_lars_und_/03_02879s.jpg",
       "why": "A bounded arena with obvious floor plane, ropes and exits."
     },
     {
       "id": "band_stage",
-      "rank": 6,
+      "rank": 5,
       "source_url": "https://www.youtube.com/watch?v=Kk9OCIV_ygk",
       "frame": "tmp/klixx-video-rooms/frames/Kk9OCIV_ygk_150_folgen_verflixxte_klixx_die_gro_e_jubil_umssendung/03_02963s.jpg",
       "why": "Readable stage layout with instruments and walkable front area."
     },
     {
       "id": "topdown_stair_room",
-      "rank": 7,
+      "rank": 6,
       "source_url": "https://www.youtube.com/watch?v=Kk9OCIV_ygk",
       "frame": "tmp/klixx-video-rooms/frames/Kk9OCIV_ygk_150_folgen_verflixxte_klixx_die_gro_e_jubil_umssendung/02_01814s.jpg",
       "why": "Spatially readable top-down room; useful if reworked into an isometric archive landing."
     },
     {
       "id": "anniversary_stage",
-      "rank": 8,
+      "rank": 7,
       "source_url": "https://www.youtube.com/watch?v=At4AiO7YTeo",
       "frame": "tmp/klixx-video-rooms/frames/At4AiO7YTeo_10_jahre_verflixxte_klixx_die_jubil_umsfolge_live/02_01816s.jpg",
       "why": "Stage and screen composition with enough physical room for a finale/archive hub."

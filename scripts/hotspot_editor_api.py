@@ -13,7 +13,8 @@ import json
 import mimetypes
 import re
 import subprocess
-from http.server import BaseHTTPRequestHandler, HTTPServer
+import threading
+from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 from pathlib import Path
 from typing import Any
 from urllib.parse import parse_qs, urlparse
@@ -34,6 +35,8 @@ HOTSPOT_KINDS = {"Character", "Pickup", "Prop", "Exit"}
 NEW_HOTSPOT_SOURCE = "editor_new_hotspot"
 DEFAULT_NEW_HOTSPOT_LOOK = "Noch nicht beschrieben."
 DEFAULT_NEW_HOTSPOT_INSPECT = "Noch nicht beschrieben."
+FRAME_PICK_TIMEOUT_SECONDS = 25
+WRITE_LOCK = threading.RLock()
 
 
 def rounded(value: Any) -> float:
@@ -549,54 +552,58 @@ def video_index() -> dict[str, Any]:
 
 
 def frame_entries() -> list[dict[str, Any]]:
-    frames = load_json(FRAMES_FILE, [])
     seen: set[str] = set()
     normalized: list[dict[str, Any]] = []
-    for frame in frames:
-        path = str(frame.get("path", ""))
-        if not path or path in seen:
-            continue
-        seen.add(path)
-        file_path = safe_project_path(path)
-        item = dict(frame)
-        item["path"] = path
-        item["exists"] = file_path.exists()
-        if file_path.exists():
-            item["mtime"] = file_path.stat().st_mtime
-        normalized.append(item)
 
-    for file_path in sorted((VIDEO_ROOM_DIR / "frames").glob("*/*.[jp][pn][g]")):
-        rel = str(file_path.relative_to(ROOT))
-        if rel in seen:
-            continue
-        seen.add(rel)
-        video_id = file_path.parent.name.split("_", 1)[0]
-        match = re.search(r"_(\d+)s\.", file_path.name)
-        normalized.append(
-            {
-                "video_id": video_id,
-                "title": file_path.parent.name,
-                "url": "",
-                "seconds": int(match.group(1)) if match else None,
-                "path": rel,
-                "exists": True,
-                "mtime": file_path.stat().st_mtime,
-            }
-        )
+    with WRITE_LOCK:
+        frames = load_json(FRAMES_FILE, [])
+        for frame in frames:
+            path = str(frame.get("path", ""))
+            if not path or path in seen:
+                continue
+            seen.add(path)
+            file_path = safe_project_path(path)
+            item = dict(frame)
+            item["path"] = path
+            item["exists"] = file_path.exists()
+            if file_path.exists():
+                item["mtime"] = file_path.stat().st_mtime
+            normalized.append(item)
+
+        for file_path in sorted((VIDEO_ROOM_DIR / "frames").glob("*/*.[jp][pn][g]")):
+            rel = str(file_path.relative_to(ROOT))
+            if rel in seen:
+                continue
+            seen.add(rel)
+            video_id = file_path.parent.name.split("_", 1)[0]
+            match = re.search(r"_(\d+)s\.", file_path.name)
+            normalized.append(
+                {
+                    "video_id": video_id,
+                    "title": file_path.parent.name,
+                    "url": "",
+                    "seconds": int(match.group(1)) if match else None,
+                    "path": rel,
+                    "exists": True,
+                    "mtime": file_path.stat().st_mtime,
+                }
+            )
 
     return normalized
 
 
 def frame_index() -> dict[str, Any]:
     catalog = load_json(CATALOG_FILE, {"videos": []})
-    selections = load_json(FRAME_SELECTIONS_FILE, {"frames": {}})
+    with WRITE_LOCK:
+        frames = frame_entries()
+        selections = load_json(FRAME_SELECTIONS_FILE, {"frames": {}})
     return {
         "ok": True,
         "catalog_path": str(CATALOG_FILE.relative_to(ROOT)),
         "frames_path": str(FRAMES_FILE.relative_to(ROOT)),
         "selections_path": str(FRAME_SELECTIONS_FILE.relative_to(ROOT)),
         "videos": catalog.get("videos", []),
-        "frames": frame_entries(),
+        "frames": frames,
         "selections": selections.get("frames", selections if isinstance(selections, dict) else {}),
     }
 
@@ -643,13 +650,14 @@ def save_frame_selections(payload: dict[str, Any], dry_run: bool) -> dict[str, A
         str(ASSET_SELECTED_FRAMES_FILE.relative_to(ROOT)),
     ]
     if not dry_run:
-        FRAME_SELECTIONS_FILE.parent.mkdir(parents=True, exist_ok=True)
-        FRAME_SELECTIONS_FILE.write_text(json.dumps(output, ensure_ascii=False, indent=2), encoding="utf-8")
-        ASSET_SELECTED_FRAMES_FILE.parent.mkdir(parents=True, exist_ok=True)
-        ASSET_SELECTED_FRAMES_FILE.write_text(
-            json.dumps({"selected": selected}, ensure_ascii=False, indent=2),
-            encoding="utf-8",
-        )
+        with WRITE_LOCK:
+            FRAME_SELECTIONS_FILE.parent.mkdir(parents=True, exist_ok=True)
+            FRAME_SELECTIONS_FILE.write_text(json.dumps(output, ensure_ascii=False, indent=2), encoding="utf-8")
+            ASSET_SELECTED_FRAMES_FILE.parent.mkdir(parents=True, exist_ok=True)
+            ASSET_SELECTED_FRAMES_FILE.write_text(
+                json.dumps({"selected": selected}, ensure_ascii=False, indent=2),
+                encoding="utf-8",
+            )
 
     return {
         "ok": True,
@@ -728,7 +736,7 @@ def pick_frame(payload: dict[str, Any]) -> dict[str, Any]:
             text=True,
             stdout=subprocess.PIPE,
             stderr=subprocess.PIPE,
-            timeout=60,
+            timeout=FRAME_PICK_TIMEOUT_SECONDS,
         )
 
     frame_entry = {
@@ -750,8 +758,9 @@ def pick_frame(payload: dict[str, Any]) -> dict[str, Any]:
     }
 
     if not dry_run:
-        upsert_frame_entry(frame_entry)
-        write_frame_selection(selection_entry)
+        with WRITE_LOCK:
+            upsert_frame_entry(frame_entry)
+            write_frame_selection(selection_entry)
 
     return {
         "ok": True,
@@ -810,25 +819,28 @@ class Handler(BaseHTTPRequestHandler):
                 status = 206
 
         length = end - start + 1
-        self.send_response(status)
-        self.send_header("Content-Type", content_type)
-        self.send_header("Content-Length", str(length))
-        self.send_header("Access-Control-Allow-Origin", "*")
-        self.send_header("Cache-Control", "no-store")
-        if allow_range:
-            self.send_header("Accept-Ranges", "bytes")
-        if status == 206:
-            self.send_header("Content-Range", f"bytes {start}-{end}/{file_size}")
-        self.end_headers()
-        with path.open("rb") as handle:
-            handle.seek(start)
-            remaining = length
-            while remaining > 0:
-                chunk = handle.read(min(1024 * 1024, remaining))
-                if not chunk:
-                    break
-                self.wfile.write(chunk)
-                remaining -= len(chunk)
+        try:
+            self.send_response(status)
+            self.send_header("Content-Type", content_type)
+            self.send_header("Content-Length", str(length))
+            self.send_header("Access-Control-Allow-Origin", "*")
+            self.send_header("Cache-Control", "no-store")
+            if allow_range:
+                self.send_header("Accept-Ranges", "bytes")
+            if status == 206:
+                self.send_header("Content-Range", f"bytes {start}-{end}/{file_size}")
+            self.end_headers()
+            with path.open("rb") as handle:
+                handle.seek(start)
+                remaining = length
+                while remaining > 0:
+                    chunk = handle.read(min(1024 * 1024, remaining))
+                    if not chunk:
+                        break
+                    self.wfile.write(chunk)
+                    remaining -= len(chunk)
+        except (BrokenPipeError, ConnectionResetError):
+            return
 
     def do_OPTIONS(self) -> None:
         self.send_json(204, {})
@@ -889,13 +901,17 @@ class Handler(BaseHTTPRequestHandler):
             self.send_json(400, {"ok": False, "error": str(error)})
 
 
+class LocalThreadingHTTPServer(ThreadingHTTPServer):
+    daemon_threads = True
+
+
 def main() -> None:
     parser = argparse.ArgumentParser()
     parser.add_argument("--host", default="127.0.0.1")
     parser.add_argument("--port", type=int, default=8082)
     args = parser.parse_args()
 
-    server = HTTPServer((args.host, args.port), Handler)
+    server = LocalThreadingHTTPServer((args.host, args.port), Handler)
     print(f"Hotspot editor write API: http://{args.host}:{args.port}/")
     try:
         server.serve_forever()

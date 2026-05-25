@@ -4,14 +4,16 @@
 
 `Klixx` ist ein Fan-Point-and-Click-Adventure über Verflixxte Klixx. Die
 spielende Person rät nicht nur Videoklicks, sondern untersucht `Folge 000`:
-eine verschollene Folge ohne Upload-Datum, ohne Laufzeit, ohne Thumbnail und mit
-einem Klickzähler, der zu reagieren scheint, bevor jemand einen Tipp abgibt.
+eine verschollene Folge ohne verlässlichen Zeitpunkt. Ein Host ist nach dem
+Öffnen eines Archivframes nicht zurückgekommen; die Regie behandelt Studio,
+Stadt und Videoarchiv als zusammenhängenden Fall.
 
-Die Struktur bleibt ein Mystery-Adventure, aber die Beweisführung klingt jetzt
-wie eine Klixx-Runde, die sich selbst ernst nimmt: Ein normales Studio trifft
-auf eine Klickzahl, die schon vor der Frage getippt hat. Jeder Gegenstand ist
-ein Vorwand für übermutige Schätzungen, nachträgliche Begründungen,
-Fischkarten-Reue oder Chat-Rechthaberei.
+Die Struktur bleibt ein Mystery-Adventure mit klassischem Verb-Objekt-Spiel.
+Die Inspiration aus Zeitreise-Adventures liegt in der Fallarbeit: Gegenwart
+markieren, Signale benennen, eine harte Uhrzeit sichern, Licht als Stadtanker
+zurückbringen und den instabilen Videoframe erst betreten, wenn die Hinweise im
+Raum verstanden sind. Es werden keine Figuren, Dialoge oder Szenen aus anderen
+Spielen übernommen.
 
 ## Technik
 
@@ -29,9 +31,9 @@ Das Spiel nutzt eine klassische Adventure-Hülle:
 
 - Obere Leiste: Bereich, Szenenname, Statuszeile und Neustart.
 - Bühne: 16:9-Raumansicht mit beschrifteten Platzhalter-Sprites.
-- Footer: Verben, Inventar und Klixx-Akte.
+- Footer: Verben, Inventar und Fallakte.
 - Dialogfenster: Sprecher, Einstiegstext, Antwortfeld und Auswahlmöglichkeiten.
-- Abschlussfenster: Der erste Klixx-Mystery-Beat öffnet sich.
+- Abschlussfenster: Der Rettungslauf für Fall 000 wird freigegeben.
 - Spielfigur: einfache Click-to-walk-Bewegung innerhalb jedes Raums.
 
 ## RBTV-Studio
@@ -40,10 +42,9 @@ Die Studio-Szene ist jetzt als eigene Fan-Nachbildung gezeichnet:
 
 - Wand, Boden, Lichttraverse und Regiefenster
 - Klixx-Tisch als zentraler Spielort
-- Bohnensofa als Cameo-Fläche
-- Chat-Monolith mit Live-Kommentaren
-- zwei Kameras und Kabelsalat
-- Bohnenbecher, Fischkartenstapel, Preis-Sockel und Regel-Einspieler
+- Chat-/Host-Vorschau als unsicherer Rückholpunkt
+- Studiokamera, Greenscreen und Rückhol-Setup
+- Bodenmarken, die den Host wieder in die Gegenwart zwingen sollen
 
 Das ist bewusst keine offizielle Asset-Kopie, sondern eine stilisierte
 Adventure-Kulisse.
@@ -71,74 +72,59 @@ markiert, während öffentlich belegte Elemente und Laufwege bevorzugt werden.
 Die Texte sollen nach Verflixxte Klixx klingen, ohne echte Dialoge oder Clips
 zu kopieren:
 
-- Zahlen werden erst gefühlt, dann behauptet und nach der Auflösung verteidigt.
-- Die Fischkarte ist keine Mechanik, sondern eine schlechte Idee mit Ritualrang.
-- Der Chat hat immer recht, oft gleichzeitig in beide Richtungen und fast immer
-  mit einer Null zu viel.
-- Direkttreffer wirken wie übernatürliche Ereignisse, überbotene Tipps wie
-  persönliche Niederlagen.
-- Metadaten, Thumbnails und Seitenverhältnisse sind Beweise, aber alle tun so,
-  als sei das Bauchgefühl.
-- Studiomöbel, Kabel und Büroflure kommentieren nicht die Handlung, sondern die
-  Schätzpsychologie dahinter.
+- Zeitmarken werden wie Produktionsnotizen behandelt: trocken, prüfbar und
+  trotzdem unheimlich.
+- Der Chat hat weiterhin zu viel Meinung, aber die Falllogik entsteht aus
+  Hotspots, Inventargegenständen und Dialogen.
+- Metadaten, Thumbnails, Licht und Signalwege sind Beweise, nicht Lore-Text.
+- Riskante Verben haben Konsequenzen: Strom, Sprinkler, Requisitensturz oder
+  Archiv-Rettungsstation.
+- Studiomöbel, Kabel und Büroflure kommentieren die Handlung, ohne echte
+  Dialoge oder Clips zu kopieren.
 
 Der Humor entsteht aus ernst gespielter Regelpanik: Produktionsraum-Quatsch,
-Klixx-Rituale und Adventure-Logik treffen aufeinander, während jede Zahl so
-wirkt, als müsse sie gleich im Chat verteidigt werden.
+Klixx-Rituale, Zeitanker und Adventure-Logik treffen aufeinander, während jede
+falsche Interaktion so wirkt, als müsse sie später im Protokoll erklärt werden.
 
 ## Cameos
 
-Aktuelle Cameos sind bewusst als originale Archivobjekte umgesetzt:
+Cameos bleiben bewusst als originale, nicht kopierte Archivmotive:
 
-- Fischkarte und Risikomodus
-- Geierkönig-Krone
-- Cheater-Tafel der Community
-- Telefonzettel aus einem alten Clip
-- leerer Sockel für den fantastischen Preis
-- Regel-Einspieler mit Schlafmasken
-- Spezialgebiet-Mappe und Format-Analyse
-- Folgenspuren wie `Folge 66` und `Folge 74`
-- Bohnensofa, Chat-Monolith, Kamerakran und Kabelsalat
-- Heinrichstraße-Hof, Dispo-Tafel, Techniklager, Serverraum 11, 80-m-SDI-Rolle
+- Heinrichstraße-Hof, Falltafel, Techniklager, Serverraum 11, 80-m-SDI-Rolle
   und Haus-15-Szenenbau
+- Schanzenstraße, Sternschanze, Wasserturm und Karoviertel als Stadtanker
+- Schimmelbrüder-Frame als begehbarer Videoarchivraum
+- Kofferreflektor, Kofferschild und Copyshop als kleines Nebenrätsel
 
-## Erster Spielabschnitt
+## Aktueller Spielabschnitt
 
-1. `Folge 000` an der Produktionsklappe untersuchen.
-2. Fischkarte vom Studiotisch nehmen.
-3. Fischkarte am Regie-Klickzähler benutzen.
-4. Formatnotiz aus der Format-Analyse nehmen.
-5. Fehlenden Playlist-Eintrag am Archivterminal untersuchen.
-6. Formatnotiz am Undercover-Frame benutzen.
-7. Geborgenen Undercover-Frame am Anomalie-Monitor benutzen.
+1. Fallakte 000 an der Falltafel nehmen.
+2. Gaffer-Tape im Szenenbau holen und Bodenmarken am Rückhol-Setup setzen.
+3. SDI-Label im Serverraum nehmen und die Signalroute beschriften.
+4. Host-Karte im Copyshop holen und am Grafikplatz laden.
+5. Schimmelbrüder-Frame in der Regie betreten: Hallenboden prüfen,
+   Frame-Probe nehmen, an Formenreihe und Musterbahn abgleichen, dann am
+   Clip-Ausgang benutzen.
+6. Bahnhofsuhr als Zeitmarke und Wasserturmlicht als Lichtmarke dokumentieren.
+7. Drehhinweis lesen, Pappstück und Transparentband holen, Kofferschild drucken,
+   Entlassungsbogen als Nachweis beim Straßenmusiker zeigen und den
+   Kofferreflektor erhalten.
+8. Reflektor am Rückhol-Setup platzieren und den Rettungslauf starten.
 
-Der Abschluss öffnet `Die Folge tippt zurück`: Der Monitor gibt keinen Hinweis,
-sondern einen viel zu selbstsicheren ersten Tipp. Danach folgt man der
-unmöglichen Klickzahl aus dem Studio heraus.
+## Konsequenzrouten
 
-## Zweiter Spielabschnitt
+Falsche gefährliche Verben führen nicht nur zu Gags, sondern zu kurzen
+Rückkehrpuzzles:
 
-Nach dem ersten Abschluss erscheint in der Regie die `Signalspur`. Sie führt in
-das `Klickrauschen`: keinen echten Raum, sondern eine begehbare Interpretation
-des Videofehlers.
-
-1. Signalspur hinter dem Anomalie-Monitor betreten.
-2. Leeren Schätzzettel nehmen.
-3. Mindestens zwei Spuren untersuchen: Ritual-Meter, Archivwelle,
-   Chat-Rauschen.
-4. Schätzzettel am Klick-Orakel benutzen.
-5. Die erste Schätzung stabilisieren: `23 Klicks`, ohne eine Angstnull vom Chat
-   mitzunehmen.
-
-Das Schätzrätsel soll sich wie Klixx anfühlen, aber Adventure-Logik bleiben:
-Die Lösung entsteht aus Spuren im Raum, nicht aus externem Wissen über echte
-Klickzahlen. Falschoptionen sind keine Mathefehler, sondern typische
-Klixx-Impulsfehler: zu viel Archivdramaturgie oder eine Null aus Panik.
+- offene Technik: Krankenhauszimmer mit Monitor, Rufknopf, Pflegekraft und
+  Entlassungsbogen
+- Produktionsmaterial mit Sprinklerfolge: Evakuierungsbereich mit Alarmfeld,
+  Löschschrank und Sicherheitsdienst
+- instabile Requisiten: blockierter Szenenbau mit Stützstrebe und Notleine
+- Archivsignal: Rettungsplatz mit Laufwerk, Prüfsummenzettel und Terminal
 
 ## Nächste Designarbeit
 
-- Entscheiden, ob die Spielfigur ein originales Crewmitglied, ein Zuschauer oder
-  eine abstrakte Cursor-Präsenz im Archiv ist.
 - Platzhalterblöcke durch eigene Fan-Art ersetzen.
 - Host-Echos und Produktionsstimmen weiter als nicht-wörtliche Figuren
   ausarbeiten.

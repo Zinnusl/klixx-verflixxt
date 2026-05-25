@@ -3,25 +3,9 @@
     "Reference frames are research material only and must not ship as final room art.",
     "Final rooms should be original 1990s cinematic pixel-art interpretations with walkable lower foreground.",
     "bbox_pct values are planned click targets for generated rooms and should be checked in web/hotspot-editor.html after generation.",
-    "The sewer-pipe room is deprecated for future generation because the source frame has no human-scale standing plane. Use assets/walkable_video_frames.json for the next room choice."
+    "Active generated video rooms currently: Schimmelbrüder, Eismaschine, Band."
   ],
   "rooms": [
-    {
-      "id": "video_kliemannsland_road",
-      "chapter": "Walkable Entry",
-      "source_url": "https://www.youtube.com/watch?v=yuQxtOc6UjU",
-      "reference_frame": "tmp/klixx-video-rooms/frames/yuQxtOc6UjU_verflixxte_klixx_staffel_2_aus_dem_kliemannsland_mit_lars_paulsen_und_/01_01129s.jpg",
-      "asset_target": "assets/scenes/video_kliemannsland_road.png",
-      "prompt": "Use the reference only for the composition of a road and roadside shoulder with clear human-scale standing space. Create an original 1990s cinematic pixel-art point-and-click room: a road through a rural creative compound, left guardrail and buildings, distant trees, road cones, a small route marker, and a right-side exit sign into the video archive. No real people, no readable logos, no copied UI. The lower and middle road surfaces must be walkable for the protagonist.",
-      "planned_hotspots": [
-        { "id": "control_room", "name": "Zurück zur Regie", "kind": "exit", "bbox_pct": [3, 62, 10, 25] },
-        { "id": "walkable_lane", "name": "Standspur", "kind": "prop", "bbox_pct": [49, 73, 24, 18] },
-        { "id": "road_marker", "name": "Routenmarker", "kind": "pickup", "bbox_pct": [36, 56, 11, 23] },
-        { "id": "traffic_totem", "name": "Markierungsgruppe", "kind": "prop", "bbox_pct": [43, 35, 18, 37] },
-        { "id": "archive_exit_sign", "name": "Ausfahrtschild", "kind": "prop", "bbox_pct": [72, 48, 16, 24] },
-        { "id": "distant_gate", "name": "Straßenende", "kind": "prop", "bbox_pct": [83, 39, 12, 30] }
-      ]
-    },
     {
       "id": "video_schimmelbrueder",
       "chapter": "Schimmelbrüder",
@@ -40,18 +24,32 @@
       ]
     },
     {
-      "id": "video_sewer_archive",
-      "deprecated": true,
-      "chapter": "Kanalisation",
-      "source_url": "https://www.youtube.com/watch?v=2NBCX4yW5tk",
-      "reference_frame": "tmp/klixx-video-rooms/frames/2NBCX4yW5tk_das_video_ist_so_deep_wie_die_kanalisation_schmutzig_verflixxte_klixx_/01_01089s.jpg",
-      "asset_target": "assets/scenes/video_sewer_archive.png",
-      "prompt": "Use the reference only for the idea of a cylindrical sewer-inspection tunnel. Create an original The Dig-like 1990s cinematic pixel-art point-and-click room: a wide concrete pipe receding into darkness, damp brick texture, side maintenance ledges, cable hooks, a small inspection tripod, chalk arrows, and a sealed archive hatch. No real people, no copied UI, no readable text, no logos. Lower 40 percent must be clearly walkable.",
+      "id": "video_icemachine",
+      "chapter": "Eismaschine",
+      "source_url": "https://www.youtube.com/watch?v=EpEKYwPEkMw",
+      "reference_frame": "tmp/klixx-video-rooms/frames/EpEKYwPEkMw_so_gibt_man_freundliches_feedback_du_vogel_verflixxte_klixx_mit_lars_f/pick_001409388ms.jpg",
+      "asset_target": "assets/scenes/video_icemachine.png",
+      "prompt": "Use the reference only for the broad composition of a soft-serve ice-machine service area. Create an original The Dig-like 1990s cinematic pixel-art point-and-click room: stainless steel counters, exposed machine panels, cleaning tools, hoses, shelves, a service counter, archive-monitor glow, a far-left exit seam, and a broad lower foreground floor for the protagonist. No real people, no copied UI, no readable text, no logos.",
       "planned_hotspots": [
-        { "id": "archive_hatch", "name": "Archivluke", "kind": "prop", "bbox_pct": [72, 40, 13, 32] },
-        { "id": "flow_arrow", "name": "Flusspfeil", "kind": "prop", "bbox_pct": [42, 73, 13, 8] },
-        { "id": "inspection_tripod", "name": "Inspektionsstativ", "kind": "prop", "bbox_pct": [19, 44, 11, 34] },
-        { "id": "wet_note", "name": "Nasser Zettel", "kind": "pickup", "bbox_pct": [58.5, 80, 5.5, 5.5] }
+        { "id": "control_room", "name": "Zurück zur Regie", "kind": "exit", "bbox_pct": [1, 11, 12, 49] },
+        { "id": "ice_machine", "name": "Eismaschine", "kind": "prop", "bbox_pct": [35, 22, 28, 45] },
+        { "id": "cleaning_bucket", "name": "Reinigungseimer", "kind": "prop", "bbox_pct": [12, 62, 12, 20] },
+        { "id": "service_counter", "name": "Arbeitsfläche", "kind": "prop", "bbox_pct": [64, 54, 26, 24] }
+      ]
+    },
+    {
+      "id": "video_brassband",
+      "chapter": "Band",
+      "source_url": "https://www.youtube.com/watch?v=Vbc3Va7xUNU",
+      "reference_frame": "tmp/klixx-video-rooms/frames/Vbc3Va7xUNU_verflixxte_moms_milit_rs_verflixxte_klixx_staffel_2_mit_lars_paulsen_f/pick_002116320ms.jpg",
+      "asset_target": "assets/scenes/video_brassband.png",
+      "prompt": "Use the reference only for the broad composition of a small brass-band performance area. Create an original The Dig-like 1990s cinematic pixel-art point-and-click room: generic stylized musicians, brass instruments, music stands, glass archive doors, plants, cables, a far-left exit seam, and a broad lower foreground floor for the protagonist. No real people or likenesses, no copied UI, no score graphics, no readable logos or text.",
+      "planned_hotspots": [
+        { "id": "control_room", "name": "Zurück zur Regie", "kind": "exit", "bbox_pct": [1, 10, 10, 48] },
+        { "id": "brass_players", "name": "Bläsergruppe", "kind": "character", "bbox_pct": [32, 18, 38, 58] },
+        { "id": "tuba_bell", "name": "Tuba", "kind": "prop", "bbox_pct": [50.8, 17, 11.5, 30] },
+        { "id": "music_stand", "name": "Notenständer", "kind": "prop", "bbox_pct": [45, 54, 18, 22] },
+        { "id": "stage_floor", "name": "Bodenmarke", "kind": "prop", "bbox_pct": [14, 70, 72, 18] }
       ]
     },
     {

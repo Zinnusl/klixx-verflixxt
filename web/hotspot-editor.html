@@ -81,18 +81,23 @@
 
   .topbar {
     min-height: 66px;
-    display: flex;
+    display: grid;
+    grid-template-columns: minmax(160px, 220px) minmax(240px, 1fr) auto;
+    grid-template-areas:
+      "brand picker actions"
+      "meta meta actions";
     align-items: center;
-    gap: 14px;
+    gap: 8px 14px;
     padding: 10px 14px;
     border-bottom: 1px solid var(--line);
     background: #121518;
   }
 
   .brand {
+    grid-area: brand;
     display: flex;
     flex-direction: column;
-    min-width: 170px;
+    min-width: 0;
   }
 
   .brand strong {
@@ -108,9 +113,10 @@
   }
 
   .scene-picker {
+    grid-area: picker;
     display: grid;
     gap: 5px;
-    min-width: min(330px, 40vw);
+    min-width: 0;
   }
 
   .scene-picker label,
@@ -136,8 +142,122 @@
     padding: 5px 9px;
   }
 
+  #sceneSelect {
+    width: 100%;
+    min-width: 0;
+  }
+
+  .scene-select {
+    position: relative;
+    z-index: 70;
+  }
+
+  .scene-select-button {
+    position: relative;
+    width: 100%;
+    min-height: 34px;
+    padding: 5px 30px 5px 9px;
+    text-align: left;
+  }
+
+  .scene-select-button::after {
+    content: "";
+    position: absolute;
+    top: 50%;
+    right: 11px;
+    width: 0;
+    height: 0;
+    border-left: 5px solid transparent;
+    border-right: 5px solid transparent;
+    border-top: 6px solid var(--muted);
+    transform: translateY(-35%);
+    pointer-events: none;
+  }
+
+  .scene-select.open .scene-select-button::after {
+    transform: translateY(-65%) rotate(180deg);
+  }
+
+  #sceneSelectValue {
+    display: block;
+    min-width: 0;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+
+  .scene-select-menu {
+    position: absolute;
+    top: calc(100% + 4px);
+    left: 0;
+    right: 0;
+    z-index: 1000;
+    display: none;
+    max-height: min(420px, 70vh);
+    overflow-y: auto;
+    padding: 4px;
+    border: 1px solid var(--line);
+    border-radius: 6px;
+    background: var(--field);
+    box-shadow: 0 16px 34px rgba(0, 0, 0, 0.5);
+  }
+
+  .scene-select.open .scene-select-menu {
+    display: grid;
+    gap: 2px;
+  }
+
+  .scene-option {
+    width: 100%;
+    min-height: 42px;
+    display: grid;
+    gap: 2px;
+    padding: 7px 8px;
+    border-color: transparent;
+    background: transparent;
+    text-align: left;
+  }
+
+  .scene-option:hover,
+  .scene-option:focus-visible {
+    border-color: #69727b;
+    background: #273038;
+    outline: none;
+  }
+
+  .scene-option[aria-selected="true"] {
+    border-color: rgba(214, 154, 58, 0.85);
+    background: rgba(214, 154, 58, 0.16);
+  }
+
+  .scene-option-name,
+  .scene-option-meta {
+    min-width: 0;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+
+  .scene-option-name {
+    font-weight: 700;
+  }
+
+  .scene-option-meta {
+    color: var(--muted);
+    font-size: 0.75rem;
+  }
+
+  .scene-meta {
+    grid-area: meta;
+    min-width: 0;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+
   .top-actions {
-    margin-left: auto;
+    grid-area: actions;
+    margin-left: 0;
     display: flex;
     gap: 8px;
     flex-wrap: wrap;
@@ -643,15 +763,15 @@
 
     .topbar {
       align-items: stretch;
-      flex-direction: column;
-    }
-
-    .scene-picker {
-      min-width: 0;
+      grid-template-columns: 1fr;
+      grid-template-areas:
+        "brand"
+        "picker"
+        "meta"
+        "actions";
     }
 
     .top-actions {
-      margin-left: 0;
       justify-content: flex-start;
     }
 
@@ -683,8 +803,20 @@
         <span>Rust pct(...) boxes + hotspot/walkable polygons</span>
       </div>
       <div class="scene-picker">
-        <label for="sceneSelect">Szene</label>
-        <select id="sceneSelect"></select>
+        <label id="sceneSelectLabel" for="sceneSelectButton">Szene</label>
+        <div class="scene-select" id="sceneSelect">
+          <button
+            type="button"
+            class="scene-select-button"
+            id="sceneSelectButton"
+            aria-haspopup="listbox"
+            aria-expanded="false"
+            aria-labelledby="sceneSelectLabel sceneSelectValue"
+          >
+            <span id="sceneSelectValue"></span>
+          </button>
+          <div class="scene-select-menu" id="sceneSelectMenu" role="listbox" aria-labelledby="sceneSelectLabel"></div>
+        </div>
       </div>
       <div class="scene-meta" id="sceneMeta"></div>
       <div class="top-actions">
@@ -1149,20 +1281,8 @@ const initialScenes = [
         ],
       },
       {
-        id: "video_kliemannsland_road",
-        name: "Straßenvideo",
-        kind: "Exit",
-        pct: { x: 67.84, y: 15.17, w: 10.98, h: 16.69 },
-        polygon: [
-          { x: 67.84, y: 15.17 },
-          { x: 78.82, y: 15.17 },
-          { x: 78.82, y: 31.86 },
-          { x: 67.84, y: 31.86 },
-        ],
-      },
-      {
         id: "video_schimmelbrueder",
-        name: "Schimmelbrüder-Video",
+        name: "Schimmelbrüder-Frame",
         kind: "Exit",
         pct: { x: 63.58, y: 33.36, w: 3.9, h: 7.94 },
         polygon: [
@@ -1172,84 +1292,40 @@ const initialScenes = [
           { x: 63.58, y: 41.3 },
         ],
       },
-    ],
-  },
-  {
-    id: "video_kliemannsland_road",
-    name: "Straßenvideo",
-    zone: "Videoarchiv",
-    token: [22.0, 84.0],
-    hotspots: [
       {
-        id: "control_room",
-        name: "Zurück zur Regie",
+        id: "video_icemachine",
+        name: "Eismaschinen-Frame",
         kind: "Exit",
-        pct: { x: 3.0, y: 62.0, w: 10.0, h: 25.0 },
+        pct: { x: 68.2, y: 33.36, w: 3.9, h: 7.94 },
         polygon: [
-          { x: 3.0, y: 62.0 },
-          { x: 13.0, y: 62.0 },
-          { x: 13.0, y: 87.0 },
-          { x: 3.0, y: 87.0 },
+          { x: 68.2, y: 33.36 },
+          { x: 72.1, y: 33.36 },
+          { x: 72.1, y: 41.3 },
+          { x: 68.2, y: 41.3 },
         ],
       },
       {
-        id: "walkable_lane",
-        name: "Standspur",
+        id: "video_brassband",
+        name: "Band-Frame",
+        kind: "Exit",
+        pct: { x: 72.82, y: 33.36, w: 3.9, h: 7.94 },
+        polygon: [
+          { x: 72.82, y: 33.36 },
+          { x: 76.72, y: 33.36 },
+          { x: 76.72, y: 41.3 },
+          { x: 72.82, y: 41.3 },
+        ],
+      },
+      {
+        id: "mixing_console",
+        name: "Mischpult",
         kind: "Prop",
-        pct: { x: 49.0, y: 73.0, w: 24.0, h: 18.0 },
+        pct: { x: 82.71, y: 43.58, w: 17.11, h: 22.39 },
         polygon: [
-          { x: 49.0, y: 73.0 },
-          { x: 73.0, y: 73.0 },
-          { x: 73.0, y: 91.0 },
-          { x: 49.0, y: 91.0 },
-        ],
-      },
-      {
-        id: "road_marker",
-        name: "Routenmarker",
-        kind: "Pickup",
-        pct: { x: 36.0, y: 56.0, w: 11.0, h: 23.0 },
-        polygon: [
-          { x: 36.0, y: 56.0 },
-          { x: 47.0, y: 56.0 },
-          { x: 47.0, y: 79.0 },
-          { x: 36.0, y: 79.0 },
-        ],
-      },
-      {
-        id: "traffic_totem",
-        name: "Markierungsgruppe",
-        kind: "Prop",
-        pct: { x: 43.0, y: 35.0, w: 18.0, h: 37.0 },
-        polygon: [
-          { x: 43.0, y: 35.0 },
-          { x: 61.0, y: 35.0 },
-          { x: 61.0, y: 72.0 },
-          { x: 43.0, y: 72.0 },
-        ],
-      },
-      {
-        id: "archive_exit_sign",
-        name: "Ausfahrtschild",
-        kind: "Prop",
-        pct: { x: 72.0, y: 48.0, w: 16.0, h: 24.0 },
-        polygon: [
-          { x: 72.0, y: 48.0 },
-          { x: 88.0, y: 48.0 },
-          { x: 88.0, y: 72.0 },
-          { x: 72.0, y: 72.0 },
-        ],
-      },
-      {
-        id: "distant_gate",
-        name: "Straßenende",
-        kind: "Prop",
-        pct: { x: 83.0, y: 39.0, w: 12.0, h: 30.0 },
-        polygon: [
-          { x: 83.0, y: 39.0 },
-          { x: 95.0, y: 39.0 },
-          { x: 95.0, y: 69.0 },
-          { x: 83.0, y: 69.0 },
+          { x: 82.71, y: 43.58 },
+          { x: 99.82, y: 43.58 },
+          { x: 99.82, y: 65.97 },
+          { x: 82.71, y: 65.97 },
         ],
       },
     ],
@@ -1348,81 +1424,140 @@ const initialScenes = [
     ],
   },
   {
-    id: "video_sewer_archive",
-    name: "Kanalvideo",
+    id: "video_icemachine",
+    name: "Eismaschinen-Video",
     zone: "Videoarchiv",
-    token: [20.0, 84.0],
+    token: [50.0, 84.0],
     hotspots: [
       {
         id: "control_room",
         name: "Zurück zur Regie",
         kind: "Exit",
-        pct: { x: 4.0, y: 65.0, w: 10.0, h: 22.0 },
+        pct: { x: 3.31, y: 17.11, w: 6.67, h: 46.22 },
         polygon: [
-          { x: 4.0, y: 65.0 },
-          { x: 14.0, y: 65.0 },
-          { x: 14.0, y: 87.0 },
-          { x: 4.0, y: 87.0 },
+          { x: 3.31, y: 17.11 },
+          { x: 9.98, y: 17.11 },
+          { x: 9.98, y: 63.33 },
+          { x: 3.31, y: 63.33 },
         ],
       },
       {
-        id: "archive_hatch",
-        name: "Archivluke",
+        id: "ice_machine",
+        name: "Eismaschine",
         kind: "Prop",
-        pct: { x: 72.0, y: 40.0, w: 13.0, h: 32.0 },
+        pct: { x: 51.02, y: 8.53, w: 19.4, h: 64.31 },
         polygon: [
-          { x: 72.0, y: 40.0 },
-          { x: 85.0, y: 40.0 },
-          { x: 85.0, y: 72.0 },
-          { x: 72.0, y: 72.0 },
+          { x: 51.02, y: 8.53 },
+          { x: 70.42, y: 8.53 },
+          { x: 70.42, y: 72.84 },
+          { x: 51.02, y: 72.84 },
         ],
       },
       {
-        id: "flow_arrow",
-        name: "Flusspfeil",
+        id: "cleaning_bucket",
+        name: "Reinigungseimer",
         kind: "Prop",
-        pct: { x: 42.0, y: 73.0, w: 13.0, h: 8.0 },
+        pct: { x: 11.84, y: 49.22, w: 12.48, h: 28.06 },
         polygon: [
-          { x: 42.0, y: 73.0 },
-          { x: 55.0, y: 73.0 },
-          { x: 55.0, y: 81.0 },
-          { x: 42.0, y: 81.0 },
+          { x: 11.84, y: 49.22 },
+          { x: 24.32, y: 49.22 },
+          { x: 24.32, y: 77.28 },
+          { x: 11.84, y: 77.28 },
         ],
       },
       {
-        id: "inspection_tripod",
-        name: "Inspektionsstativ",
+        id: "service_counter",
+        name: "Arbeitsfläche",
         kind: "Prop",
-        pct: { x: 19.0, y: 44.0, w: 11.0, h: 34.0 },
+        pct: { x: 64.38, y: 39.83, w: 35.62, h: 17.89 },
         polygon: [
-          { x: 19.0, y: 44.0 },
-          { x: 30.0, y: 44.0 },
-          { x: 30.0, y: 78.0 },
-          { x: 19.0, y: 78.0 },
+          { x: 64.38, y: 39.83 },
+          { x: 100.0, y: 39.83 },
+          { x: 100.0, y: 57.72 },
+          { x: 64.38, y: 57.72 },
+        ],
+      },
+    ],
+  },
+  {
+    id: "video_brassband",
+    name: "Band-Video",
+    zone: "Videoarchiv",
+    token: [50.0, 84.0],
+    hotspots: [
+      {
+        id: "control_room",
+        name: "Zurück zur Regie",
+        kind: "Exit",
+        pct: { x: 4.17, y: 19.59, w: 7.85, h: 45.08 },
+        polygon: [
+          { x: 4.17, y: 19.59 },
+          { x: 12.02, y: 19.59 },
+          { x: 12.02, y: 64.67 },
+          { x: 4.17, y: 64.67 },
         ],
       },
       {
-        id: "wet_note",
-        name: "Nasser Zettel",
-        kind: "Pickup",
-        pct: { x: 58.5, y: 80.0, w: 5.5, h: 5.5 },
+        id: "brass_players",
+        name: "Bläsergruppe",
+        kind: "Character",
+        pct: { x: 39.74, y: 32.17, w: 41.55, h: 34.53 },
         polygon: [
-          { x: 58.5, y: 80.0 },
-          { x: 64.0, y: 80.0 },
-          { x: 64.0, y: 85.5 },
-          { x: 58.5, y: 85.5 },
+          { x: 40.48, y: 34.41 },
+          { x: 44.41, y: 31.08 },
+          { x: 48.6, y: 45.94 },
+          { x: 45.43, y: 50.24 },
+          { x: 45.32, y: 65.94 },
+          { x: 50.11, y: 66.35 },
+          { x: 50.7, y: 47.88 },
+          { x: 48.82, y: 36.22 },
+          { x: 53.28, y: 33.02 },
+          { x: 55.7, y: 43.16 },
+          { x: 57.58, y: 65.1 },
+          { x: 62.69, y: 63.58 },
+          { x: 63.49, y: 46.35 },
+          { x: 68.55, y: 31.77 },
+          { x: 81.13, y: 34.27 },
+          { x: 81.67, y: 65.8 },
+          { x: 74.19, y: 70.1 },
+          { x: 43.76, y: 71.08 },
+          { x: 39.03, y: 64.69 },
         ],
       },
       {
-        id: "lost_signal",
-        name: "Fehlender Bildbereich",
+        id: "tuba_bell",
+        name: "Tuba",
         kind: "Prop",
-        pct: { x: 43.0, y: 20.0, w: 22.0, h: 32.0 },
+        pct: { x: 57.84, y: 25.61, w: 5.8, h: 21.53 },
         polygon: [
-          { x: 43.0, y: 20.0 },
-          { x: 65.0, y: 20.0 },
-          { x: 65.0, y: 52.0 },
-          { x: 43.0, y: 52.0 },
+          { x: 57.84, y: 25.61 },
+          { x: 63.64, y: 25.61 },
+          { x: 63.64, y: 47.14 },
+          { x: 57.84, y: 47.14 },
+        ],
+      },
+      {
+        id: "music_stand",
+        name: "Notenständer",
+        kind: "Prop",
+        pct: { x: 45.48, y: 46.92, w: 4.51, h: 20.33 },
+        polygon: [
+          { x: 45.48, y: 46.92 },
+          { x: 49.99, y: 46.92 },
+          { x: 49.99, y: 67.25 },
+          { x: 45.48, y: 67.25 },
+        ],
+      },
+      {
+        id: "stage_floor",
+        name: "Bodenmarke",
+        kind: "Prop",
+        pct: { x: 4.27, y: 79.03, w: 72.0, h: 18.0 },
+        polygon: [
+          { x: 4.27, y: 79.03 },
+          { x: 76.27, y: 79.03 },
+          { x: 76.27, y: 97.03 },
+          { x: 4.27, y: 97.03 },
         ],
       },
     ],
@@ -1493,6 +1628,18 @@ const initialScenes = [
           { x: 62.8, y: 50.94 },
         ],
       },
+      {
+        id: "cable_loop",
+        name: "Kabelschleife",
+        kind: "Prop",
+        pct: { x: 66.53, y: 26.92, w: 3.4, h: 15.72 },
+        polygon: [
+          { x: 66.53, y: 26.92 },
+          { x: 69.93, y: 26.92 },
+          { x: 69.93, y: 42.64 },
+          { x: 66.53, y: 42.64 },
+        ],
+      },
     ],
   },
   {
@@ -1561,6 +1708,18 @@ const initialScenes = [
           { x: 85.53, y: 67.28 },
         ],
       },
+      {
+        id: "brushes",
+        name: "Pinsel",
+        kind: "Prop",
+        pct: { x: 41.74, y: 46.5, w: 10.44, h: 9.89 },
+        polygon: [
+          { x: 41.74, y: 46.5 },
+          { x: 52.18, y: 46.5 },
+          { x: 52.18, y: 56.39 },
+          { x: 41.74, y: 56.39 },
+        ],
+      },
     ],
   },
   {
@@ -1609,12 +1768,12 @@ const initialScenes = [
         id: "street_mural",
         name: "Wandbild",
         kind: "Prop",
-        pct: { x: 12.47, y: 4.28, w: 20.47, h: 56.33 },
+        pct: { x: 12.52, y: 4.28, w: 20.47, h: 53.55 },
         polygon: [
-          { x: 12.47, y: 4.28 },
-          { x: 32.94, y: 4.28 },
-          { x: 32.94, y: 60.61 },
-          { x: 12.47, y: 60.61 },
+          { x: 12.52, y: 4.28 },
+          { x: 32.99, y: 4.28 },
+          { x: 32.99, y: 57.83 },
+          { x: 12.52, y: 57.83 },
         ],
       },
       {
@@ -1639,6 +1798,18 @@ const initialScenes = [
           { x: 35.78, y: 31.86 },
           { x: 35.78, y: 44.11 },
           { x: 32.73, y: 44.11 },
+        ],
+      },
+      {
+        id: "bicycle",
+        name: "Fahrrad",
+        kind: "Prop",
+        pct: { x: 21.9, y: 57.34, w: 9.63, h: 14.33 },
+        polygon: [
+          { x: 21.9, y: 57.34 },
+          { x: 31.53, y: 57.34 },
+          { x: 31.53, y: 71.67 },
+          { x: 21.9, y: 71.67 },
         ],
       },
     ],
@@ -1707,6 +1878,18 @@ const initialScenes = [
           { x: 38.28, y: 57.42 },
           { x: 38.28, y: 74.75 },
           { x: 31.07, y: 74.75 },
+        ],
+      },
+      {
+        id: "public_phone",
+        name: "Öffentliches Telefon",
+        kind: "Prop",
+        pct: { x: 70.45, y: 52.89, w: 2.27, h: 12.25 },
+        polygon: [
+          { x: 70.45, y: 52.89 },
+          { x: 72.72, y: 52.89 },
+          { x: 72.72, y: 65.14 },
+          { x: 70.45, y: 65.14 },
         ],
       },
     ],
@@ -1869,12 +2052,12 @@ const initialScenes = [
         id: "nurse_station",
         name: "Pflegekraft",
         kind: "Character",
-        pct: { x: 83.3, y: 12.19, w: 2.92, h: 12.78 },
+        pct: { x: 67.34, y: 35.39, w: 11.68, h: 36.11 },
         polygon: [
-          { x: 83.3, y: 12.19 },
-          { x: 86.22, y: 12.19 },
-          { x: 86.22, y: 24.97 },
-          { x: 83.3, y: 24.97 },
+          { x: 67.34, y: 35.39 },
+          { x: 79.02, y: 35.39 },
+          { x: 79.02, y: 71.5 },
+          { x: 67.34, y: 71.5 },
         ],
       },
       {
@@ -1893,12 +2076,12 @@ const initialScenes = [
         id: "hospital_exit",
         name: "Korridortür",
         kind: "Prop",
-        pct: { x: 91.44, y: 1.08, w: 6.45, h: 80.67 },
+        pct: { x: 86.98, y: 0.11, w: 6.02, h: 70.81 },
         polygon: [
-          { x: 91.44, y: 1.08 },
-          { x: 97.89, y: 1.08 },
-          { x: 97.89, y: 81.75 },
-          { x: 91.44, y: 81.75 },
+          { x: 86.98, y: 0.11 },
+          { x: 93.0, y: 0.11 },
+          { x: 93.0, y: 70.92 },
+          { x: 86.98, y: 70.92 },
         ],
       },
     ],
@@ -1913,48 +2096,60 @@ const initialScenes = [
         id: "alarm_panel",
         name: "Alarmfeld",
         kind: "Prop",
-        pct: { x: 40.37, y: 22.5, w: 4.42, h: 18.03 },
+        pct: { x: 38.06, y: 20.83, w: 4.42, h: 18.03 },
         polygon: [
-          { x: 40.37, y: 22.5 },
-          { x: 44.79, y: 22.5 },
-          { x: 44.79, y: 40.53 },
-          { x: 40.37, y: 40.53 },
+          { x: 38.06, y: 20.83 },
+          { x: 42.48, y: 20.83 },
+          { x: 42.48, y: 38.86 },
+          { x: 38.06, y: 38.86 },
         ],
       },
       {
         id: "extinguisher_cabinet",
         name: "Löschschrank",
         kind: "Prop",
-        pct: { x: 46.46, y: 24.55, w: 6.01, h: 27.34 },
+        pct: { x: 43.77, y: 22.74, w: 6.01, h: 27.34 },
         polygon: [
-          { x: 46.46, y: 24.55 },
-          { x: 52.47, y: 24.55 },
-          { x: 52.47, y: 51.89 },
-          { x: 46.46, y: 51.89 },
+          { x: 43.77, y: 22.74 },
+          { x: 49.78, y: 22.74 },
+          { x: 49.78, y: 50.08 },
+          { x: 43.77, y: 50.08 },
         ],
       },
       {
         id: "safety_officer",
         name: "Sicherheitsdienst",
         kind: "Character",
-        pct: { x: 66.92, y: 27.06, w: 8.0, h: 32.0 },
+        pct: { x: 67.4, y: 21.92, w: 8.32, h: 56.31 },
         polygon: [
-          { x: 66.92, y: 27.06 },
-          { x: 74.92, y: 27.06 },
-          { x: 74.92, y: 59.06 },
-          { x: 66.92, y: 59.06 },
+          { x: 67.4, y: 21.92 },
+          { x: 75.72, y: 21.92 },
+          { x: 75.72, y: 78.23 },
+          { x: 67.4, y: 78.23 },
         ],
       },
       {
         id: "fire_return_door",
         name: "Rückweg ins Gebäude",
         kind: "Prop",
-        pct: { x: 24.34, y: 9.28, w: 13.78, h: 60.97 },
+        pct: { x: 22.24, y: 7.89, w: 13.78, h: 60.97 },
         polygon: [
-          { x: 24.34, y: 9.28 },
-          { x: 38.12, y: 9.28 },
-          { x: 38.12, y: 70.25 },
-          { x: 24.34, y: 70.25 },
+          { x: 22.24, y: 7.89 },
+          { x: 36.02, y: 7.89 },
+          { x: 36.02, y: 68.86 },
+          { x: 22.24, y: 68.86 },
+        ],
+      },
+      {
+        id: "cable_bin",
+        name: "Kabelmüll in Tonne",
+        kind: "Prop",
+        pct: { x: 0.0, y: 82.75, w: 15.76, h: 17.25 },
+        polygon: [
+          { x: 0.0, y: 82.75 },
+          { x: 15.76, y: 82.75 },
+          { x: 15.76, y: 100.0 },
+          { x: 0.0, y: 100.0 },
         ],
       },
     ],
@@ -1993,12 +2188,12 @@ const initialScenes = [
         id: "workshop_gap",
         name: "Freier Spalt",
         kind: "Prop",
-        pct: { x: 87.91, y: 6.95, w: 3.17, h: 69.86 },
+        pct: { x: 25.65, y: 30.14, w: 10.37, h: 42.92 },
         polygon: [
-          { x: 87.91, y: 6.95 },
-          { x: 91.08, y: 6.95 },
-          { x: 91.08, y: 76.81 },
-          { x: 87.91, y: 76.81 },
+          { x: 25.81, y: 35.52 },
+          { x: 28.28, y: 43.44 },
+          { x: 35.38, y: 71.63 },
+          { x: 31.45, y: 69.83 },
         ],
       },
       {
@@ -2011,6 +2206,18 @@ const initialScenes = [
           { x: 84.01, y: 10.5 },
           { x: 84.01, y: 71.81 },
           { x: 74.72, y: 71.81 },
+        ],
+      },
+      {
+        id: "paint_cans",
+        name: "Farbdosen",
+        kind: "Prop",
+        pct: { x: 1.9, y: 76.22, w: 16.95, h: 16.0 },
+        polygon: [
+          { x: 1.9, y: 76.22 },
+          { x: 18.85, y: 76.22 },
+          { x: 18.85, y: 92.22 },
+          { x: 1.9, y: 92.22 },
         ],
       },
     ],
@@ -2131,13 +2338,6 @@ const SCENE_WALKABLE = {
     { x: 100.0, y: 100.0 },
     { x: 0.0, y: 100.0 },
   ],
-  "video_kliemannsland_road": [
-    { x: 24.0, y: 45.0 },
-    { x: 58.0, y: 47.0 },
-    { x: 90.0, y: 96.0 },
-    { x: 3.0, y: 96.0 },
-    { x: 10.0, y: 72.0 },
-  ],
   "video_schimmelbrueder": [
     { x: 8.66, y: 64.76 },
     { x: 40.16, y: 66.56 },
@@ -2152,11 +2352,29 @@ const SCENE_WALKABLE = {
     { x: 0.0, y: 100.0 },
     { x: 0.0, y: 73.78 },
   ],
-  "video_sewer_archive": [
-    { x: 15.0, y: 72.0 },
-    { x: 85.0, y: 72.0 },
-    { x: 94.0, y: 96.0 },
-    { x: 7.0, y: 96.0 },
+  "video_icemachine": [
+    { x: 11.29, y: 63.3 },
+    { x: 12.26, y: 77.19 },
+    { x: 24.78, y: 77.6 },
+    { x: 25.32, y: 60.52 },
+    { x: 47.58, y: 66.08 },
+    { x: 64.14, y: 78.02 },
+    { x: 100.0, y: 97.88 },
+    { x: 100.0, y: 100.0 },
+    { x: 0.0, y: 100.0 },
+    { x: 0.0, y: 72.88 },
+  ],
+  "video_brassband": [
+    { x: 0.0, y: 73.58 },
+    { x: 15.16, y: 65.24 },
+    { x: 26.77, y: 62.05 },
+    { x: 33.23, y: 59.97 },
+    { x: 38.92, y: 59.83 },
+    { x: 39.52, y: 67.05 },
+    { x: 59.25, y: 66.77 },
+    { x: 75.48, y: 69.97 },
+    { x: 77.15, y: 100.0 },
+    { x: 0.0, y: 100.0 },
   ],
   "server_room": [
     { x: 0.0, y: 77.53 },
@@ -2337,8 +2555,14 @@ const state = {
   drag: null,
 };
 
+let sceneSelectTypeahead = "";
+let sceneSelectTypeaheadTimer = 0;
+
 const el = {
   sceneSelect: document.getElementById("sceneSelect"),
+  sceneSelectButton: document.getElementById("sceneSelectButton"),
+  sceneSelectValue: document.getElementById("sceneSelectValue"),
+  sceneSelectMenu: document.getElementById("sceneSelectMenu"),
   sceneMeta: document.getElementById("sceneMeta"),
   sceneFrame: document.getElementById("sceneFrame"),
   sceneImage: document.getElementById("sceneImage"),
@@ -2922,15 +3146,190 @@ function clearWalkablePolygon() {
   renderAll(true);
 }
 
+function sceneSelectIsOpen() {
+  return el.sceneSelect.classList.contains("open");
+}
+
+function sceneOption(index) {
+  return el.sceneSelectMenu.querySelector(`.scene-option[data-index="${index}"]`);
+}
+
+function updateSceneSelectSelection() {
+  const currentScene = scene();
+  el.sceneSelectValue.textContent = currentScene.name;
+  el.sceneSelectButton.title = `${currentScene.name} (${currentScene.id})`;
+
+  for (const option of el.sceneSelectMenu.querySelectorAll(".scene-option")) {
+    option.setAttribute("aria-selected", String(Number(option.dataset.index) === state.sceneIndex));
+  }
+}
+
 function renderSceneSelect() {
-  el.sceneSelect.innerHTML = "";
+  el.sceneSelectMenu.innerHTML = "";
   state.scenes.forEach((currentScene, index) => {
-    const option = document.createElement("option");
-    option.value = String(index);
-    option.textContent = `${currentScene.name} (${currentScene.id})`;
-    el.sceneSelect.appendChild(option);
+    const option = document.createElement("button");
+    const optionName = document.createElement("span");
+    const optionMeta = document.createElement("span");
+
+    option.type = "button";
+    option.className = "scene-option";
+    option.dataset.index = String(index);
+    option.tabIndex = -1;
+    option.setAttribute("role", "option");
+    option.title = `${currentScene.name} (${currentScene.id})`;
+
+    optionName.className = "scene-option-name";
+    optionName.textContent = currentScene.name;
+    optionMeta.className = "scene-option-meta";
+    optionMeta.textContent = `${currentScene.zone} · ${currentScene.id}`;
+
+    option.append(optionName, optionMeta);
+    el.sceneSelectMenu.appendChild(option);
   });
-  el.sceneSelect.value = String(state.sceneIndex);
+  updateSceneSelectSelection();
+}
+
+function setSceneSelectOpen(open, focusCurrent = false) {
+  el.sceneSelect.classList.toggle("open", open);
+  el.sceneSelectButton.setAttribute("aria-expanded", String(open));
+
+  if (open) {
+    updateSceneSelectSelection();
+    if (focusCurrent) {
+      requestAnimationFrame(() => focusSceneOption(state.sceneIndex));
+    }
+  }
+}
+
+function focusSceneOption(index) {
+  const boundedIndex = clamp(index, 0, state.scenes.length - 1);
+  const option = sceneOption(boundedIndex);
+  if (!option) {
+    return;
+  }
+  option.focus({ preventScroll: true });
+  option.scrollIntoView({ block: "nearest" });
+}
+
+function selectScene(index, options = {}) {
+  const nextIndex = clamp(Number(index) || 0, 0, state.scenes.length - 1);
+  state.sceneIndex = nextIndex;
+  state.selectedIndex = 0;
+  state.selectedPointIndex = 0;
+  state.selectedLayer = "hotspot";
+  loadSceneImage(scene());
+  renderAll();
+  setSceneSelectOpen(false);
+
+  if (options.focusButton) {
+    el.sceneSelectButton.focus({ preventScroll: true });
+  }
+}
+
+function sceneMatchesTypeahead(currentScene, query) {
+  return currentScene.name.toLowerCase().startsWith(query)
+    || currentScene.id.toLowerCase().startsWith(query);
+}
+
+function matchingSceneIndex(query, activeIndex, includeActive = false) {
+  if (!query || state.scenes.length === 0) {
+    return -1;
+  }
+
+  const offset = includeActive ? 0 : 1;
+  const startIndex = (activeIndex + offset + state.scenes.length) % state.scenes.length;
+  const candidates = [
+    ...state.scenes.slice(startIndex),
+    ...state.scenes.slice(0, startIndex),
+  ];
+  const match = candidates.findIndex((currentScene) => sceneMatchesTypeahead(currentScene, query));
+  if (match < 0) {
+    return -1;
+  }
+  return (startIndex + match) % state.scenes.length;
+}
+
+function handleSceneSelectTypeahead(event, activeIndex, isOpen) {
+  if (event.key.length !== 1 || event.key === " " || event.altKey || event.ctrlKey || event.metaKey) {
+    return false;
+  }
+
+  event.preventDefault();
+  window.clearTimeout(sceneSelectTypeaheadTimer);
+  sceneSelectTypeahead += event.key.toLowerCase();
+  sceneSelectTypeaheadTimer = window.setTimeout(() => {
+    sceneSelectTypeahead = "";
+  }, 700);
+
+  let nextIndex = matchingSceneIndex(sceneSelectTypeahead, activeIndex, sceneSelectTypeahead.length > 1);
+  if (nextIndex < 0 && sceneSelectTypeahead.length > 1) {
+    sceneSelectTypeahead = event.key.toLowerCase();
+    nextIndex = matchingSceneIndex(sceneSelectTypeahead, activeIndex);
+  }
+  if (nextIndex < 0) {
+    return true;
+  }
+
+  if (isOpen) {
+    focusSceneOption(nextIndex);
+  } else {
+    selectScene(nextIndex, { focusButton: true });
+  }
+  return true;
+}
+
+function onSceneSelectKeyDown(event) {
+  const isOpen = sceneSelectIsOpen();
+  const activeOption = event.target.closest?.(".scene-option");
+  const activeIndex = activeOption ? Number(activeOption.dataset.index) : state.sceneIndex;
+
+  if (handleSceneSelectTypeahead(event, activeIndex, isOpen)) {
+    return;
+  }
+
+  if (event.key === "ArrowDown" || event.key === "ArrowUp") {
+    event.preventDefault();
+    if (!isOpen) {
+      setSceneSelectOpen(true, true);
+      return;
+    }
+    focusSceneOption(activeIndex + (event.key === "ArrowDown" ? 1 : -1));
+    return;
+  }
+
+  if (event.key === "Home" || event.key === "End") {
+    event.preventDefault();
+    if (!isOpen) {
+      setSceneSelectOpen(true);
+    }
+    focusSceneOption(event.key === "Home" ? 0 : state.scenes.length - 1);
+    return;
+  }
+
+  if (event.key === "Enter" || event.key === " " || event.key === "Spacebar") {
+    event.preventDefault();
+    if (!isOpen) {
+      setSceneSelectOpen(true, true);
+      return;
+    }
+    if (activeOption) {
+      selectScene(activeIndex, { focusButton: true });
+      return;
+    }
+    focusSceneOption(state.sceneIndex);
+    return;
+  }
+
+  if (event.key === "Escape") {
+    event.preventDefault();
+    setSceneSelectOpen(false);
+    el.sceneSelectButton.focus({ preventScroll: true });
+    return;
+  }
+
+  if (event.key === "Tab") {
+    setSceneSelectOpen(false);
+  }
 }
 
 function renderRects() {
@@ -3460,7 +3859,7 @@ function renderWalkableSelectionGeometry(activeInput = null) {
 
 function renderHeader() {
   const currentScene = scene();
-  el.sceneSelect.value = String(state.sceneIndex);
+  updateSceneSelectSelection();
   el.panelSceneName.textContent = currentScene.name;
   el.hotspotCount.textContent = `${currentScene.hotspots.length} Hotspots · ${ensureWalkable(currentScene).length} Punkte`;
   el.sceneMeta.textContent = `${currentScene.zone} · token ${rustFloat(currentScene.token[0])}/${rustFloat(currentScene.token[1])}`;
@@ -3612,6 +4011,9 @@ function stopDrag() {
 }
 
 function targetIsEditable(target) {
+  if (target.closest?.(".scene-select")) {
+    return true;
+  }
   return ["INPUT", "TEXTAREA", "SELECT"].includes(target.tagName);
 }
 
@@ -3721,14 +4123,23 @@ function onKeyDown(event) {
   renderAll(true);
 }
 
-el.sceneSelect.addEventListener("change", () => {
-  state.sceneIndex = Number(el.sceneSelect.value);
-  state.selectedIndex = 0;
-  state.selectedPointIndex = 0;
-  state.selectedLayer = "hotspot";
-  loadSceneImage(scene());
-  renderAll();
+el.sceneSelectButton.addEventListener("click", () => {
+  setSceneSelectOpen(!sceneSelectIsOpen(), true);
 });
+el.sceneSelectButton.addEventListener("keydown", onSceneSelectKeyDown);
+el.sceneSelectMenu.addEventListener("click", (event) => {
+  const option = event.target.closest?.(".scene-option");
+  if (!option) {
+    return;
+  }
+  selectScene(option.dataset.index, { focusButton: true });
+});
+el.sceneSelectMenu.addEventListener("keydown", onSceneSelectKeyDown);
+document.addEventListener("pointerdown", (event) => {
+  if (!el.sceneSelect.contains(event.target)) {
+    setSceneSelectOpen(false);
+  }
+}, { capture: true });
 
 el.editWalkableButton.addEventListener("click", () => {
   state.selectedLayer = "walkable";

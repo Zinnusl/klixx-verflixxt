@@ -20,11 +20,12 @@ Release-Build:
 
 ## Aktuelle Richtung
 
-Klixx ist neu als deutschsprachiges Point-and-Click-Abenteuer über einen
-Praktikanten am ersten Tag angelegt. Die kleine Aufgabe, eine Greenscreen-Probe
-vorzubereiten, wächst unerwartet aus dem Studio heraus: Heinrichstraße,
-Serverraum, Haus-15-Szenenbau, Schanzenstraße, Bahnhof Sternschanze,
-Schanzenpark und Karoviertel werden Teil derselben Probe.
+Klixx ist ein deutschsprachiges Point-and-Click-Abenteuer um `Fall 000`: Ein
+Host verschwindet nach dem Öffnen eines Archivframes in einer begehbaren
+Videospur. Die zunächst nüchterne Studioarbeit wird zu einem Rettungslauf mit
+Zeitanker-Logik: Heinrichstraße, Serverraum, Haus-15-Szenenbau, Schanzenstraße,
+Bahnhof Sternschanze, Schanzenpark, Karoviertel und der Schimmelbrüder-Frame
+werden Teil desselben Falls.
 
 Aktueller Stand:
 
@@ -33,21 +34,24 @@ Aktueller Stand:
 - Trunk-Dev-Server und Web-Build-Pipeline.
 - Projektlokale Browser-Speicherung per `localStorage`.
 - Klassische Adventure-Oberfläche mit Statusleiste, Bühne, Kontextaktion,
-  Inventar, Probenakte, Dialogfenster und Click-to-walk-Bewegung.
+  Inventar, Fallakte, Dialogfenster und Click-to-walk-Bewegung.
 - Eigene Unicode-Schrift für sichere Darstellung von Umlauten.
 - Neu generierte Pixel-Look-Hintergründe für zehn Szenen, inklusive
   Greenscreen-Studio, Regie, Produktionshof, Serverraum, Szenenbau und vier
   Stadtorten.
 - Animierte Praktikantenfigur als 4x4-Walkcycle-Spritesheet.
-- Generierte Inventaricons für Laufzettel, Gaffer-Tape, SDI-Label,
-  Bauchbindenkarte und Lichtreflektor.
-- Spielziel: Laufzettel holen, Bodenmarken setzen, Signalweg beschriften,
-  Bauchbinde in der Regie laden, Bahnhofstakt und Parklicht prüfen,
-  Lichtreferenz platzieren und den Probelauf starten.
+- Generierte Inventaricons für Fallakte, Gaffer-Tape, SDI-Label, Host-Karte,
+  Lichtreflektor und die Archiv-/Nebenquest-Gegenstände.
+- Spielziel: Fallakte holen, Bodenmarken setzen, Signalweg beschriften,
+  Host-Karte in der Regie laden, den Schimmelbrüder-Frame stabilisieren,
+  Bahnhofstakt und Parklicht prüfen, den Kofferreflektor beschaffen und den
+  Rettungslauf starten.
 
 ## Steuerung
 
-- Hotspot anklicken: Die naheliegende Aktion wird direkt ausgeführt.
+- Verb wählen, dann Hotspot anklicken: Ansehen, Anstubsen, Benutzen,
+  Aufheben, Anzüngeln, Riechen oder Reden.
+- Ausgänge funktionieren unabhängig vom aktuell gewählten Verb.
 - Auf freie Bodenfläche klicken, um die Spielfigur zu bewegen.
 - Inventargegenstand anklicken, dann kompatiblen Hotspot anklicken.
 - `Neu` löscht den lokalen Spielstand.

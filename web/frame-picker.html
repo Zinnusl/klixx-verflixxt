@@ -487,7 +487,7 @@
           <h2>Frame picken</h2>
           <label class="field">
             <span class="label">Scene ID</span>
-            <input id="pickSceneIdInput" placeholder="video_kliemannsland_road">
+            <input id="pickSceneIdInput" placeholder="video_schimmelbrueder">
           </label>
           <label class="field">
             <span class="label">Notiz</span>
@@ -522,6 +522,7 @@
 
 <script>
 const API = "http://127.0.0.1:8082";
+const PICK_FRAME_TIMEOUT_MS = 30000;
 
 const state = {
   frames: [],
@@ -853,7 +854,7 @@ function renderDetail() {
     </div>
     <label class="field">
       <span class="label">Scene ID</span>
-      <input id="sceneIdInput" value="${pick.scene_id || ""}" placeholder="video_kliemannsland_road">
+      <input id="sceneIdInput" value="${pick.scene_id || ""}" placeholder="video_schimmelbrueder">
     </label>
     <label class="field">
       <span class="label">Notiz</span>
@@ -932,11 +933,20 @@ async function pickCurrentFrame() {
   el.pickFrameButton.disabled = true;
   el.pickFrameButton.textContent = "Extrahiere...";
   el.pickStatus.textContent = `Extrahiere Frame bei ${formatPreciseTime(seconds)}...`;
+  const controller = new AbortController();
+  const timeout = window.setTimeout(() => controller.abort(), PICK_FRAME_TIMEOUT_MS);
+  const slowNotice = window.setTimeout(() => {
+    el.pickStatus.textContent = `Extrahiere noch bei ${formatPreciseTime(seconds)}... warte auf lokale API/ffmpeg.`;
+  }, 3500);
+  const stuckNotice = window.setTimeout(() => {
+    el.pickStatus.textContent = "Extraktion dauert ungewöhnlich lange. Wenn das stehen bleibt: ./scripts/dev.sh bzw. den API-Server neu starten.";
+  }, 10000);
 
   try {
     const response = await fetch(`${API}/pick-frame`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
+      signal: controller.signal,
       body: JSON.stringify({
         video_path: video.path,
         video_id: video.video_id,
@@ -963,18 +973,24 @@ async function pickCurrentFrame() {
     }
     state.selections[frame.path] = result.selection;
     state.activePath = frame.path;
-    state.video = video.video_id;
+    state.video = "all";
     state.source = "picked";
     state.status = "all";
     el.sourceFilter.value = "picked";
     renderVideoFilter();
-    el.videoFilter.value = state.video;
+    el.videoFilter.value = "all";
     el.statusFilter.value = "all";
     render();
     el.pickStatus.textContent = `Gepickt: ${formatPreciseTime(seconds)} -> ${frame.path}`;
   } catch (error) {
-    el.pickStatus.textContent = `Nicht gepickt: ${error.message}`;
+    const message = error.name === "AbortError"
+      ? "Timeout beim Extrahieren. Starte ./scripts/dev.sh bzw. den API-Server neu und lade die Seite neu."
+      : error.message;
+    el.pickStatus.textContent = `Nicht gepickt: ${message}`;
   } finally {
+    window.clearTimeout(timeout);
+    window.clearTimeout(slowNotice);
+    window.clearTimeout(stuckNotice);
     el.pickFrameButton.disabled = false;
     el.pickFrameButton.textContent = "Aktuellen Frame übernehmen";
   }

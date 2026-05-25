@@ -7,6 +7,22 @@
       "scene_id": "video_schimmelbrueder",
       "notes": "Dieser Frame zeigt einen wide shot der Fertigungshalle wo irgendwas in Formen gefuellt wird. Das ist das Video zu dem der Schimmelbrueder Song gesungen wurde.",
       "tags": []
+    },
+    {
+      "path": "tmp/klixx-video-rooms/frames/EpEKYwPEkMw_so_gibt_man_freundliches_feedback_du_vogel_verflixxte_klixx_mit_lars_f/pick_001409388ms.jpg",
+      "status": "selected",
+      "walkable": false,
+      "scene_id": "video_icemachine",
+      "notes": "In diesem Video wird eine Eismaschine saubergemacht, das Video kam auch schon zweimal vor. Es waere also interessant zu sehen, wie es dort sonst noch so aussieht.",
+      "tags": []
+    },
+    {
+      "path": "tmp/klixx-video-rooms/frames/Vbc3Va7xUNU_verflixxte_moms_milit_rs_verflixxte_klixx_staffel_2_mit_lars_paulsen_f/pick_002116320ms.jpg",
+      "status": "selected",
+      "walkable": true,
+      "scene_id": "video_brassband",
+      "notes": "In diesem Video wird eine Band gefilmt, die ihre Instrumente spielen. Das passt gut in ein Adventure game.",
+      "tags": []
     }
   ]
 }

@@ -61,12 +61,14 @@ stay readable point-and-click spaces first.
   pulled-back rooms, readable silhouettes, moody lighting, visible walking
   floor and embedded props. Generated source images are lightly posterized and
   scaled with nearest-neighbor filtering to avoid a photorealistic read.
-- The interaction model follows a simplified late-LucasArts / `The Dig` idea:
-  no visible verb bar, contextual scene clicks, and inventory selection for
-  item-on-object puzzles.
-- The story is now about a first-day intern preparing a green-screen rehearsal.
-  The initially small studio task expands into an unexpectedly large Hamburg
-  route: campus, street, station, park and Karoviertel.
+- The interaction model is explicit verb-object adventure play: visible verbs
+  for looking, poking, using, picking up, tasting, smelling and talking, plus
+  inventory selection for item-on-object puzzles. Exits stay forgiving and work
+  regardless of the selected verb.
+- The story is now about `Fall 000`, a missing-host archive case. The
+  initially practical studio tasks become time-anchor work: campus signal
+  route, city clock, park light, Copyshop materials and a begehbarer
+  Schimmelbrüder video frame all feed the final rescue setup.
 
 ## Sources
 
